@@ -3639,15 +3639,12 @@ namespace DS4Windows
             else
                 dc = (DS4Controls)Enum.Parse(typeof(DS4Controls), buttonName, true);
 
-            List<DS4ControlSettings> ds4settingsList = ds4settings[deviceNum];
-            for (int i = 0, settingsLen = ds4settingsList.Count; i < settingsLen; i++)
+            int temp = (int)dc;
+            if (temp > 0)
             {
-                DS4ControlSettings dcs = ds4settingsList[i];
-                if (dcs.control == dc)
-                {
-                    dcs.UpdateSettings(shift, action, exts, kt, trigger);
-                    break;
-                }
+                int index = temp - 1;
+                DS4ControlSettings dcs = ds4settings[deviceNum][index];
+                dcs.UpdateSettings(shift, action, exts, kt, trigger);
             }
         }
 
@@ -3659,19 +3656,15 @@ namespace DS4Windows
             else
                 dc = (DS4Controls)Enum.Parse(typeof(DS4Controls), buttonName, true);
 
-            List<DS4ControlSettings> ds4settingsList = ds4settings[deviceNum];
-            for (int i = 0, settingsLen = ds4settingsList.Count; i < settingsLen; i++)
+            int temp = (int)dc;
+            if (temp > 0)
             {
-                DS4ControlSettings dcs = ds4settingsList[i];
-                if (dcs.control == dc)
-                {
-                    if (shift)
-                        dcs.shiftExtras = exts;
-                    else
-                        dcs.extras = exts;
-
-                    break;
-                }
+                int index = temp - 1;
+                DS4ControlSettings dcs = ds4settings[deviceNum][index];
+                if (shift)
+                    dcs.shiftExtras = exts;
+                else
+                    dcs.extras = exts;
             }
         }
 
@@ -3683,19 +3676,15 @@ namespace DS4Windows
             else
                 dc = (DS4Controls)Enum.Parse(typeof(DS4Controls), buttonName, true);
 
-            List<DS4ControlSettings> ds4settingsList = ds4settings[deviceNum];
-            for (int i = 0, settingsLen = ds4settingsList.Count; i < settingsLen; i++)
+            int temp = (int)dc;
+            if (temp > 0)
             {
-                DS4ControlSettings dcs = ds4settingsList[i];
-                if (dcs.control == dc)
-                {
-                    if (shift)
-                        dcs.shiftKeyType = keyType;
-                    else
-                        dcs.keyType = keyType;
-
-                    break;
-                }
+                int index = temp - 1;
+                DS4ControlSettings dcs = ds4settings[deviceNum][index];
+                if (shift)
+                    dcs.shiftKeyType = keyType;
+                else
+                    dcs.keyType = keyType;
             }
         }
 
@@ -3707,16 +3696,18 @@ namespace DS4Windows
             else
                 dc = (DS4Controls)Enum.Parse(typeof(DS4Controls), buttonName, true);
 
-            List<DS4ControlSettings> ds4settingsList = ds4settings[deviceNum];
-            for (int i = 0, settingsLen = ds4settingsList.Count; i < settingsLen; i++)
+            int temp = (int)dc;
+            if (temp > 0)
             {
-                DS4ControlSettings dcs = ds4settingsList[i];
-                if (dcs.control == dc)
+                int index = temp - 1;
+                DS4ControlSettings dcs = ds4settings[deviceNum][index];
+                if (shift)
                 {
-                    if (shift)
-                        return dcs.shiftAction;
-                    else
-                        return dcs.action;
+                    return dcs.shiftTrigger;
+                }
+                else
+                {
+                    return dcs.action;
                 }
             }
 
@@ -3751,17 +3742,15 @@ namespace DS4Windows
             else
                 dc = (DS4Controls)Enum.Parse(typeof(DS4Controls), buttonName, true);
 
-            List<DS4ControlSettings> ds4settingsList = ds4settings[deviceNum];
-            for (int i = 0, settingsLen = ds4settingsList.Count; i < settingsLen; i++)
+            int temp = (int)dc;
+            if (temp > 0)
             {
-                DS4ControlSettings dcs = ds4settingsList[i];
-                if (dcs.control == dc)
-                {
-                    if (shift)
-                        return dcs.shiftExtras;
-                    else
-                        return dcs.extras;
-                }
+                int index = temp - 1;
+                DS4ControlSettings dcs = ds4settings[deviceNum][index];
+                if (shift)
+                    return dcs.shiftExtras;
+                else
+                    return dcs.extras;
             }
 
             return null;
@@ -3775,17 +3764,15 @@ namespace DS4Windows
             else
                 dc = (DS4Controls)Enum.Parse(typeof(DS4Controls), buttonName, true);
 
-            List<DS4ControlSettings> ds4settingsList = ds4settings[deviceNum];
-            for (int i = 0, settingsLen = ds4settingsList.Count; i < settingsLen; i++)
+            int temp = (int)dc;
+            if (temp > 0)
             {
-                DS4ControlSettings dcs = ds4settingsList[i];
-                if (dcs.control == dc)
-                {
-                    if (shift)
-                        return dcs.shiftKeyType;
-                    else
-                        return dcs.keyType;
-                }
+                int index = temp - 1;
+                DS4ControlSettings dcs = ds4settings[deviceNum][index];
+                if (shift)
+                    return dcs.shiftKeyType;
+                else
+                    return dcs.keyType;
             }
 
             return DS4KeyType.None;
@@ -3799,12 +3786,12 @@ namespace DS4Windows
             else
                 dc = (DS4Controls)Enum.Parse(typeof(DS4Controls), buttonName, true);
 
-            List<DS4ControlSettings> ds4settingsList = ds4settings[deviceNum];
-            for (int i = 0, settingsLen = ds4settingsList.Count; i < settingsLen; i++)
+            int temp = (int)dc;
+            if (temp > 0)
             {
-                DS4ControlSettings dcs = ds4settingsList[i];
-                if (dcs.control == dc)
-                    return dcs.shiftTrigger;
+                int index = temp - 1;
+                DS4ControlSettings dcs = ds4settings[deviceNum][index];
+                return dcs.shiftTrigger;
             }
 
             return 0;
@@ -3831,12 +3818,12 @@ namespace DS4Windows
             else
                 dc = (DS4Controls)Enum.Parse(typeof(DS4Controls), buttonName, true);
 
-            List<DS4ControlSettings> ds4settingsList = ds4settings[deviceNum];
-            for (int i = 0, settingsLen = ds4settingsList.Count; i < settingsLen; i++)
+            int temp = (int)dc;
+            if (temp > 0)
             {
-                DS4ControlSettings dcs = ds4settingsList[i];
-                if (dcs.control == dc)
-                    return dcs;
+                int index = temp - 1;
+                DS4ControlSettings dcs = ds4settings[deviceNum][index];
+                return dcs;
             }
 
             return null;
