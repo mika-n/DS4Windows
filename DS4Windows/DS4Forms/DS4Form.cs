@@ -436,6 +436,7 @@ namespace DS4Windows.Forms
             Thread timerThread = new Thread(() =>
             {
                 hotkeysTimer = new NonFormTimer();
+                hotkeysTimer.Interval = 20;
                 //hotkeysTimer.Elapsed += Hotkeys;
                 hotkeysTimer.AutoReset = false;
                 if (SwipeProfiles)
@@ -554,6 +555,7 @@ namespace DS4Windows.Forms
                 while (processes.Length > 0)
                 {
                     Thread.Sleep(500);
+                    processes = Process.GetProcessesByName("DS4Updater");
                 }
 
                 File.Delete(exepath + "\\DS4Updater.exe");
