@@ -481,13 +481,24 @@ namespace DS4Windows
             // then use dummy zero MAC address, because there is a good chance the gamepad stll works in DS4Windows app (the code would throw
             // an index out of bounds exception anyway without IF-THEN-ELSE checks after trying to read a serial number).
 
+            // DEBUG:
+            AppLogger.LogToGui($"DEBUG: readSerial. Trying to read serial# from {this.ToString()} InputReportLen={Capabilities.InputReportByteLength}", false);
+
             if (Capabilities.InputReportByteLength == 64)
             {
                 byte[] buffer = new byte[16];
                 buffer[0] = 18;
                 if (readFeatureData(buffer))
+                {
                     serial = String.Format("{0:X02}:{1:X02}:{2:X02}:{3:X02}:{4:X02}:{5:X02}",
                         buffer[6], buffer[5], buffer[4], buffer[3], buffer[2], buffer[1]);
+
+                    // DEBUG:
+                    AppLogger.LogToGui($"DEBUG: readSerial. OK. readFeatureData. Serial#={serial}", false);
+                }
+                else
+                    // DEBUG:
+                    AppLogger.LogToGui($"DEBUG: readSerial. ERROR. readFeatureData failed. Serial#={serial}", false);
             }
             else
             {
@@ -502,7 +513,13 @@ namespace DS4Windows
                     string MACAddr = System.Text.Encoding.Unicode.GetString(buffer).Replace("\0", string.Empty).ToUpper();
                     MACAddr = $"{MACAddr[0]}{MACAddr[1]}:{MACAddr[2]}{MACAddr[3]}:{MACAddr[4]}{MACAddr[5]}:{MACAddr[6]}{MACAddr[7]}:{MACAddr[8]}{MACAddr[9]}:{MACAddr[10]}{MACAddr[11]}";
                     serial = MACAddr;
+
+                    // DEBUG:
+                    AppLogger.LogToGui($"DEBUG: readSerial. OK. HidD_GetSerialNumberString. Serial#={serial}", false);
                 }
+                else
+                    // DEBUG:
+                    AppLogger.LogToGui($"DEBUG: readSerial. ERROR. HidD_GetSerialNumberString. Serial#={serial}", false);
             }
 
             // If serial# reading failed then generate a dummy MAC address based on HID device path (WinOS generated runtime unique value based on connected usb port and hub or BT channel).
@@ -513,6 +530,9 @@ namespace DS4Windows
                 string MACAddr = string.Empty;
 
                 AppLogger.LogToGui($"WARNING: Failed to read serial# from a gamepad ({this._deviceAttributes.VendorHexId}/{this._deviceAttributes.ProductHexId}). Generating MAC address from a device path. From now on you should connect this gamepad always into the same USB port or BT pairing host to keep the same device path.", true);
+
+                // DEBUG:
+                AppLogger.LogToGui($"DEBUG: readSerial. Generating dummy MAC address based on HID device path {this.DevicePath}", false);
 
                 try
                 {
@@ -543,6 +563,9 @@ namespace DS4Windows
                     else
                         // Hmm... Shold never come here. Strange format in devicePath because all identifier items of devicePath string are missing.
                         serial = BLANK_SERIAL;
+
+                    // DEBUG:
+                    AppLogger.LogToGui($"DEBUG: readSerial. Generated dummy MAC serial#={serial}", false);
                 }
                 catch (Exception e)
                 {

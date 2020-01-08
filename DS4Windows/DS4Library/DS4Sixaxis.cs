@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Configuration; // DEBUG config file reading
 
 namespace DS4Windows
 {
@@ -120,10 +121,28 @@ namespace DS4Windows
         };
         private bool calibrationDone = false;
 
+        // DEBUG: gyro inverted
+        public int gyroMultiplierYaw = 1;    // Multiplier of raw gyro values. 1=Use original gyro value (default). -1=Inverted gyro axis
+        public int gyroMultiplierRoll = 1;   // Some DS4 gamepads seems to have a bug (or calibration routine in DS4Windows has a bug) and the hardware Yaw value is inverted.
+        public int gyroMultiplierPitch = 1;  // Profile options allow yaw/roll/pitch raw hardware gyro axis values to be inverted.
+        
         public DS4SixAxis()
         {
             sPrev = new SixAxis(0, 0, 0, 0, 0, 0, 0.0);
             now = new SixAxis(0, 0, 0, 0, 0, 0, 0.0);
+
+            // DEBUG: gyro inverted
+            if (!string.IsNullOrEmpty(ConfigurationSettings.AppSettings["Debug_GyroMultiplierYaw"]))
+                gyroMultiplierYaw = Convert.ToInt32(ConfigurationSettings.AppSettings["Debug_GyroMultiplierYaw"]);
+
+            if (!string.IsNullOrEmpty(ConfigurationSettings.AppSettings["Debug_GyroMultiplierRoll"]))
+                gyroMultiplierRoll = Convert.ToInt32(ConfigurationSettings.AppSettings["Debug_GyroMultiplierRoll"]);
+
+            if (!string.IsNullOrEmpty(ConfigurationSettings.AppSettings["Debug_GyroMultiplierPitch"]))
+                gyroMultiplierPitch = Convert.ToInt32(ConfigurationSettings.AppSettings["Debug_GyroMultiplierPitch"]);
+
+            AppLogger.LogToGui($"DEBUG: DS4SixAxis. gyroMultiplierYaw={gyroMultiplierYaw}  gyroMultiplierRoll={gyroMultiplierRoll}  gyroMultiplierPitch={gyroMultiplierPitch}", false);
+
         }
 
         int temInt = 0;
@@ -197,6 +216,14 @@ namespace DS4Windows
                 calibrationData[1].sensDenom != 0 &&
                 calibrationData[2].sensDenom != 0 &&
                 accelRange != 0;
+
+            // DEBUG. Debug output of calibration data
+            AppLogger.LogToGui($"DEBUG: setCalibrationData. calibrationDone={calibrationDone}  FromUsb={fromUSB}", false);
+
+            for (int idx = 0; idx < 6; idx++)
+                AppLogger.LogToGui($"DEBUG: setCalibrationData. calibrationData[{idx}] bias={calibrationData[idx].bias}  sensNumer={calibrationData[idx].sensNumer}  sensDenom={calibrationData[idx].sensDenom}", false);
+
+            AppLogger.LogToGui($"DEBUG: setCalibrationData. gyroSpeed2x={gyroSpeed2x} gyroSpeedPlus+gyroSpeedMinus=({gyroSpeedPlus} + {gyroSpeedMinus})  yaw={calibrationData[1].sensDenom} yawPlus-yawMinus=({yawPlus} - {yawMinus})", false);
         }
 
         private void applyCalibs(ref int yaw, ref int pitch, ref int roll,
@@ -245,6 +272,11 @@ namespace DS4Windows
             {
                 if (SixAccelMoved != null)
                 {
+                    // DEBUG: gyro inverted if debug value -1
+                    currentYaw *= gyroMultiplierYaw;
+                    currentPitch *= gyroMultiplierPitch;
+                    currentRoll *= gyroMultiplierRoll;
+
                     sPrev.copy(now);
                     now.populate(currentYaw, currentPitch, currentRoll,
                         AccelX, AccelY, AccelZ, elapsedDelta, sPrev);

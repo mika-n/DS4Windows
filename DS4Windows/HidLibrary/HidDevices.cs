@@ -43,7 +43,9 @@ namespace DS4Windows
 
         public static IEnumerable<HidDevice> EnumerateDS4(VidPidInfo[] devInfo)
         {
-            //int iDebugDevCount = 0;
+            // DEBUG:
+            int iDebugDevCount = 0;
+
             List<HidDevice> foundDevs = new List<HidDevice>();
             int devInfoLen = devInfo.Length;
             IEnumerable<DeviceInfo> temp = EnumerateDevices();
@@ -53,19 +55,40 @@ namespace DS4Windows
                 DeviceInfo x = devEnum.Current;
                 //DeviceInfo x = temp.ElementAt(i);               
                 HidDevice tempDev = new HidDevice(x.Path, x.Description);
-                //iDebugDevCount++;
-                //AppLogger.LogToGui($"DEBUG: HID#{iDebugDevCount} Path={x.Path}  Description={x.Description}  VID={tempDev.Attributes.VendorHexId}  PID={tempDev.Attributes.ProductHexId}  Usage=0x{tempDev.Capabilities.Usage.ToString("X")}  Version=0x{tempDev.Attributes.Version.ToString("X")}", false);
+
+                // DEBUG:
+                iDebugDevCount++;
+                AppLogger.LogToGui($"DEBUG: EnumerateDS4. HID#{iDebugDevCount} Path={x.Path}  Description={x.Description}  VID={tempDev.Attributes.VendorHexId}  PID={tempDev.Attributes.ProductHexId}  Usage=0x{tempDev.Capabilities.Usage.ToString("X")}  Version=0x{tempDev.Attributes.Version.ToString("X")}", false);
+
                 bool found = false;
                 for (int j = 0; !found && j < devInfoLen; j++)
                 {
                     VidPidInfo tempInfo = devInfo[j];
-                    if (tempDev.Capabilities.Usage == 0x05 &&
+                    //if (tempDev.Capabilities.Usage == 0x05 &&
+                    //    tempDev.Attributes.VendorId == tempInfo.vid &&
+                    //    tempDev.Attributes.ProductId == tempInfo.pid)
+                    // DEBUG:
+                    if ((tempDev.Capabilities.Usage == 0x05 || (Global.debug_CustomHIDUsageFlag != -1 && tempDev.Capabilities.Usage == Global.debug_CustomHIDUsageFlag)) &&
                         tempDev.Attributes.VendorId == tempInfo.vid &&
                         tempDev.Attributes.ProductId == tempInfo.pid)
                     {
+                        AppLogger.LogToGui($"DEBUG: EnumerateDS4. HID#{iDebugDevCount} detected as DS4 compatible gamepad device", false);
+
                         found = true;
                         foundDevs.Add(tempDev);
                     }
+                }
+
+                // DEBUG: If the device was not one of the KnownDevices but it has gamepad usage flag type then try to use it as an unknown device
+                if (!found && (tempDev.Capabilities.Usage == 0x05 || (Global.debug_CustomHIDUsageFlag != -1 && tempDev.Capabilities.Usage == Global.debug_CustomHIDUsageFlag)) &&
+                    !(tempDev.Attributes.VendorId == 0x045E && tempDev.Attributes.ProductId == 0x028E)) // Ignore USB xbox360 gamepad because it may be the virtual output device
+                {
+                    AppLogger.LogToGui($"DEBUG: EnumerateDS4. HID#{iDebugDevCount} unknown gamepad device. It may not be DS4 compatible, but trying to use it as potentially DS4 compatible gamepad device", false);
+                    if (Global.debug_CustomHIDUsageFlag != -1)
+                        AppLogger.LogToGui($"DEBUG: EnumerateDS4. HID#{iDebugDevCount} Usage={tempDev.Capabilities.Usage}  CustomHIDUsaegFlag={Global.debug_CustomHIDUsageFlag}", false);
+
+                    found = true;
+                    foundDevs.Add(tempDev);
                 }
             }
 

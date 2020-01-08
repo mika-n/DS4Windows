@@ -13,6 +13,8 @@ using System.Threading.Tasks;
 using System.Globalization;
 using System.Diagnostics;
 
+using System.Configuration; // DEBUG config file reading
+
 namespace DS4Windows
 {
     [Flags]
@@ -273,6 +275,22 @@ namespace DS4Windows
             X360Controls.Back, X360Controls.Start, X360Controls.None, X360Controls.None, X360Controls.None, X360Controls.None,
             X360Controls.None, X360Controls.None, X360Controls.None, X360Controls.None
         };
+
+
+        // DEBUG. Debug feature flags. These values are the default behaviour of DS4Win app
+        public static int debug_HidDSetNumInputBuffers = 2;
+        public static bool debug_GyroCalibration = true;
+        public static int debug_GyroCalibrationType = 0;
+        public static bool debug_SendRumbleLightbarData = true;
+        public static int debug_SendRumbleLightbarDataType = 0;
+        public static int debug_SendRumbleLightbarDataAPI = 0;
+        public static bool debug_ReadTouchpadData = true;
+        public static bool debug_ReadGyroData = true;
+        public static bool debug_ReadBatteryData = true;
+        public static bool debug_PrintoutInputDataBuffer = false;
+        public static int debug_ForceConnectionType = 0;  // 0=No Force (default, autodetected), 1=USB, 2=BT
+        public static int debug_CustomHIDUsageFlag = -1;  // -1=No custom (default 0x05 only), >=0 custom usage flag
+
 
         // Create mapping array at runtime
         public static DS4Controls[] reverseX360ButtonMapping = new Func<DS4Controls[]>(() =>
@@ -3876,6 +3894,49 @@ namespace DS4Windows
                 if (File.Exists(m_Profile))
                 {
                     XmlNode Item;
+
+                    // DEBUG. Load debug options from xxx.exe.config file
+                    try
+                    {
+                        if (!string.IsNullOrEmpty(ConfigurationSettings.AppSettings["Debug_ForceConnectionType"]))
+                            Global.debug_ForceConnectionType = Convert.ToInt32(ConfigurationSettings.AppSettings["Debug_ForceConnectionType"]);
+
+                        if (!string.IsNullOrEmpty(ConfigurationSettings.AppSettings["Debug_HidDSetNumInputBuffers"]))
+                            Global.debug_HidDSetNumInputBuffers = Convert.ToInt32(ConfigurationSettings.AppSettings["Debug_HidDSetNumInputBuffers"]);
+
+                        if (!string.IsNullOrEmpty(ConfigurationSettings.AppSettings["Debug_GyroCalibration"]))
+                            Global.debug_GyroCalibration = ConfigurationSettings.AppSettings["Debug_GyroCalibration"].ToUpper() == "TRUE";
+
+                        if (!string.IsNullOrEmpty(ConfigurationSettings.AppSettings["Debug_GyroCalibrationType"]))
+                            Global.debug_GyroCalibrationType = Convert.ToInt32(ConfigurationSettings.AppSettings["Debug_GyroCalibrationType"]);
+
+                        if (!string.IsNullOrEmpty(ConfigurationSettings.AppSettings["Debug_SendRumbleLightbarData"]))
+                            Global.debug_SendRumbleLightbarData = ConfigurationSettings.AppSettings["Debug_SendRumbleLightbarData"].ToUpper() == "TRUE";
+
+                        if (!string.IsNullOrEmpty(ConfigurationSettings.AppSettings["Debug_SendRumbleLightbarDataType"]))
+                            Global.debug_SendRumbleLightbarDataType = Convert.ToInt32(ConfigurationSettings.AppSettings["Debug_SendRumbleLightbarDataType"]);
+
+                        if (!string.IsNullOrEmpty(ConfigurationSettings.AppSettings["Debug_SendRumbleLightbarDataAPI"]))
+                            Global.debug_SendRumbleLightbarDataAPI = Convert.ToInt32(ConfigurationSettings.AppSettings["Debug_SendRumbleLightbarDataAPI"]);
+
+                        if (!string.IsNullOrEmpty(ConfigurationSettings.AppSettings["Debug_ReadTouchpadData"]))
+                            Global.debug_ReadTouchpadData = ConfigurationSettings.AppSettings["Debug_ReadTouchpadData"].ToUpper() == "TRUE";
+
+                        if (!string.IsNullOrEmpty(ConfigurationSettings.AppSettings["Debug_ReadGyroData"]))
+                            Global.debug_ReadGyroData = ConfigurationSettings.AppSettings["Debug_ReadGyroData"].ToUpper() == "TRUE";
+
+                        if (!string.IsNullOrEmpty(ConfigurationSettings.AppSettings["Debug_ReadBatteryData"]))
+                            Global.debug_ReadBatteryData = ConfigurationSettings.AppSettings["Debug_ReadBatteryData"].ToUpper() == "TRUE";
+
+                        if (!string.IsNullOrEmpty(ConfigurationSettings.AppSettings["Debug_PrintoutInputDataBuffer"]))
+                            Global.debug_PrintoutInputDataBuffer = ConfigurationSettings.AppSettings["Debug_PrintoutInputDataBuffer"].ToUpper() == "TRUE";
+
+                        if (!string.IsNullOrEmpty(ConfigurationSettings.AppSettings["Debug_CustomHIDUsageFlag"]))
+                            Global.debug_CustomHIDUsageFlag = Convert.ToInt32(ConfigurationSettings.AppSettings["Debug_CustomHIDUsageFlag"]);
+                    }
+                    catch (Exception)
+                    { }
+
 
                     m_Xdoc.Load(m_Profile);
 
