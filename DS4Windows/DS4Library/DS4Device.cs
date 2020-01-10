@@ -889,6 +889,7 @@ namespace DS4Windows
         private int debugPerformDs4InputReportTypeErrCount = 0;
         private int debugPrintoutInputReportCount = 0;
         private DateTime debugPrintoutPrevTimestamp = DateTime.Now;
+        private int debugPerformDS4InputErrCount = 0;
 
         private unsafe void performDs4Input()
         {
@@ -1283,7 +1284,11 @@ namespace DS4Windows
                         {
                             // DEBUG:
                             //currerror = "Index out of bounds: touchpad"; 
-                            currerror = e.Message;
+                            if (debugPerformDS4InputErrCount < 20)
+                            {
+                                debugPerformDS4InputErrCount++;
+                                currerror = $"TouchpadError. {debugPerformDS4InputErrCount}. {e.Message}. {e.StackTrace}. {e.Source}";
+                            }
                         }
                     }
 

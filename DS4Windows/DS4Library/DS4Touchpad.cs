@@ -95,16 +95,44 @@ namespace DS4Windows
             return changed;
         }
 
+        private int debugTouchpadErrorCounter = 0;
+
         public void handleTouchpad(byte[] data, DS4State sensors, int touchPacketOffset = 0)
         {
-            PreTouchProcess?.Invoke(this, EventArgs.Empty);
+            try // debug trackball
+            {
+                PreTouchProcess?.Invoke(this, EventArgs.Empty);
+            }
+            catch (Exception e)
+            {
+                if (debugTouchpadErrorCounter < 40)
+                {
+                    debugTouchpadErrorCounter++;
+                    AppLogger.LogToGui($"ERROR. handleTouchpad. PreTouchProcess. {touchPacketOffset}. {e.StackTrace}", false);
+                    AppLogger.LogToGui($"ERROR. handleTouchpad. PreTouchProcess. {touchPacketOffset}. {e.Message}", false);
+                    throw;
+                }
+            }
 
             bool touchPadIsDown = sensors.TouchButton;
             if (!PacketChanged(data, touchPacketOffset) && touchPadIsDown == lastTouchPadIsDown)
             {
-                if (TouchUnchanged != null)
-                    TouchUnchanged(this, EventArgs.Empty);
-                return;
+                try
+                {
+                    if (TouchUnchanged != null)
+                        TouchUnchanged(this, EventArgs.Empty);
+                    return;
+                }
+                catch (Exception e) // debug trackball
+                {
+                    if (debugTouchpadErrorCounter < 40)
+                    {
+                        debugTouchpadErrorCounter++;
+                        AppLogger.LogToGui($"ERROR. handleTouchpad. TouchUnchanged. {touchPacketOffset}. {e.StackTrace}", false);
+                        AppLogger.LogToGui($"ERROR. handleTouchpad. TouchUnchanged. {touchPacketOffset}. {e.Message}", false);
+                        throw;
+                    }
+                }
             }
 
             Array.Copy(data, TOUCHPAD_DATA_OFFSET + touchPacketOffset, previousPacket, 0, 8);
@@ -138,7 +166,22 @@ namespace DS4Windows
                             args = new TouchpadEventArgs(sensors.ReportTimeStamp, sensors.TouchButton, t0);
                         }
 
-                        TouchesBegan(this, args);
+                        try
+                        {
+                            TouchesBegan(this, args);
+                        }
+                        catch (Exception e) // debug trackball
+                        {
+                            if (debugTouchpadErrorCounter < 40)
+                            {
+                                debugTouchpadErrorCounter++;
+                                AppLogger.LogToGui($"ERROR. handleTouchpad. TouchesBegan. {touchPacketOffset}. {e.StackTrace}", false);
+                                AppLogger.LogToGui($"ERROR. handleTouchpad. TouchesBegan. {touchPacketOffset}. {e.Message}", false);
+                                AppLogger.LogToGui($"ERROR. handleTouchpad. touchID1={touchID1}  touchID2={touchID2}  currentX1={currentX1} currentY1={currentY1}  currentX2={currentX2} currentY2={currentY2}", false);
+                                throw;
+                            }
+                        }
+
                     }
                 }
                 else if (sensors.Touch1 == lastIsActive1 && sensors.Touch2 == lastIsActive2 && TouchesMoved != null)
@@ -172,7 +215,22 @@ namespace DS4Windows
 
                     args = new TouchpadEventArgs(sensors.ReportTimeStamp, sensors.TouchButton, currentT0, currentT1);
 
-                    TouchesMoved(this, args);
+                    try
+                    {
+                        TouchesMoved(this, args);
+                    }
+                    catch (Exception e) // debug trackball
+                    {
+                        if (debugTouchpadErrorCounter < 40)
+                        {
+                            debugTouchpadErrorCounter++;
+                            AppLogger.LogToGui($"ERROR. handleTouchpad. TouchesMoved. {touchPacketOffset}. {e.StackTrace}", false);
+                            AppLogger.LogToGui($"ERROR. handleTouchpad. TouchesMoved. {touchPacketOffset}. {e.Message}", false);
+                            AppLogger.LogToGui($"ERROR. handleTouchpad. touchID1={touchID1}  touchID2={touchID2}  currentX1={currentX1} currentY1={currentY1}  currentX2={currentX2} currentY2={currentY2}", false);
+                            throw;
+                        }
+                    }
+
                 }
 
                 if (!lastTouchPadIsDown && touchPadIsDown && TouchButtonDown != null)
@@ -194,7 +252,21 @@ namespace DS4Windows
                         args = new TouchpadEventArgs(sensors.ReportTimeStamp, sensors.TouchButton, t0);
                     }
 
-                    TouchButtonDown(this, args);
+                    try
+                    {
+                        TouchButtonDown(this, args);
+                    }
+                    catch (Exception e) // debug trackball
+                    {
+                        if (debugTouchpadErrorCounter < 40)
+                        {
+                            debugTouchpadErrorCounter++;
+                            AppLogger.LogToGui($"ERROR. handleTouchpad. TouchButtonDown. {touchPacketOffset}. {e.StackTrace}", false);
+                            AppLogger.LogToGui($"ERROR. handleTouchpad. TouchButtonDown. {touchPacketOffset}. {e.Message}", false);
+                            AppLogger.LogToGui($"ERROR. handleTouchpad. touchID1={touchID1}  touchID2={touchID2}  currentX1={currentX1} currentY1={currentY1}  currentX2={currentX2} currentY2={currentY2}", false);
+                            throw;
+                        }
+                    }
                 }
                 else if (lastTouchPadIsDown && !touchPadIsDown && TouchButtonUp != null)
                 {
@@ -215,7 +287,21 @@ namespace DS4Windows
                         args = new TouchpadEventArgs(sensors.ReportTimeStamp, sensors.TouchButton, t0);
                     }
 
-                    TouchButtonUp(this, args);
+                    try
+                    {
+                        TouchButtonUp(this, args);
+                    }
+                    catch (Exception e) // debug trackball
+                    {
+                        if (debugTouchpadErrorCounter < 40)
+                        {
+                            debugTouchpadErrorCounter++;
+                            AppLogger.LogToGui($"ERROR. handleTouchpad. TouchButtonUp. {touchPacketOffset}. {e.StackTrace}", false);
+                            AppLogger.LogToGui($"ERROR. handleTouchpad. TouchButtonUp. {touchPacketOffset}. {e.Message}", false);
+                            AppLogger.LogToGui($"ERROR. handleTouchpad. touchID1={touchID1}  touchID2={touchID2}  currentX1={currentX1} currentY1={currentY1}  currentX2={currentX2} currentY2={currentY2}", false);
+                            throw;
+                        }
+                    }
                 }
 
                 if (sensors.Touch1)
@@ -263,7 +349,21 @@ namespace DS4Windows
                         args = new TouchpadEventArgs(sensors.ReportTimeStamp, sensors.TouchButton, t0);
                     }
 
-                    TouchesEnded(this, args);
+                    try
+                    {
+                        TouchesEnded(this, args);
+                    }
+                    catch (Exception e) // debug trackball
+                    {
+                        if (debugTouchpadErrorCounter < 40)
+                        {
+                            debugTouchpadErrorCounter++;
+                            AppLogger.LogToGui($"ERROR. handleTouchpad. TouchesEnded. {touchPacketOffset}. {e.StackTrace}", false);
+                            AppLogger.LogToGui($"ERROR. handleTouchpad. TouchesEnded. {touchPacketOffset}. {e.Message}", false);
+                            AppLogger.LogToGui($"ERROR. handleTouchpad. touchID1={touchID1}  touchID2={touchID2}  currentX1={currentX1} currentY1={currentY1}  currentX2={currentX2} currentY2={currentY2}", false);
+                            throw;
+                        }
+                    }
                 }
             }
 
