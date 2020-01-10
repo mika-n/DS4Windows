@@ -7,16 +7,20 @@ using System.Security.Principal;
 
 namespace DS4Windows
 {
+    public enum VidPidFeatureSet : byte { DefaultDS4 = 0, OnlyInputData0x01 = 1, OnlyOutputData0x05 = 2, NoOutputData = 4, NoBatteryReading = 8 };
+
     public class VidPidInfo
     {
         public readonly int vid;
         public readonly int pid;
         public readonly string name;
-        internal VidPidInfo(int vid, int pid, string name = "Generic DS4")
+        public readonly VidPidFeatureSet featureSet;
+        internal VidPidInfo(int vid, int pid, string name = "Generic DS4", VidPidFeatureSet featureSet = VidPidFeatureSet.DefaultDS4)
         {
             this.vid = vid;
             this.pid = pid;
             this.name = name;
+            this.featureSet = featureSet;
         }
     }
 
@@ -51,9 +55,9 @@ namespace DS4Windows
             new VidPidInfo(0x2E95, 0x7725, "Scuf Vantage"), // Scuf Vantage gamepad
             new VidPidInfo(0x11C0, 0x4001, "PS4 Fun"), // PS4 Fun Controller
             new VidPidInfo(RAZER_VID, 0x1007, "Razer Raiju TE USB"), // Razer Raiju Tournament Edition (wired)
-            new VidPidInfo(RAZER_VID, 0x100A, "Razer Raiju TE BT"), // DEBUG. patchfid. Razer Raiju Tournament Edition (BT). Incoming report data (32 bytes) in USB format in BT. WriteOutput uses "usb write" logic in BT.
+            new VidPidInfo(RAZER_VID, 0x100A, "Razer Raiju TE BT", VidPidFeatureSet.OnlyInputData0x01 | VidPidFeatureSet.OnlyOutputData0x05 | VidPidFeatureSet.NoBatteryReading), // DEBUG. patchfid. Razer Raiju Tournament Edition (BT). Incoming report data (32 bytes) in USB format in BT. WriteOutput uses "usb write" logic in BT.
             new VidPidInfo(RAZER_VID, 0x1004, "Razer Raiju UE USB"), // Razer Raiju Ultimate Edition (wired)
-            new VidPidInfo(RAZER_VID, 0x1009, "Razer Raiju UE BT"), // DEBUG. patchfid. Razer Raiju Ultimate Edition (BT). Incoming report data (32 bytes) in USB format in BT. WriteOutput uses "usb write" logic in BT.
+            new VidPidInfo(RAZER_VID, 0x1009, "Razer Raiju UE BT", VidPidFeatureSet.OnlyInputData0x01 | VidPidFeatureSet.OnlyOutputData0x05 | VidPidFeatureSet.NoBatteryReading), // DEBUG. patchfid. Razer Raiju Ultimate Edition (BT). Incoming report data (32 bytes) in USB format in BT. WriteOutput uses "usb write" logic in BT.
             new VidPidInfo(SONY_VID, 0x05C5, "CronusMax (PS4 Mode)"), // CronusMax (PS4 Output Mode)
             new VidPidInfo(0x0C12, 0x57AB, "Warrior Joypad JS083"), // Warrior Joypad JS083 (wired). Custom lightbar color doesn't work, but everything else works OK (except touchpad and gyro because the gamepad doesnt have those).
             new VidPidInfo(0x0C12, 0x0E16, "Steel Play MetalTech"), // Steel Play Metaltech P4 (wired)
