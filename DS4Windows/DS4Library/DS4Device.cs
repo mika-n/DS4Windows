@@ -135,8 +135,9 @@ namespace DS4Windows
         private DS4State cState = new DS4State();
         private DS4State pState = new DS4State();
         private ConnectionType conType;
-        private WriteOutputType writeOutputType;
-        private ReadInputType readInputType;
+        public VidPidFeatureSet featureSet;  // DEBUG: patchfix
+        //private WriteOutputType writeOutputType;
+        //private ReadInputType readInputType;
         private byte[] accel = new byte[6];
         private byte[] gyro = new byte[6];
         private byte[] inputReport;
@@ -436,11 +437,15 @@ namespace DS4Windows
             return runCalib;
         }
 
-        public DS4Device(HidDevice hidDevice, string disName)
+        public DS4Device(HidDevice hidDevice, string disName, VidPidFeatureSet featureSet = VidPidFeatureSet.DefaultDS4)
         {
             hDevice = hidDevice;
             displayName = disName;
+            this.featureSet = featureSet; // DEBUG: patchfix
             conType = HidConnectionType(hDevice);
+
+            if(this.featureSet != VidPidFeatureSet.DefaultDS4)
+                AppLogger.LogToGui($"Gamepad {displayName} ({conType}) uses custom feature set ({this.featureSet.ToString()})", false);
 
             // DEBUG:
             if (Global.debug_ForceConnectionType == 1)
@@ -455,10 +460,7 @@ namespace DS4Windows
             }
 
             Mac = hDevice.readSerial();
-            runCalib = true;
-
-            // DEBUG: patchfix
-            HidDeviceAttributes tempAttr = hDevice.Attributes;
+            runCalib = (this.featureSet & VidPidFeatureSet.NoGyroCalib) == 0; // DEBUG: patchfix //true;
 
             // DEBUG:
             AppLogger.LogToGui($"DEBUG: DS4Device. {displayName} conType={conType}  MAC={Mac}", false);
@@ -476,24 +478,23 @@ namespace DS4Windows
                 outReportBuffer = new byte[hDevice.Capabilities.OutputReportByteLength];
 
                 // DEBUG: patchfix
-                readInputType = ReadInputType.INPUTFEATURE01;
-                writeOutputType = WriteOutputType.OUTPUTFEATURE05;
+                //readInputType = ReadInputType.INPUTFEATURE01;
+                //writeOutputType = WriteOutputType.OUTPUTFEATURE05;
 
                 if (conType == ConnectionType.USB)
                 {
                     warnInterval = WARN_INTERVAL_USB;
-                    // DEBUG: patchfix
-                    //HidDeviceAttributes tempAttr = hDevice.Attributes;
+                    HidDeviceAttributes tempAttr = hDevice.Attributes;
                     if (tempAttr.VendorId == 0x054C && tempAttr.ProductId == 0x09CC)
                     {
                         audio = new DS4Audio();
                         micAudio = new DS4Audio(DS4Library.CoreAudio.DataFlow.Capture);
                     }
-                    else if (tempAttr.VendorId == DS4Devices.NACON_VID && (tempAttr.ProductId == 0x0D01 || tempAttr.ProductId == 0x0D02))
-                    {
+                    //else if (tempAttr.VendorId == DS4Devices.NACON_VID && (tempAttr.ProductId == 0x0D01 || tempAttr.ProductId == 0x0D02))
+                    //{
                         // The old logic didn't run gyro calibration for any of the Nacon gamepads. Nowadays there are Nacon gamepads with full PS4 compatible gyro, so skip the calibration only for old Nacon devices (is that skip even necessary?)
-                        runCalib = false;
-                    }
+                    //    runCalib = false;
+                    //}
                     else if (tempAttr.VendorId == DS4Devices.RAZER_VID && tempAttr.ProductId == 0x1007 && outReportBuffer.Length >= 22) // DEBUG: patchfix check BufLen before creating audio device
                     {
                         audio = new DS4Audio(searchName: RAIJU_TE_AUDIO_SEARCHNAME);
@@ -516,28 +517,38 @@ namespace DS4Windows
             {
                 btInputReport = new byte[BT_INPUT_REPORT_LENGTH];
                 inputReport = new byte[BT_INPUT_REPORT_LENGTH - 2];
-                
+
                 // DEBUG: patchfix. Some Nacon gamepads use 32 bytes output buffer in BT
-                //outputReport = new byte[BT_OUTPUT_REPORT_LENGTH];
-                //outReportBuffer = new byte[BT_OUTPUT_REPORT_LENGTH];
-                outputReport = new byte[hDevice.Capabilities.OutputReportByteLength <= 15 ? BT_OUTPUT_REPORT_LENGTH : hDevice.Capabilities.OutputReportByteLength];
-                outReportBuffer = new byte[hDevice.Capabilities.OutputReportByteLength <= 15 ? BT_OUTPUT_REPORT_LENGTH : hDevice.Capabilities.OutputReportByteLength];
-
-                // DEBUG: patchfix
-                if (tempAttr.VendorId == DS4Devices.RAZER_VID && (tempAttr.ProductId == 0x100A || tempAttr.ProductId == 0x1009))
+                //if (!this.featureSet.HasFlag(VidPidFeatureSet.OnlyOutputData0x05))
+                if ((this.featureSet & VidPidFeatureSet.OnlyOutputData0x05) == 0)
                 {
-                    // Razer TE and UE gamepads behave like USB connected pads in BT connection mode
-                    readInputType = ReadInputType.INPUTFEATURE01;
-                    writeOutputType = WriteOutputType.OUTPUTFEATURE05;
-
-                    AppLogger.LogToGui($"Gamepad {tempAttr.VendorHexId}/{tempAttr.ProductHexId} uses BT connection, but data protocol is in usb format", false);
+                    // DefaultDS4 protocol while writing data to gamepad (ie. OnlyOutputData0x05 flag is NOT set)
+                    outputReport = new byte[BT_OUTPUT_REPORT_LENGTH];
+                    outReportBuffer = new byte[BT_OUTPUT_REPORT_LENGTH];
                 }
                 else
                 {
-                    // Default DS4 HID input data packet format and writeOutput (rumble/lightbar) API in BT 
-                    readInputType = ReadInputType.INPUTFEATURE11;
-                    writeOutputType = WriteOutputType.OUTPUTFEATURE11;
+                    // Writing ligthbar and rumble data usign  "too big" output buffer fails in some Razer gamepads. If the gamepad doesn't use default DS4 protocol to set rumble and lightbar data (ie. PC writes data to gamepad)
+                    // then use the actual device capability value in buffer size. However, the buffer needs to be minimum of 15 bytes to avoid out-of-index errors or gamepad should define VidPidFaetureSet.NoOutputData flag.
+                    outputReport = new byte[hDevice.Capabilities.OutputReportByteLength <= 15 ? 15 : hDevice.Capabilities.OutputReportByteLength];
+                    outReportBuffer = new byte[hDevice.Capabilities.OutputReportByteLength <= 15 ? 15 : hDevice.Capabilities.OutputReportByteLength];
                 }
+
+                // DEBUG: patchfix
+                //if (tempAttr.VendorId == DS4Devices.RAZER_VID && (tempAttr.ProductId == 0x100A || tempAttr.ProductId == 0x1009))
+                //{
+                    // Razer TE and UE gamepads behave like USB connected pads in BT connection mode
+                //    readInputType = ReadInputType.INPUTFEATURE01;
+                //    writeOutputType = WriteOutputType.OUTPUTFEATURE05;
+                //
+                //    AppLogger.LogToGui($"Gamepad {tempAttr.VendorHexId}/{tempAttr.ProductHexId} uses BT connection, but data protocol is in usb format", false);
+                //}
+                //else
+                //{
+                    // Default DS4 HID input data packet format and writeOutput (rumble/lightbar) API in BT 
+                //    readInputType = ReadInputType.INPUTFEATURE11;
+                //    writeOutputType = WriteOutputType.OUTPUTFEATURE11;
+                //}
 
                 warnInterval = WARN_INTERVAL_BT;
                 synced = isValidSerial();
@@ -545,8 +556,7 @@ namespace DS4Windows
 
             // DEBUG:
             AppLogger.LogToGui($"DEBUG: DS4Device. {displayName} conType={conType} UsedInputReportBufLen={inputReport.Length} UsedOutputReportBufLen={outputReport.Length} synced={synced} runCalib={runCalib}", false);
-            AppLogger.LogToGui($"DEBUG: DS4Device. {displayName} conType={conType} readInputType={readInputType} writeOutputType={writeOutputType}", false);
-
+            
             touchpad = new DS4Touchpad();
             sixAxis = new DS4SixAxis();
             if (runCalib)
@@ -587,7 +597,7 @@ namespace DS4Windows
             byte[] calibration = new byte[41];
             // DEBUG: patchfix. Some gamepads behave like USB devices in BT connection also. OutReportBuffer size tells us how the gamepad handles incoming and outgoing HID data packets.
             //calibration[0] = conType == ConnectionType.BT ? (byte)0x05 : (byte)0x02;
-            calibration[0] = (conType == ConnectionType.BT && readInputType == ReadInputType.INPUTFEATURE11) ? (byte)0x05 : (byte)0x02;
+            calibration[0] = conType == ConnectionType.BT ? (byte)0x05 : (byte)0x02;
 
             if (!Global.debug_GyroCalibration)
             {
@@ -602,7 +612,7 @@ namespace DS4Windows
 
             AppLogger.LogToGui($"DEBUG: RefreshCalibration. getCalibrationData{(conType == ConnectionType.BT ? " and DS4ModeSwitch" : "")}. conType={conType}  calibDataType={calibration[0]}", false);
 
-            // DEBUG: patchfix
+            // DEBUG: 
             //if (conType == ConnectionType.BT)
             if(calibration[0] == 0x05)
             {
@@ -633,8 +643,8 @@ namespace DS4Windows
 
                 AppLogger.LogToGui($"DEBUG: RefreshCalibration. calibration found={found}", false);
 
-                // DEBUG: patchfix
-                sixAxis.setCalibrationData(ref calibration, false /*conType == ConnectionType.USB*/);
+                // DEBUG: 
+                sixAxis.setCalibrationData(ref calibration, false /* conType == ConnectionType.USB */);
 
                 if (hDevice.Attributes.ProductId == 0x5C4 && hDevice.Attributes.VendorId == 0x054C &&
                     sixAxis.fixupInvertedGyroAxis())
@@ -739,7 +749,7 @@ namespace DS4Windows
             // DEBUG: patfhfix
             if (conType == ConnectionType.BT)
             {
-                if ((writeOutputType == WriteOutputType.OUTPUTFEATURE11 && Global.debug_SendRumbleLightbarDataAPI == 0) || Global.debug_SendRumbleLightbarDataAPI == 2)
+                if (((this.featureSet & VidPidFeatureSet.OnlyOutputData0x05) == 0 && Global.debug_SendRumbleLightbarDataAPI == 0) || Global.debug_SendRumbleLightbarDataAPI == 2)
                     return hDevice.WriteOutputReportViaControl(outputReport);
                 else
                     // Some gamepads behave like USB devices in BT (fex couple Razer gamepads)
@@ -936,7 +946,8 @@ namespace DS4Windows
                     //Latency = latencyQueue.Average();
                     Latency = latencySum / tempLatencyCount;
 
-                    if (conType == ConnectionType.BT && readInputType == ReadInputType.INPUTFEATURE11)
+                    // DEBUG patchix
+                    if (conType == ConnectionType.BT && (this.featureSet & VidPidFeatureSet.OnlyInputData0x01) == 0)
                     {
                         //HidDevice.ReadStatus res = hDevice.ReadFile(btInputReport);
                         //HidDevice.ReadStatus res = hDevice.ReadAsyncWithFileStream(btInputReport, READ_STREAM_TIMEOUT);
@@ -1101,7 +1112,7 @@ namespace DS4Windows
                     oldTimeDouble = curTimeDouble;
 
                     // DEBUG: patchfix
-                    if (conType == ConnectionType.BT && readInputType == ReadInputType.INPUTFEATURE11 && btInputReport[0] != 0x11 && debugPerformDs4InputReportTypeErrCount <= 3)
+                    if (conType == ConnectionType.BT && (this.featureSet & VidPidFeatureSet.OnlyInputData0x01) == 0 && btInputReport[0] != 0x11 && debugPerformDs4InputReportTypeErrCount <= 3)
                     {
                         // DEBUG:
                         if (debugPerformDs4InputReportTypeErrCount < 3)
@@ -1171,8 +1182,9 @@ namespace DS4Windows
                     cState.TouchButton = (tempByte & 0x02) != 0;
                     cState.FrameCounter = (byte)(tempByte >> 2);
 
+                    // DEBUG patchix
                     // DEBUG. Feed battery values to DS4Win app only when debug option enables it
-                    if (Global.debug_ReadBatteryData)
+                    if ((this.featureSet & VidPidFeatureSet.NoBatteryReading) == 0 && Global.debug_ReadBatteryData)
                     {
                         tempByte = inputReport[30];
                         tempCharging = (tempByte & 0x10) != 0;
@@ -1201,10 +1213,11 @@ namespace DS4Windows
                     }
                     else
                     {
-                        // DEBUG: Debug option disabled reading of battery data. Report 100% battery level.
+                        // DEBUG patchix
+                        // The gamepad doesn't return real battery values, so use dummy 99% value to avoid 0% battery lwo warnings and LED colors in DS4Windows app
                         priorInputReport30 = 0x0F;
-                        battery = 100;
-                        cState.Battery = 100;
+                        battery = 99;
+                        cState.Battery = 99;
                     }
 
                     tempStamp = (uint)((ushort)(inputReport[11] << 8) | inputReport[10]);
@@ -1448,7 +1461,7 @@ namespace DS4Windows
 
             // DEBUG: patchfix
             // DEBUG: If debug option disabled rumble and lightbar writing (to DS4 gamepad) then don't do anything here except quit output thread when DS4Windows app is closed or all controllers disconnected
-            if (writeOutputType == WriteOutputType.OUTPUTNONE || !Global.debug_SendRumbleLightbarData)
+            if ((this.featureSet & VidPidFeatureSet.NoOutputData) != 0 || !Global.debug_SendRumbleLightbarData)
             {
                 if (exitOutputThread == false && (IsRemoving || IsRemoved))
                 {
@@ -1468,7 +1481,7 @@ namespace DS4Windows
                 // DEBUG: Force sendData structure
                 // DEBUG: patchfix
                 //if ((Global.debug_SendRumbleLightbarDataType == 0 && usingBT) || Global.debug_SendRumbleLightbarDataType == 2)
-                if ((Global.debug_SendRumbleLightbarDataType == 0 && writeOutputType == WriteOutputType.OUTPUTFEATURE11 && Global.debug_SendRumbleLightbarDataType == 0) || Global.debug_SendRumbleLightbarDataType == 2)
+                if ((usingBT && (this.featureSet & VidPidFeatureSet.OnlyOutputData0x05) == 0 && Global.debug_SendRumbleLightbarDataType == 0) || Global.debug_SendRumbleLightbarDataType == 2)
                 {
                     outReportBuffer[0] = 0x11;
                     outReportBuffer[1] = (byte)(0x80 | btPollRate); // input report rate
