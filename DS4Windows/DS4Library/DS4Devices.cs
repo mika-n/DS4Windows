@@ -7,6 +7,14 @@ using System.Security.Principal;
 
 namespace DS4Windows
 {
+    // VidPidFeatureSet feature flags:
+    // DefaultDS4           = Standard DS4 compatible communication (as it has been in DS4Win app for years)
+    // OnlyInputData0x01    = The incoming HID report data structure does NOT send 0x11 packet even in DS4 mode over BT connection. If this flag is set then accept "PC-friendly" 0x01 HID report data in BT (like in USB connections)
+    // OnlyOutputData0x05   = Outgoing HID report write data structure does NOT support DS4 BT 0x11 data structure. Use only "USB type of" 0x05 data packets even in BT connections.
+    // NoOutputData         = Gamepad doesn't support lightbar and rumble data writing at all. DS4Win app does not try to write out anything to gamepad.
+    // NoBatteryReading     = Gamepad doesn't send battery readings in the same format than DS4 gamepad (always 0%). Skip reading a battery fields and report fixed 99% battery level to avoid "low battery" LED flashes.
+    // NoGyroCalib          = Gamepad doesn't support or need gyro calibration routines. Skip gyro calibration if this flag is set.
+    //
     public enum VidPidFeatureSet : byte { DefaultDS4 = 0, OnlyInputData0x01 = 1, OnlyOutputData0x05 = 2, NoOutputData = 4, NoBatteryReading = 8, NoGyroCalib = 16 };
 
     public class VidPidInfo
@@ -132,10 +140,9 @@ namespace DS4Windows
                     else if (DevicePaths.Contains(hDevice.DevicePath))
                         continue; // BT/USB endpoint already open once
 
-                    // DEBUG: Return null metainfo if gamepad was not found
+                    // DEBUG: Return null metainfo if gamepad type was not identified (Unknown gamepad but using Usage=0x05 flag)
                     //VidPidInfo metainfo = knownDevices.Single(x => x.vid == hDevice.Attributes.VendorId &&
                     //    x.pid == hDevice.Attributes.ProductId);
-                    // DEBUG: patchfix
                     VidPidInfo metainfo = knownDevices.SingleOrDefault(x => x.vid == hDevice.Attributes.VendorId &&
                                             x.pid == hDevice.Attributes.ProductId);
                     if (!hDevice.IsOpen)
@@ -208,12 +215,13 @@ namespace DS4Windows
                         }
                         else
                         {
-                            // DEBUG. Accept unknown device if those were with usage=0x5 flag
+                            // DEBUG: Accept unknown device if those were with usage=0x5 flag
                             if (metainfo != null)
-                                AppLogger.LogToGui($"DEBUG: findControllers. idx={i} Using device {hDevice.DevicePath}  metainfo.name={metainfo.name}", false);
+                                AppLogger.LogToGui($"DEBUG: findControllers. idx={i} Using device {hDevice.DevicePath}  metainfo.name={metainfo.name}  metainfo.featureSet={metainfo.featureSet}", false);
                             else
                                 AppLogger.LogToGui($"DEBUG: findControllers. idx={i} Using device {hDevice.DevicePath}  metainfo.name=UNKNOWN", false);
 
+                            // DEBUG:
                             DS4Device ds4Device = new DS4Device(hDevice, (metainfo != null ? metainfo.name : "UNKNOWN"), (metainfo != null ? metainfo.featureSet : VidPidFeatureSet.DefaultDS4) /* DEBUG patchfix */);
                             //ds4Device.Removal += On_Removal;
                             if (!ds4Device.ExitOutputThread)
