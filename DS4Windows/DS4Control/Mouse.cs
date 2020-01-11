@@ -509,10 +509,18 @@ namespace DS4Windows
                                 currentWeight *= 1.0;
                             }
 
-                            x_out /= finalWeight;
-                            trackballXVel = x_out;
-                            y_out /= finalWeight;
-                            trackballYVel = y_out;
+                            // debug trackball
+                            if (finalWeight == 0)
+                            {
+                                AppLogger.LogToGui($"WARNING. Mouse.touchesEnded. TrackBufferLoop. finalWeight is zero. Should never happend because it is used as divider. trackBallBufferHead={trackballBufferHead}  trackBallBufferTail={trackballBufferTail}  trackballBufferLen={TRACKBALL_BUFFER_LEN}  trackballActive={trackballActive}  x_out={x_out}  y_out={y_out}  trackballXVel={trackballXVel}  trackballYVel={trackballYVel}", false);
+                            }
+                            else
+                            {
+                                x_out /= finalWeight;
+                                trackballXVel = x_out;
+                                y_out /= finalWeight;
+                                trackballYVel = y_out;
+                            }
 
                             trackballActive = true;
                         }
