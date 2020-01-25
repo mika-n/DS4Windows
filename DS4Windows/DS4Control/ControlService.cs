@@ -490,10 +490,12 @@ namespace DS4Windows
                             if (device.isValidSerial() && containsLinkedProfile(device.getMacAddress()))
                             {
                                 ProfilePath[i] = getLinkedProfile(device.getMacAddress());
+                                Global.linkedProfileCheck[i] = true;
                             }
                             else
                             {
                                 ProfilePath[i] = OlderProfilePath[i];
+                                Global.linkedProfileCheck[i] = false;
                             }
 
                             LoadProfile(i, false, this, false, false);
@@ -764,10 +766,12 @@ namespace DS4Windows
                                 if (device.isValidSerial() && containsLinkedProfile(device.getMacAddress()))
                                 {
                                     ProfilePath[Index] = getLinkedProfile(device.getMacAddress());
+                                    Global.linkedProfileCheck[Index] = true;
                                 }
                                 else
                                 {
                                     ProfilePath[Index] = OlderProfilePath[Index];
+                                    Global.linkedProfileCheck[Index] = false;
                                 }
 
                                 LoadProfile(Index, false, this, false, false);

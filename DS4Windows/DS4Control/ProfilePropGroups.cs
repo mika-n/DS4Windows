@@ -15,6 +15,7 @@ namespace DS4Windows
         public int deadZone;
         public int antiDeadZone;
         public int maxZone = 100;
+        public double maxOutput = 100.0;
     }
 
     public class TriggerDeadZoneZInfo
@@ -22,6 +23,7 @@ namespace DS4Windows
         public byte deadZone; // Trigger deadzone is expressed in axis units
         public int antiDeadZone;
         public int maxZone = 100;
+        public double maxOutput = 100.0;
     }
 
     public class GyroMouseInfo
