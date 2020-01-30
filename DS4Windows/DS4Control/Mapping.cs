@@ -274,7 +274,7 @@ namespace DS4Windows
         public static int mouseaccel = 0;
         public static int prevmouseaccel = 0;
         private static double horizontalRemainder = 0.0, verticalRemainder = 0.0;
-        private const int MOUSESPEEDFACTOR = 48;
+        public const int MOUSESPEEDFACTOR = 48;
         private const double MOUSESTICKOFFSET = 0.26;
 
         public static void Commit(int device)
@@ -1307,7 +1307,7 @@ namespace DS4Windows
                             output = abs - 0.18;
                         else // if (abs > 0.75)
                             output = (abs * 1.72) - 0.72;
-                        dState.Motion.outputAccelX = (byte)(output * sign * 128.0);
+                        dState.Motion.outputAccelX = (int)(output * sign * 128.0);
                     }
                     else if (sxOutCurveMode == 2)
                     {
@@ -1325,14 +1325,15 @@ namespace DS4Windows
                     {
                         double abs = Math.Abs(temp);
                         double output = abs * (abs - 2.0);
-                        dState.Motion.outputAccelX = (byte)(-1.0 * output *
+                        dState.Motion.outputAccelX = (int)(-1.0 * output *
                             sign * 128.0);
                     }
                     else if (sxOutCurveMode == 5)
                     {
                         double inner = Math.Abs(temp) - 1.0;
                         double output = inner * inner * inner + 1.0;
-                        dState.Motion.outputAccelX = (byte)(-1.0 * output * 255.0);
+                        dState.Motion.outputAccelX = (int)(output *
+                            sign * 128.0);
                     }
                     else if (sxOutCurveMode == 6)
                     {
@@ -1357,7 +1358,7 @@ namespace DS4Windows
                             output = abs - 0.18;
                         else // if (abs > 0.75)
                             output = (abs * 1.72) - 0.72;
-                        dState.Motion.outputAccelZ = (byte)(output * sign * 128.0);
+                        dState.Motion.outputAccelZ = (int)(output * sign * 128.0);
                     }
                     else if (szOutCurveMode == 2)
                     {
@@ -1375,14 +1376,15 @@ namespace DS4Windows
                     {
                         double abs = Math.Abs(temp);
                         double output = abs * (abs - 2.0);
-                        dState.Motion.outputAccelZ = (byte)(-1.0 * output *
+                        dState.Motion.outputAccelZ = (int)(-1.0 * output *
                             sign * 128.0);
                     }
                     else if (szOutCurveMode == 5)
                     {
                         double inner = Math.Abs(temp) - 1.0;
                         double output = inner * inner * inner + 1.0;
-                        dState.Motion.outputAccelZ = (byte)(-1.0 * output * 255.0);
+                        dState.Motion.outputAccelZ = (int)(output *
+                            sign * 128.0);
                     }
                     else if (szOutCurveMode == 6)
                     {
