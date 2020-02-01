@@ -510,12 +510,20 @@ namespace DS4Windows
 #endif
                 if (NativeMethods.HidD_GetSerialNumberString(safeReadHandle.DangerousGetHandle(), buffer, bufferLen))
                 {
-                    string MACAddr = System.Text.Encoding.Unicode.GetString(buffer).Replace("\0", string.Empty).ToUpper();
-                    MACAddr = $"{MACAddr[0]}{MACAddr[1]}:{MACAddr[2]}{MACAddr[3]}:{MACAddr[4]}{MACAddr[5]}:{MACAddr[6]}{MACAddr[7]}:{MACAddr[8]}{MACAddr[9]}:{MACAddr[10]}{MACAddr[11]}";
-                    serial = MACAddr;
+                    try
+                    {
+                        string MACAddr = System.Text.Encoding.Unicode.GetString(buffer).Replace("\0", string.Empty).ToUpper();
+                        MACAddr = $"{MACAddr[0]}{MACAddr[1]}:{MACAddr[2]}{MACAddr[3]}:{MACAddr[4]}{MACAddr[5]}:{MACAddr[6]}{MACAddr[7]}:{MACAddr[8]}{MACAddr[9]}:{MACAddr[10]}{MACAddr[11]}";
+                        serial = MACAddr;
 
-                    // DEBUG:
-                    AppLogger.LogToGui($"DEBUG: readSerial. OK. HidD_GetSerialNumberString. Serial#={serial}", false);
+                        // DEBUG:
+                        AppLogger.LogToGui($"DEBUG: readSerial. OK. HidD_GetSerialNumberString. Serial#={serial}", false);
+                    }
+                    catch (Exception e)
+                    {
+                        // DEBUG: Some devices throw an index-out-of-bounds error because MACAddr string is not in expected format. Handle those using the fallback serial generator routine.
+                        AppLogger.LogToGui($"DEBUG: readSerial. ERROR. Exception while reading MACAddr from read HidD_GetSerialNumberString buffer. {e.Message}", false);
+                    }
                 }
                 else
                     // DEBUG:
