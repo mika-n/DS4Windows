@@ -654,7 +654,7 @@ namespace DS4Windows
                 }
             }
 
-            if (s.TouchButton)
+            if (s.Touch1Finger || s.TouchButton)
                 synthesizeMouseButtons();
         }
 

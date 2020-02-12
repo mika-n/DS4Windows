@@ -979,28 +979,28 @@ namespace DS4Windows
 
                     if (absX <= 0.4)
                     {
-                        outputX = 0.55 * absX;
+                        outputX = 0.7 * absX;
                     }
                     else if (absX <= 0.75)
                     {
-                        outputX = absX - 0.18;
+                        outputX = absX - 0.12;
                     }
                     else if (absX > 0.75)
                     {
-                        outputX = (absX * 1.72) - 0.72;
+                        outputX = (absX * 1.48) - 0.48;
                     }
 
                     if (absY <= 0.4)
                     {
-                        outputY = 0.55 * absY;
+                        outputY = 0.7 * absY;
                     }
                     else if (absY <= 0.75)
                     {
-                        outputY = absY - 0.18;
+                        outputY = absY - 0.12;
                     }
                     else if (absY > 0.75)
                     {
-                        outputY = (absY * 1.72) - 0.72;
+                        outputY = (absY * 1.48) - 0.48;
                     }
 
                     dState.LX = (byte)(outputX * signX * capX + 128.0);
@@ -1082,28 +1082,28 @@ namespace DS4Windows
 
                     if (absX <= 0.4)
                     {
-                        outputX = 0.55 * absX;
+                        outputX = 0.7 * absX;
                     }
                     else if (absX <= 0.75)
                     {
-                        outputX = absX - 0.18;
+                        outputX = absX - 0.12;
                     }
                     else if (absX > 0.75)
                     {
-                        outputX = (absX * 1.72) - 0.72;
+                        outputX = (absX * 1.48) - 0.48;
                     }
 
                     if (absY <= 0.4)
                     {
-                        outputY = 0.55 * absY;
+                        outputY = 0.7 * absY;
                     }
                     else if (absY <= 0.75)
                     {
-                        outputY = absY - 0.18;
+                        outputY = absY - 0.12;
                     }
                     else if (absY > 0.75)
                     {
-                        outputY = (absY * 1.72) - 0.72;
+                        outputY = (absY * 1.48) - 0.48;
                     }
 
                     dState.RX = (byte)(outputX * signX * capX + 128.0);
@@ -2257,34 +2257,17 @@ namespace DS4Windows
                                 if (synced && !d.isCharging())
                                 {
                                     ConnectionType deviceConn = d.getConnectionType();
-                                    bool exclusive = /*tempBool =*/ d.isExclusive();
+                                    //bool exclusive = /*tempBool =*/ d.isExclusive();
                                     if (deviceConn == ConnectionType.BT)
                                     {
                                         d.DisconnectBT();
+                                        ReleaseActionKeys(action, device);
+                                        return;
                                     }
-                                    else if (deviceConn == ConnectionType.SONYWA && exclusive)
+                                    else if (deviceConn == ConnectionType.SONYWA)
                                     {
-                                        d.DisconnectDongle();
+                                        action.pressRelease = true;
                                     }
-
-                                    //foreach (DS4Controls dc in action.trigger)
-                                    for (int i = 0, arlen = action.trigger.Count; i < arlen; i++)
-                                    {
-                                        DS4Controls dc = action.trigger[i];
-                                        DS4ControlSettings dcs = getDS4CSetting(device, dc);
-                                        if (dcs.action != null)
-                                        {
-                                            if (dcs.actionType == DS4ControlSettings.ActionType.Key)
-                                                InputMethods.performKeyRelease((ushort)dcs.action);
-                                            else if (dcs.actionType == DS4ControlSettings.ActionType.Macro)
-                                            {
-                                                int[] keys = (int[])dcs.action;
-                                                for (int j = 0, keysLen = keys.Length; j < keysLen; j++)
-                                                    InputMethods.performKeyRelease((ushort)keys[j]);
-                                            }
-                                        }
-                                    }
-                                    return;
                                 }
                             }
                             else if (action.typeID == SpecialAction.ActionTypeId.BatteryCheck)
@@ -2352,6 +2335,22 @@ namespace DS4Windows
                                         prevFadetimer[device] = fadetimer[device];*/
                                     DS4LightBar.forcelight[device] = false;
                                     actionDone[index].dev[device] = false;
+                                }
+                            }
+                            else if (action.typeID == SpecialAction.ActionTypeId.DisconnectBT && action.pressRelease)
+                            {
+                                actionFound = true;
+                                DS4Device d = ctrl.DS4Controllers[device];
+                                ConnectionType deviceConn = d.getConnectionType();
+                                if (deviceConn == ConnectionType.SONYWA && d.isSynced())
+                                {
+                                    if (d.isDS4Idle())
+                                    {
+                                        d.DisconnectDongle();
+                                        ReleaseActionKeys(action, device);
+                                        actionDone[index].dev[device] = false;
+                                        action.pressRelease = false;
+                                    }
                                 }
                             }
                             else if (action.typeID != SpecialAction.ActionTypeId.Key &&
@@ -2621,6 +2620,27 @@ namespace DS4Windows
                 else
                 {
                     actionDone[index].dev[device] = false;
+                }
+            }
+        }
+
+        private static void ReleaseActionKeys(SpecialAction action, int device)
+        {
+            //foreach (DS4Controls dc in action.trigger)
+            for (int i = 0, arlen = action.trigger.Count; i < arlen; i++)
+            {
+                DS4Controls dc = action.trigger[i];
+                DS4ControlSettings dcs = getDS4CSetting(device, dc);
+                if (dcs.action != null)
+                {
+                    if (dcs.actionType == DS4ControlSettings.ActionType.Key)
+                        InputMethods.performKeyRelease((ushort)dcs.action);
+                    else if (dcs.actionType == DS4ControlSettings.ActionType.Macro)
+                    {
+                        int[] keys = (int[])dcs.action;
+                        for (int j = 0, keysLen = keys.Length; j < keysLen; j++)
+                            InputMethods.performKeyRelease((ushort)keys[j]);
+                    }
                 }
             }
         }
