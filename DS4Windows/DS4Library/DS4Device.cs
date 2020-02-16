@@ -869,8 +869,6 @@ namespace DS4Windows
         public string error;
         public bool firstReport = true;
         public bool oldCharging = false;
-        double curTimeDouble = 0.0;
-        double oldTimeDouble = 0.0;
         DateTime utcNow = DateTime.UtcNow;
         bool ds4InactiveFrame = true;
         bool idleInput = true;
@@ -906,8 +904,7 @@ namespace DS4Windows
                 long oldtime = 0;
                 string currerror = string.Empty;
                 long curtime = 0;
-                Stopwatch sw = new Stopwatch();
-                sw.Start();
+                long testelapsed = 0;
                 timeoutEvent = false;
                 ds4InactiveFrame = true;
                 idleInput = true;
@@ -1103,14 +1100,11 @@ namespace DS4Windows
                         }
                     }
 
-                    curTimeDouble = sw.Elapsed.TotalMilliseconds;
-                    curtime = sw.ElapsedMilliseconds;
-
-                    lastTimeElapsed = curtime - oldtime;
-                    lastTimeElapsedDouble = (curTimeDouble - oldTimeDouble);
-
+                    curtime = Stopwatch.GetTimestamp();
+                    testelapsed = curtime - oldtime;
+                    lastTimeElapsedDouble = testelapsed * (1.0 / Stopwatch.Frequency) * 1000.0;
+                    lastTimeElapsed = (long)lastTimeElapsedDouble;
                     oldtime = curtime;
-                    oldTimeDouble = curTimeDouble;
 
                     // DEBUG: patchfix
                     if (conType == ConnectionType.BT && (this.featureSet & VidPidFeatureSet.OnlyInputData0x01) == 0 && btInputReport[0] != 0x11 && debugPerformDs4InputReportTypeErrCount <= 3)
