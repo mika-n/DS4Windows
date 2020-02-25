@@ -1013,18 +1013,6 @@ namespace DS4Windows
             return m_Config.rumbleAutostopTime[index];
         }
 
-        public static double[] Rainbow => m_Config.rainbow;
-        public static double getRainbow(int index)
-        {
-            return m_Config.rainbow[index];
-        }
-
-        public static double[] MaxSatRainbow => m_Config.maxRainbowSat;
-        public static double GetMaxSatRainbow(int index)
-        {
-            return m_Config.maxRainbowSat[index];
-        }
-
         public static bool[] FlushHIDQueue => m_Config.flushHIDQueue;
         public static bool getFlushHIDQueue(int index)
         {
@@ -1060,28 +1048,10 @@ namespace DS4Windows
             return touchpadActive[index];
         }
 
-        public static byte[] FlashType => m_Config.flashType;
-        public static byte getFlashType(int index)
+        public static LightbarSettingInfo[] LightbarSettingsInfo => m_Config.lightbarSettingInfo;
+        public static LightbarSettingInfo getLightbarSettingsInfo(int index)
         {
-            return m_Config.flashType[index];
-        }
-
-        public static int[] FlashAt => m_Config.flashAt;
-        public static int getFlashAt(int index)
-        {
-            return m_Config.flashAt[index];
-        }
-
-        public static bool[] LedAsBatteryIndicator => m_Config.ledAsBattery;
-        public static bool getLedAsBatteryIndicator(int index)
-        {
-            return m_Config.ledAsBattery[index];
-        }
-
-        public static int[] ChargingType => m_Config.chargingType;
-        public static int getChargingType(int index)
-        {
-            return m_Config.chargingType[index];
+            return m_Config.lightbarSettingInfo[index];
         }
 
         public static bool[] DinputOnly => m_Config.dinputOnly;
@@ -1241,40 +1211,46 @@ namespace DS4Windows
         public static void SetGyroMouseToggle(int index, bool value, ControlService control) 
             => m_Config.SetGyroMouseToggle(index, value, control);
 
-        public static DS4Color[] MainColor => m_Config.m_Leds;
+        //public static DS4Color[] MainColor => m_Config.m_Leds;
         public static ref DS4Color getMainColor(int index)
         {
-            return ref m_Config.m_Leds[index];
+            return ref m_Config.lightbarSettingInfo[index].ds4winSettings.m_Led;
+            //return ref m_Config.m_Leds[index];
         }
 
-        public static DS4Color[] LowColor => m_Config.m_LowLeds;
+        //public static DS4Color[] LowColor => m_Config.m_LowLeds;
         public static ref DS4Color getLowColor(int index)
         {
-            return ref m_Config.m_LowLeds[index];
+            return ref m_Config.lightbarSettingInfo[index].ds4winSettings.m_LowLed;
+            //return ref m_Config.m_LowLeds[index];
         }
 
-        public static DS4Color[] ChargingColor => m_Config.m_ChargingLeds;
+        //public static DS4Color[] ChargingColor => m_Config.m_ChargingLeds;
         public static ref DS4Color getChargingColor(int index)
         {
-            return ref m_Config.m_ChargingLeds[index];
+            return ref m_Config.lightbarSettingInfo[index].ds4winSettings.m_ChargingLed;
+            //return ref m_Config.m_ChargingLeds[index];
         }
 
-        public static DS4Color[] CustomColor => m_Config.m_CustomLeds;
+        //public static DS4Color[] CustomColor => m_Config.m_CustomLeds;
         public static ref DS4Color getCustomColor(int index)
         {
-            return ref m_Config.m_CustomLeds[index];
+            return ref m_Config.lightbarSettingInfo[index].ds4winSettings.m_CustomLed;
+            //return ref m_Config.m_CustomLeds[index];
         }
 
-        public static bool[] UseCustomLed => m_Config.useCustomLeds;
+        //public static bool[] UseCustomLed => m_Config.useCustomLeds;
         public static bool getUseCustomLed(int index)
         {
-            return m_Config.useCustomLeds[index];
+            return m_Config.lightbarSettingInfo[index].ds4winSettings.useCustomLed;
+            //return m_Config.useCustomLeds[index];
         }
 
-        public static DS4Color[] FlashColor => m_Config.m_FlashLeds;
+        //public static DS4Color[] FlashColor => m_Config.m_FlashLeds;
         public static ref DS4Color getFlashColor(int index)
         {
-            return ref m_Config.m_FlashLeds[index];
+            return ref m_Config.lightbarSettingInfo[index].ds4winSettings.m_FlashLed;
+            //return ref m_Config.m_FlashLeds[index];
         }
 
         public static byte[] TapSensitivity => m_Config.tapSensitivity;
@@ -1974,8 +1950,6 @@ namespace DS4Windows
         public int[] idleDisconnectTimeout = new int[5] { 0, 0, 0, 0, 0 };
         public bool[] touchpadJitterCompensation = new bool[5] { true, true, true, true, true };
         public bool[] lowerRCOn = new bool[5] { false, false, false, false, false };
-        public bool[] ledAsBattery = new bool[5] { false, false, false, false, false };
-        public byte[] flashType = new byte[5] { 0, 0, 0, 0, 0 };
         public string[] profilePath = new string[5] { string.Empty, string.Empty, string.Empty, string.Empty, string.Empty };
         public string[] olderProfilePath = new string[5] { string.Empty, string.Empty, string.Empty, string.Empty, string.Empty };
         public Dictionary<string, string> linkedProfiles = new Dictionary<string, string>();
@@ -2008,10 +1982,7 @@ namespace DS4Windows
             new TriggerDeadZoneZInfo(), new TriggerDeadZoneZInfo(),
             new TriggerDeadZoneZInfo()
         };
-        /*public Byte[] l2Deadzone = new Byte[5] { 0, 0, 0, 0, 0 }, r2Deadzone = new Byte[5] { 0, 0, 0, 0, 0 };
-        public int[] l2AntiDeadzone = new int[5] { 0, 0, 0, 0, 0 }, r2AntiDeadzone = new int[5] { 0, 0, 0, 0, 0 };
-        public int[] l2Maxzone = new int[5] { 100, 100, 100, 100, 100 }, r2Maxzone = new int[5] { 100, 100, 100, 100, 100 };
-        */
+
         public double[] LSRotation = new double[5] { 0.0, 0.0, 0.0, 0.0, 0.0 }, RSRotation = new double[5] { 0.0, 0.0, 0.0, 0.0, 0.0 };
         public double[] SXDeadzone = new double[5] { 0.25, 0.25, 0.25, 0.25, 0.25 }, SZDeadzone = new double[5] { 0.25, 0.25, 0.25, 0.25, 0.25 };
         public double[] SXMaxzone = new double[5] { 1.0, 1.0, 1.0, 1.0, 1.0 },
@@ -2025,8 +1996,6 @@ namespace DS4Windows
         public bool[] doubleTap = new bool[5] { false, false, false, false, false };
         public int[] scrollSensitivity = new int[5] { 0, 0, 0, 0, 0 };
         public int[] touchpadInvert = new int[5] { 0, 0, 0, 0, 0 };
-        public double[] rainbow = new double[5] { 0.0, 0.0, 0.0, 0.0, 0.0 };
-        public int[] flashAt = new int[5] { 0, 0, 0, 0, 0 };
         public bool[] mouseAccel = new bool[5] { false, false, false, false, false };
         public int[] btPollRate = new int[5] { 4, 4, 4, 4, 4 };
         public int[] gyroMouseDZ = new int[5] { MouseCursor.GYRO_MOUSE_DEADZONE, MouseCursor.GYRO_MOUSE_DEADZONE,
@@ -2113,51 +2082,13 @@ namespace DS4Windows
             _szOutCurveMode[index] = value;
         }
 
-        public DS4Color[] m_LowLeds = new DS4Color[5]
+        public LightbarSettingInfo[] lightbarSettingInfo = new LightbarSettingInfo[5]
         {
-            new DS4Color(Color.Black),
-            new DS4Color(Color.Black),
-            new DS4Color(Color.Black),
-            new DS4Color(Color.Black),
-            new DS4Color(Color.Black)
-        };
-        public DS4Color[] m_Leds = new DS4Color[5]
-        {
-            new DS4Color(Color.Blue),
-            new DS4Color(Color.Red),
-            new DS4Color(Color.Green),
-            new DS4Color(Color.Pink),
-            new DS4Color(Color.White)
-        };
-        public DS4Color[] m_ChargingLeds = new DS4Color[5]
-        {
-            new DS4Color(Color.Black),
-            new DS4Color(Color.Black),
-            new DS4Color(Color.Black),
-            new DS4Color(Color.Black),
-            new DS4Color(Color.Black)
-        };
-        public DS4Color[] m_FlashLeds = new DS4Color[5]
-        {
-            new DS4Color(Color.Black),
-            new DS4Color(Color.Black),
-            new DS4Color(Color.Black),
-            new DS4Color(Color.Black),
-            new DS4Color(Color.Black)
-        };
-        public bool[] useCustomLeds = new bool[5] { false, false, false, false, false };
-        public DS4Color[] m_CustomLeds = new DS4Color[5]
-        {
-            new DS4Color(Color.Blue),
-            new DS4Color(Color.Blue),
-            new DS4Color(Color.Blue),
-            new DS4Color(Color.Blue),
-            new DS4Color(Color.Blue)
+            new LightbarSettingInfo(), new LightbarSettingInfo(),
+            new LightbarSettingInfo(), new LightbarSettingInfo(),
+            new LightbarSettingInfo()
         };
 
-        public double[] maxRainbowSat = new double[5] { 1.0, 1.0, 1.0, 1.0, 1.0 };
-
-        public int[] chargingType = new int[5] { 0, 0, 0, 0, 0 };
         public string[] launchProgram = new string[5] { string.Empty, string.Empty, string.Empty, string.Empty, string.Empty };
         public bool[] dinputOnly = new bool[5] { false, false, false, false, false };
         public bool[] startTouchpadOff = new bool[5] { false, false, false, false, false };
@@ -2172,10 +2103,12 @@ namespace DS4Windows
         public bool[] gyroMouseStickTriggerTurns = new bool[5] { true, true, true, true, true };
         public GyroMouseStickInfo[] gyroMStickInfo = new GyroMouseStickInfo[5]
         {
-            new GyroMouseStickInfo(), new GyroMouseStickInfo(),
+            new GyroMouseStickInfo(),
+            new GyroMouseStickInfo(),
             new GyroMouseStickInfo(), new GyroMouseStickInfo(),
             new GyroMouseStickInfo()
         };
+        
         public bool[] gyroMouseStickToggle = new bool[5] { false, false, false,
             false, false };
 
@@ -2267,6 +2200,17 @@ namespace DS4Windows
                 profileActions[i].Add("Disconnect Controller");
                 profileActionCount[i] = profileActions[i].Count;
             }
+
+            SetupDefaultColors();
+        }
+
+        private void SetupDefaultColors()
+        {
+            lightbarSettingInfo[0].ds4winSettings.m_Led = new DS4Color(Color.Blue);
+            lightbarSettingInfo[1].ds4winSettings.m_Led = new DS4Color(Color.Red);
+            lightbarSettingInfo[2].ds4winSettings.m_Led = new DS4Color(Color.Green);
+            lightbarSettingInfo[3].ds4winSettings.m_Led = new DS4Color(Color.Pink);
+            lightbarSettingInfo[4].ds4winSettings.m_Led = new DS4Color(Color.White);
         }
 
         private string stickOutputCurveString(int id)
@@ -2443,6 +2387,41 @@ namespace DS4Windows
             return result;
         }
 
+        private string GetLightbarModeString(LightbarMode mode)
+        {
+            string result = "DS4Win";
+            switch (mode)
+            {
+                case LightbarMode.DS4Win:
+                    result = "DS4Win";
+                    break;
+                case LightbarMode.Passthru:
+                    result = "Passthru";
+                    break;
+                default:
+                    break;
+            }
+            return result;
+        }
+
+        private LightbarMode GetLightbarModeType(string modeString)
+        {
+            LightbarMode result = LightbarMode.DS4Win;
+            switch (modeString)
+            {
+                case "DS4Win":
+                    result = LightbarMode.DS4Win;
+                    break;
+                case "Passthru":
+                    result = LightbarMode.Passthru;
+                    break;
+                default:
+                    break;
+            }
+
+            return result;
+        }
+
         public bool SaveProfile(int device, string propath)
         {
             bool Saved = true;
@@ -2468,26 +2447,30 @@ namespace DS4Windows
 
                 Node = m_Xdoc.CreateNode(XmlNodeType.Element, "DS4Windows", null);
 
+                LightbarSettingInfo lightbarSettings = lightbarSettingInfo[device];
+                LightbarDS4WinInfo lightInfo = lightbarSettings.ds4winSettings;
+
                 XmlNode xmlFlushHIDQueue = m_Xdoc.CreateNode(XmlNodeType.Element, "flushHIDQueue", null); xmlFlushHIDQueue.InnerText = flushHIDQueue[device].ToString(); Node.AppendChild(xmlFlushHIDQueue);
                 XmlNode xmlTouchToggle = m_Xdoc.CreateNode(XmlNodeType.Element, "touchToggle", null); xmlTouchToggle.InnerText = enableTouchToggle[device].ToString(); Node.AppendChild(xmlTouchToggle);
                 XmlNode xmlIdleDisconnectTimeout = m_Xdoc.CreateNode(XmlNodeType.Element, "idleDisconnectTimeout", null); xmlIdleDisconnectTimeout.InnerText = idleDisconnectTimeout[device].ToString(); Node.AppendChild(xmlIdleDisconnectTimeout);
                 XmlNode xmlColor = m_Xdoc.CreateNode(XmlNodeType.Element, "Color", null);
-                xmlColor.InnerText = m_Leds[device].red.ToString() + "," + m_Leds[device].green.ToString() + "," + m_Leds[device].blue.ToString();
+                xmlColor.InnerText = lightInfo.m_Led.red.ToString() + "," + lightInfo.m_Led.green.ToString() + "," + lightInfo.m_Led.blue.ToString();
                 Node.AppendChild(xmlColor);
                 XmlNode xmlRumbleBoost = m_Xdoc.CreateNode(XmlNodeType.Element, "RumbleBoost", null); xmlRumbleBoost.InnerText = rumble[device].ToString(); Node.AppendChild(xmlRumbleBoost);
                 XmlNode xmlRumbleAutostopTime = m_Xdoc.CreateNode(XmlNodeType.Element, "RumbleAutostopTime", null); xmlRumbleAutostopTime.InnerText = rumbleAutostopTime[device].ToString(); Node.AppendChild(xmlRumbleAutostopTime);
-                XmlNode xmlLedAsBatteryIndicator = m_Xdoc.CreateNode(XmlNodeType.Element, "ledAsBatteryIndicator", null); xmlLedAsBatteryIndicator.InnerText = ledAsBattery[device].ToString(); Node.AppendChild(xmlLedAsBatteryIndicator);
-                XmlNode xmlLowBatteryFlash = m_Xdoc.CreateNode(XmlNodeType.Element, "FlashType", null); xmlLowBatteryFlash.InnerText = flashType[device].ToString(); Node.AppendChild(xmlLowBatteryFlash);
-                XmlNode xmlFlashBatterAt = m_Xdoc.CreateNode(XmlNodeType.Element, "flashBatteryAt", null); xmlFlashBatterAt.InnerText = flashAt[device].ToString(); Node.AppendChild(xmlFlashBatterAt);
+                XmlNode xmlLightbarMode = m_Xdoc.CreateNode(XmlNodeType.Element, "LightbarMode", null); xmlLightbarMode.InnerText = GetLightbarModeString(lightbarSettings.mode); Node.AppendChild(xmlLightbarMode);
+                XmlNode xmlLedAsBatteryIndicator = m_Xdoc.CreateNode(XmlNodeType.Element, "ledAsBatteryIndicator", null); xmlLedAsBatteryIndicator.InnerText = lightInfo.ledAsBattery.ToString(); Node.AppendChild(xmlLedAsBatteryIndicator);
+                XmlNode xmlLowBatteryFlash = m_Xdoc.CreateNode(XmlNodeType.Element, "FlashType", null); xmlLowBatteryFlash.InnerText = lightInfo.flashType.ToString(); Node.AppendChild(xmlLowBatteryFlash);
+                XmlNode xmlFlashBatterAt = m_Xdoc.CreateNode(XmlNodeType.Element, "flashBatteryAt", null); xmlFlashBatterAt.InnerText = lightInfo.flashAt.ToString(); Node.AppendChild(xmlFlashBatterAt);
                 XmlNode xmlTouchSensitivity = m_Xdoc.CreateNode(XmlNodeType.Element, "touchSensitivity", null); xmlTouchSensitivity.InnerText = touchSensitivity[device].ToString(); Node.AppendChild(xmlTouchSensitivity);
                 XmlNode xmlLowColor = m_Xdoc.CreateNode(XmlNodeType.Element, "LowColor", null);
-                xmlLowColor.InnerText = m_LowLeds[device].red.ToString() + "," + m_LowLeds[device].green.ToString() + "," + m_LowLeds[device].blue.ToString();
+                xmlLowColor.InnerText = lightInfo.m_LowLed.red.ToString() + "," + lightInfo.m_LowLed.green.ToString() + "," + lightInfo.m_LowLed.blue.ToString();
                 Node.AppendChild(xmlLowColor);
                 XmlNode xmlChargingColor = m_Xdoc.CreateNode(XmlNodeType.Element, "ChargingColor", null);
-                xmlChargingColor.InnerText = m_ChargingLeds[device].red.ToString() + "," + m_ChargingLeds[device].green.ToString() + "," + m_ChargingLeds[device].blue.ToString();
+                xmlChargingColor.InnerText = lightInfo.m_ChargingLed.red.ToString() + "," + lightInfo.m_ChargingLed.green.ToString() + "," + lightInfo.m_ChargingLed.blue.ToString();
                 Node.AppendChild(xmlChargingColor);
                 XmlNode xmlFlashColor = m_Xdoc.CreateNode(XmlNodeType.Element, "FlashColor", null);
-                xmlFlashColor.InnerText = m_FlashLeds[device].red.ToString() + "," + m_FlashLeds[device].green.ToString() + "," + m_FlashLeds[device].blue.ToString();
+                xmlFlashColor.InnerText = lightInfo.m_FlashLed.red.ToString() + "," + lightInfo.m_FlashLed.green.ToString() + "," + lightInfo.m_FlashLed.blue.ToString();
                 Node.AppendChild(xmlFlashColor);
                 XmlNode xmlTouchpadJitterCompensation = m_Xdoc.CreateNode(XmlNodeType.Element, "touchpadJitterCompensation", null); xmlTouchpadJitterCompensation.InnerText = touchpadJitterCompensation[device].ToString(); Node.AppendChild(xmlTouchpadJitterCompensation);
                 XmlNode xmlLowerRCOn = m_Xdoc.CreateNode(XmlNodeType.Element, "lowerRCOn", null); xmlLowerRCOn.InnerText = lowerRCOn[device].ToString(); Node.AppendChild(xmlLowerRCOn);
@@ -2504,8 +2487,8 @@ namespace DS4Windows
                 XmlNode xmlL2MaxOutput = m_Xdoc.CreateNode(XmlNodeType.Element, "L2MaxOutput", null); xmlL2MaxOutput.InnerText = l2ModInfo[device].maxOutput.ToString(); Node.AppendChild(xmlL2MaxOutput);
                 XmlNode xmlR2MaxOutput = m_Xdoc.CreateNode(XmlNodeType.Element, "R2MaxOutput", null); xmlR2MaxOutput.InnerText = r2ModInfo[device].maxOutput.ToString(); Node.AppendChild(xmlR2MaxOutput);
                 XmlNode xmlButtonMouseSensitivity = m_Xdoc.CreateNode(XmlNodeType.Element, "ButtonMouseSensitivity", null); xmlButtonMouseSensitivity.InnerText = buttonMouseSensitivity[device].ToString(); Node.AppendChild(xmlButtonMouseSensitivity);
-                XmlNode xmlRainbow = m_Xdoc.CreateNode(XmlNodeType.Element, "Rainbow", null); xmlRainbow.InnerText = rainbow[device].ToString(); Node.AppendChild(xmlRainbow);
-                XmlNode xmlMaxSatRainbow = m_Xdoc.CreateNode(XmlNodeType.Element, "MaxSatRainbow", null); xmlMaxSatRainbow.InnerText = Convert.ToInt32(maxRainbowSat[device] * 100.0).ToString(); Node.AppendChild(xmlMaxSatRainbow);
+                XmlNode xmlRainbow = m_Xdoc.CreateNode(XmlNodeType.Element, "Rainbow", null); xmlRainbow.InnerText = lightInfo.rainbow.ToString(); Node.AppendChild(xmlRainbow);
+                XmlNode xmlMaxSatRainbow = m_Xdoc.CreateNode(XmlNodeType.Element, "MaxSatRainbow", null); xmlMaxSatRainbow.InnerText = Convert.ToInt32(lightInfo.maxRainbowSat * 100.0).ToString(); Node.AppendChild(xmlMaxSatRainbow);
                 XmlNode xmlLSD = m_Xdoc.CreateNode(XmlNodeType.Element, "LSDeadZone", null); xmlLSD.InnerText = lsModInfo[device].deadZone.ToString(); Node.AppendChild(xmlLSD);
                 XmlNode xmlRSD = m_Xdoc.CreateNode(XmlNodeType.Element, "RSDeadZone", null); xmlRSD.InnerText = rsModInfo[device].deadZone.ToString(); Node.AppendChild(xmlRSD);
                 XmlNode xmlLSAD = m_Xdoc.CreateNode(XmlNodeType.Element, "LSAntiDeadZone", null); xmlLSAD.InnerText = lsModInfo[device].antiDeadZone.ToString(); Node.AppendChild(xmlLSAD);
@@ -2530,7 +2513,7 @@ namespace DS4Windows
                 xmlSens.InnerText = $"{LSSens[device]}|{RSSens[device]}|{l2Sens[device]}|{r2Sens[device]}|{SXSens[device]}|{SZSens[device]}";
                 Node.AppendChild(xmlSens);
 
-                XmlNode xmlChargingType = m_Xdoc.CreateNode(XmlNodeType.Element, "ChargingType", null); xmlChargingType.InnerText = chargingType[device].ToString(); Node.AppendChild(xmlChargingType);
+                XmlNode xmlChargingType = m_Xdoc.CreateNode(XmlNodeType.Element, "ChargingType", null); xmlChargingType.InnerText = lightInfo.chargingType.ToString(); Node.AppendChild(xmlChargingType);
                 XmlNode xmlMouseAccel = m_Xdoc.CreateNode(XmlNodeType.Element, "MouseAcceleration", null); xmlMouseAccel.InnerText = mouseAccel[device].ToString(); Node.AppendChild(xmlMouseAccel);
                 //XmlNode xmlShiftMod = m_Xdoc.CreateNode(XmlNodeType.Element, "ShiftModifier", null); xmlShiftMod.InnerText = shiftModifier[device].ToString(); Node.AppendChild(xmlShiftMod);
                 XmlNode xmlLaunchProgram = m_Xdoc.CreateNode(XmlNodeType.Element, "LaunchProgram", null); xmlLaunchProgram.InnerText = launchProgram[device].ToString(); Node.AppendChild(xmlLaunchProgram);
@@ -3083,6 +3066,8 @@ namespace DS4Windows
                 }
 
                 OutContType oldContType = Global.activeOutDevType[device];
+                LightbarSettingInfo lightbarSettings = lightbarSettingInfo[device];
+                LightbarDS4WinInfo lightInfo = lightbarSettings.ds4winSettings;
 
                 // Make sure to reset currently set profile values before parsing
                 ResetProfile(device);
@@ -3095,6 +3080,14 @@ namespace DS4Windows
 
                 try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/idleDisconnectTimeout"); Int32.TryParse(Item.InnerText, out idleDisconnectTimeout[device]); }
                 catch { missingSetting = true; }
+
+                try {
+                    Item = m_Xdoc.SelectSingleNode("/" + rootname + "/LightbarMode");
+                    string tempMode = Item.InnerText;
+                    lightbarSettings.mode = GetLightbarModeType(tempMode);
+                }
+                catch { lightbarSettings.mode = LightbarMode.DS4Win; missingSetting = true; }
+
                 //New method for saving color
                 try
                 {
@@ -3105,21 +3098,21 @@ namespace DS4Windows
                     else
                         colors = new string[0];
 
-                    m_Leds[device].red = byte.Parse(colors[0]);
-                    m_Leds[device].green = byte.Parse(colors[1]);
-                    m_Leds[device].blue = byte.Parse(colors[2]);
+                    lightInfo.m_Led.red = byte.Parse(colors[0]);
+                    lightInfo.m_Led.green = byte.Parse(colors[1]);
+                    lightInfo.m_Led.blue = byte.Parse(colors[2]);
                 }
                 catch { missingSetting = true; }
 
                 if (m_Xdoc.SelectSingleNode("/" + rootname + "/Color") == null)
                 {
                     //Old method of color saving
-                    try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/Red"); Byte.TryParse(Item.InnerText, out m_Leds[device].red); }
+                    try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/Red"); Byte.TryParse(Item.InnerText, out lightInfo.m_Led.red); }
                     catch { missingSetting = true; }
-                    try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/Green"); Byte.TryParse(Item.InnerText, out m_Leds[device].green); }
+                    try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/Green"); Byte.TryParse(Item.InnerText, out lightInfo.m_Led.green); }
                     catch { missingSetting = true; }
 
-                    try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/Blue"); Byte.TryParse(Item.InnerText, out m_Leds[device].blue); }
+                    try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/Blue"); Byte.TryParse(Item.InnerText, out lightInfo.m_Led.blue); }
                     catch { missingSetting = true; }
                 }
 
@@ -3129,13 +3122,13 @@ namespace DS4Windows
                 try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/RumbleAutostopTime"); Int32.TryParse(Item.InnerText, out rumbleAutostopTime[device]); }
                 catch { missingSetting = true; }
 
-                try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/ledAsBatteryIndicator"); Boolean.TryParse(Item.InnerText, out ledAsBattery[device]); }
+                try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/ledAsBatteryIndicator"); Boolean.TryParse(Item.InnerText, out lightInfo.ledAsBattery); }
                 catch { missingSetting = true; }
 
-                try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/FlashType"); Byte.TryParse(Item.InnerText, out flashType[device]); }
+                try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/FlashType"); Byte.TryParse(Item.InnerText, out lightInfo.flashType); }
                 catch { missingSetting = true; }
 
-                try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/flashBatteryAt"); Int32.TryParse(Item.InnerText, out flashAt[device]); }
+                try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/flashBatteryAt"); Int32.TryParse(Item.InnerText, out lightInfo.flashAt); }
                 catch { missingSetting = true; }
 
                 try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/touchSensitivity"); Byte.TryParse(Item.InnerText, out touchSensitivity[device]); }
@@ -3151,20 +3144,20 @@ namespace DS4Windows
                     else
                         colors = new string[0];
 
-                    m_LowLeds[device].red = byte.Parse(colors[0]);
-                    m_LowLeds[device].green = byte.Parse(colors[1]);
-                    m_LowLeds[device].blue = byte.Parse(colors[2]);
+                    lightInfo.m_LowLed.red = byte.Parse(colors[0]);
+                    lightInfo.m_LowLed.green = byte.Parse(colors[1]);
+                    lightInfo.m_LowLed.blue = byte.Parse(colors[2]);
                 }
                 catch { missingSetting = true; }
 
                 if (m_Xdoc.SelectSingleNode("/" + rootname + "/LowColor") == null)
                 {
                     //Old method of color saving
-                    try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/LowRed"); byte.TryParse(Item.InnerText, out m_LowLeds[device].red); }
+                    try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/LowRed"); byte.TryParse(Item.InnerText, out lightInfo.m_LowLed.red); }
                     catch { missingSetting = true; }
-                    try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/LowGreen"); byte.TryParse(Item.InnerText, out m_LowLeds[device].green); }
+                    try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/LowGreen"); byte.TryParse(Item.InnerText, out lightInfo.m_LowLed.green); }
                     catch { missingSetting = true; }
-                    try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/LowBlue"); byte.TryParse(Item.InnerText, out m_LowLeds[device].blue); }
+                    try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/LowBlue"); byte.TryParse(Item.InnerText, out lightInfo.m_LowLed.blue); }
                     catch { missingSetting = true; }
                 }
 
@@ -3178,19 +3171,19 @@ namespace DS4Windows
                     else
                         colors = new string[0];
 
-                    m_ChargingLeds[device].red = byte.Parse(colors[0]);
-                    m_ChargingLeds[device].green = byte.Parse(colors[1]);
-                    m_ChargingLeds[device].blue = byte.Parse(colors[2]);
+                    lightInfo.m_ChargingLed.red = byte.Parse(colors[0]);
+                    lightInfo.m_ChargingLed.green = byte.Parse(colors[1]);
+                    lightInfo.m_ChargingLed.blue = byte.Parse(colors[2]);
                 }
                 catch { missingSetting = true; }
 
                 if (m_Xdoc.SelectSingleNode("/" + rootname + "/ChargingColor") == null)
                 {
-                    try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/ChargingRed"); Byte.TryParse(Item.InnerText, out m_ChargingLeds[device].red); }
+                    try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/ChargingRed"); Byte.TryParse(Item.InnerText, out lightInfo.m_ChargingLed.red); }
                     catch { missingSetting = true; }
-                    try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/ChargingGreen"); Byte.TryParse(Item.InnerText, out m_ChargingLeds[device].green); }
+                    try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/ChargingGreen"); Byte.TryParse(Item.InnerText, out lightInfo.m_ChargingLed.green); }
                     catch { missingSetting = true; }
-                    try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/ChargingBlue"); Byte.TryParse(Item.InnerText, out m_ChargingLeds[device].blue); }
+                    try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/ChargingBlue"); Byte.TryParse(Item.InnerText, out lightInfo.m_ChargingLed.blue); }
                     catch { missingSetting = true; }
                 }
 
@@ -3202,9 +3195,9 @@ namespace DS4Windows
                         colors = Item.InnerText.Split(',');
                     else
                         colors = new string[0];
-                    m_FlashLeds[device].red = byte.Parse(colors[0]);
-                    m_FlashLeds[device].green = byte.Parse(colors[1]);
-                    m_FlashLeds[device].blue = byte.Parse(colors[2]);
+                    lightInfo.m_FlashLed.red = byte.Parse(colors[0]);
+                    lightInfo.m_FlashLed.green = byte.Parse(colors[1]);
+                    lightInfo.m_FlashLed.blue = byte.Parse(colors[2]);
                 }
                 catch { missingSetting = true; }
 
@@ -3283,13 +3276,13 @@ namespace DS4Windows
 
                 try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/ButtonMouseSensitivity"); int.TryParse(Item.InnerText, out buttonMouseSensitivity[device]); }
                 catch { missingSetting = true; }
-                try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/Rainbow"); double.TryParse(Item.InnerText, out rainbow[device]); }
-                catch { rainbow[device] = 0; missingSetting = true; }
+                try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/Rainbow"); double.TryParse(Item.InnerText, out lightInfo.rainbow); }
+                catch { lightInfo.rainbow = 0; missingSetting = true; }
                 try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/MaxSatRainbow");
                     int.TryParse(Item.InnerText, out int temp);
-                    maxRainbowSat[device] = Math.Max(0, Math.Min(100, temp)) / 100.0;
+                    lightInfo.maxRainbowSat = Math.Max(0, Math.Min(100, temp)) / 100.0;
                 }
-                catch { maxRainbowSat[device] = 1.0; missingSetting = true; }
+                catch { lightInfo.maxRainbowSat = 1.0; missingSetting = true; }
                 try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/LSDeadZone"); int.TryParse(Item.InnerText, out lsModInfo[device].deadZone); }
                 catch { lsModInfo[device].deadZone = 10; missingSetting = true; }
                 try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/RSDeadZone"); int.TryParse(Item.InnerText, out rsModInfo[device].deadZone); }
@@ -3383,7 +3376,7 @@ namespace DS4Windows
                 }
                 catch { missingSetting = true; }
 
-                try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/ChargingType"); int.TryParse(Item.InnerText, out chargingType[device]); }
+                try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/ChargingType"); int.TryParse(Item.InnerText, out lightInfo.chargingType); }
                 catch { missingSetting = true; }
                 try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/MouseAcceleration"); bool.TryParse(Item.InnerText, out mouseAccel[device]); }
                 catch { missingSetting = true; }
@@ -3477,7 +3470,10 @@ namespace DS4Windows
                 catch { sASteeringWheelEmulationRange[device] = 360; missingSetting = true; }
 
 
-                try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/GyroOutputMode"); GyroOutMode.TryParse(Item.InnerText, out gyroOutMode[device]); }
+                try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/GyroOutputMode");
+                    string tempMode = Item.InnerText;
+                    gyroOutMode[device] = GetGyroOutModeType(tempMode);
+                }
                 catch { PortOldGyroSettings(device); missingSetting = true; }
 
                 try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/GyroMouseStickTriggers"); sAMouseStickTriggers[device] = Item.InnerText; }
@@ -3598,7 +3594,7 @@ namespace DS4Windows
                     Item = m_Xdoc.SelectSingleNode("/" + rootname + "/BTPollRate");
                     int temp = 0;
                     int.TryParse(Item.InnerText, out temp);
-                    btPollRate[device] = (temp >= 0 && temp <= 16) ? temp : 0;
+                    btPollRate[device] = (temp >= 0 && temp <= 16) ? temp : 4;
                 }
                 catch { btPollRate[device] = 4; missingSetting = true; }
 
@@ -4097,10 +4093,10 @@ namespace DS4Windows
                         {
                             Item = m_Xdoc.SelectSingleNode("/Profile/CustomLed" + (i + 1));
                             string[] ss = Item.InnerText.Split(':');
-                            bool.TryParse(ss[0], out useCustomLeds[i]);
-                            DS4Color.TryParse(ss[1], ref m_CustomLeds[i]);
+                            bool.TryParse(ss[0], out lightbarSettingInfo[i].ds4winSettings.useCustomLed);
+                            DS4Color.TryParse(ss[1], ref lightbarSettingInfo[i].ds4winSettings.m_CustomLed);
                         }
-                        catch { useCustomLeds[i] = false; m_CustomLeds[i] = new DS4Color(Color.Blue); missingSetting = true; }
+                        catch { lightbarSettingInfo[i].ds4winSettings.useCustomLed = false; lightbarSettingInfo[i].ds4winSettings.m_CustomLed = new DS4Color(Color.Blue); missingSetting = true; }
                     }
                 }
             }
@@ -4170,7 +4166,7 @@ namespace DS4Windows
             for (int i = 0; i < 4; i++)
             {
                 XmlNode xmlCustomLed = m_Xdoc.CreateNode(XmlNodeType.Element, "CustomLed" + (1 + i), null);
-                xmlCustomLed.InnerText = useCustomLeds[i] + ":" + m_CustomLeds[i].red + "," + m_CustomLeds[i].green + "," + m_CustomLeds[i].blue;
+                xmlCustomLed.InnerText = lightbarSettingInfo[i].ds4winSettings.useCustomLed + ":" + lightbarSettingInfo[i].ds4winSettings.m_CustomLed.red + "," + lightbarSettingInfo[i].ds4winSettings.m_CustomLed.green + "," + lightbarSettingInfo[i].ds4winSettings.m_CustomLed.blue;
                 Node.AppendChild(xmlCustomLed);
             }
 
@@ -4842,8 +4838,7 @@ namespace DS4Windows
             idleDisconnectTimeout[device] = 0;
             touchpadJitterCompensation[device] = true;
             lowerRCOn[device] = false;
-            ledAsBattery[device] = false;
-            flashType[device] = 0;
+            
             rumble[device] = 100;
             rumbleAutostopTime[device] = 0;
             touchSensitivity[device] = 100;
@@ -4867,13 +4862,14 @@ namespace DS4Windows
             doubleTap[device] = false;
             scrollSensitivity[device] = 0;
             touchpadInvert[device] = 0;
-            rainbow[device] = 0;
-            maxRainbowSat[device] = 1.0;
-            flashAt[device] = 0;
             mouseAccel[device] = false;
             btPollRate[device] = 4;
 
-            m_LowLeds[device] = new DS4Color(Color.Black);
+            LightbarSettingInfo lightbarSettings = lightbarSettingInfo[device];
+            LightbarDS4WinInfo lightInfo = lightbarSettings.ds4winSettings;
+            lightbarSettings.Mode = LightbarMode.DS4Win;
+            lightInfo.m_LowLed = new DS4Color(Color.Black);
+            //m_LowLeds[device] = new DS4Color(Color.Black);
 
             Color tempColor = Color.Blue;
             switch(device)
@@ -4886,13 +4882,29 @@ namespace DS4Windows
                 default: tempColor = Color.Blue; break;
             }
 
-            m_Leds[device] = new DS4Color(tempColor);
+            lightInfo.m_Led = new DS4Color(tempColor);
+            lightInfo.m_ChargingLed = new DS4Color(Color.Black);
+            lightInfo.m_FlashLed = new DS4Color(Color.Black);
+            lightInfo.flashAt = 0;
+            lightInfo.flashType = 0;
+            lightInfo.chargingType = 0;
+            lightInfo.rainbow = 0;
+            lightInfo.maxRainbowSat = 1.0;
+            lightInfo.ledAsBattery = false;
+
+            /*m_Leds[device] = new DS4Color(tempColor);
             m_ChargingLeds[device] = new DS4Color(Color.Black);
             m_FlashLeds[device] = new DS4Color(Color.Black);
             //useCustomLeds[device] = false;
             //m_CustomLeds[device] = new DS4Color(Color.Blue);
 
             chargingType[device] = 0;
+            rainbow[device] = 0;
+            maxRainbowSat[device] = 1.0;
+            flashAt[device] = 0;
+            ledAsBattery[device] = false;
+            flashType[device] = 0;
+            */
             launchProgram[device] = string.Empty;
             dinputOnly[device] = false;
             startTouchpadOff[device] = false;

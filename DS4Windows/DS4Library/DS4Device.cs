@@ -19,6 +19,7 @@ namespace DS4Windows
         public byte red;
         public byte green;
         public byte blue;
+
         public DS4Color(Color c)
         {
             red = c.R;
@@ -1396,17 +1397,6 @@ namespace DS4Windows
                                 DisconnectDongle();
                             }
                         }
-                    }
-
-                    if (conType == ConnectionType.BT && oldCharging != charging)
-                    {
-                        /*if (Global.getQuickCharge() && charging)
-                        {
-                            DisconnectBT(true);
-                            timeoutExecuted = true;
-                            return;
-                        }
-                        */
                     }
 
                     if (Report != null)

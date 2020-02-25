@@ -41,23 +41,28 @@ namespace DS4Windows
 
         public static void updateLightBar(DS4Device device, int deviceNum)
         {
-            DS4Color color;
-            if (!defaultLight && !forcelight[deviceNum])
+            DS4Color color = new DS4Color();
+            bool useForceLight = forcelight[deviceNum];
+            LightbarSettingInfo lightbarSettingInfo = getLightbarSettingsInfo(deviceNum);
+            LightbarDS4WinInfo lightModeInfo = lightbarSettingInfo.ds4winSettings;
+            bool useLightRoutine = lightbarSettingInfo.mode == LightbarMode.DS4Win;
+            //bool useLightRoutine = false;
+            if (!defaultLight && !useForceLight && useLightRoutine)
             {
-                if (getUseCustomLed(deviceNum))
+                if (lightModeInfo.useCustomLed)
                 {
-                    if (getLedAsBatteryIndicator(deviceNum))
+                    if (lightModeInfo.ledAsBattery)
                     {
-                        ref DS4Color fullColor = ref getCustomColor(deviceNum);
-                        ref DS4Color lowColor = ref getLowColor(deviceNum);
+                        ref DS4Color fullColor = ref lightModeInfo.m_CustomLed; // ref getCustomColor(deviceNum);
+                        ref DS4Color lowColor = ref lightModeInfo.m_LowLed; //ref getLowColor(deviceNum);
                         color = getTransitionedColor(ref lowColor, ref fullColor, device.getBattery());
                     }
                     else
-                        color = getCustomColor(deviceNum);
+                        color = lightModeInfo.m_CustomLed; //getCustomColor(deviceNum);
                 }
                 else
                 {
-                    double rainbow = getRainbow(deviceNum);
+                    double rainbow = lightModeInfo.rainbow;// getRainbow(deviceNum);
                     if (rainbow > 0)
                     {
                         // Display rainbow
@@ -76,8 +81,8 @@ namespace DS4Windows
                         else if (counters[deviceNum] > 180000)
                             counters[deviceNum] = 0;
 
-                        double maxSat = GetMaxSatRainbow(deviceNum);
-                        if (getLedAsBatteryIndicator(deviceNum))
+                        double maxSat = lightModeInfo.maxRainbowSat; // GetMaxSatRainbow(deviceNum);
+                        if (lightModeInfo.ledAsBattery)
                         {
                             byte useSat = (byte)(maxSat == 1.0 ?
                                 device.getBattery() * 2.55 :
@@ -89,10 +94,10 @@ namespace DS4Windows
                                 (byte)(maxSat == 1.0 ? 255 : 255 * maxSat));
 
                     }
-                    else if (getLedAsBatteryIndicator(deviceNum))
+                    else if (lightModeInfo.ledAsBattery)
                     {
-                        ref DS4Color fullColor = ref getMainColor(deviceNum);
-                        ref DS4Color lowColor = ref getLowColor(deviceNum);
+                        ref DS4Color fullColor = ref lightModeInfo.m_Led; //ref getMainColor(deviceNum);
+                        ref DS4Color lowColor = ref lightModeInfo.m_LowLed; //ref getLowColor(deviceNum);
                         color = getTransitionedColor(ref lowColor, ref fullColor, device.getBattery());
                     }
                     else
@@ -101,15 +106,15 @@ namespace DS4Windows
                     }
                 }
 
-                if (device.getBattery() <= getFlashAt(deviceNum) && !defaultLight && !device.isCharging())
+                if (device.getBattery() <= lightModeInfo.flashAt && !defaultLight && !device.isCharging())
                 {
-                    ref DS4Color flashColor = ref getFlashColor(deviceNum);
+                    ref DS4Color flashColor = ref lightModeInfo.m_FlashLed; //ref getFlashColor(deviceNum);
                     if (!(flashColor.red == 0 &&
                         flashColor.green == 0 &&
                         flashColor.blue == 0))
                         color = flashColor;
 
-                    if (getFlashType(deviceNum) == 1)
+                    if (lightModeInfo.flashType == 1)
                     {
                         double ratio = 0.0;
 
@@ -158,10 +163,10 @@ namespace DS4Windows
                 }
 
                 int idleDisconnectTimeout = getIdleDisconnectTimeout(deviceNum);
-                if (idleDisconnectTimeout > 0 && getLedAsBatteryIndicator(deviceNum) &&
+                if (idleDisconnectTimeout > 0 && lightModeInfo.ledAsBattery &&
                     (!device.isCharging() || device.getBattery() >= 100))
                 {
-                    //Fade lightbar by idle time
+                    // Fade lightbar by idle time
                     TimeSpan timeratio = new TimeSpan(DateTime.UtcNow.Ticks - device.lastActive.Ticks);
                     double botratio = timeratio.TotalMilliseconds;
                     double topratio = TimeSpan.FromSeconds(idleDisconnectTimeout).TotalMilliseconds;
@@ -182,7 +187,7 @@ namespace DS4Windows
 
                 if (device.isCharging() && device.getBattery() < 100)
                 {
-                    switch (getChargingType(deviceNum))
+                    switch (lightModeInfo.chargingType)
                     {
                         case 1:
                         {
@@ -243,20 +248,24 @@ namespace DS4Windows
                         }
                         case 3:
                         {
-                            color = getChargingColor(deviceNum);
+                            color = lightModeInfo.m_ChargingLed; //getChargingColor(deviceNum);
                             break;
                         }
                         default: break;
                     }
                 }
             }
-            else if (forcelight[deviceNum])
+            else if (useForceLight)
             {
                 color = forcedColor[deviceNum];
+                useLightRoutine = true;
             }
             else if (shuttingdown)
+            {
                 color = new DS4Color(0, 0, 0);
-            else
+                useLightRoutine = true;
+            }
+            else if (useLightRoutine)
             {
                 if (device.getConnectionType() == ConnectionType.BT)
                     color = new DS4Color(32, 64, 64);
@@ -264,76 +273,77 @@ namespace DS4Windows
                     color = new DS4Color(0, 0, 0);
             }
 
-            bool distanceprofile = DistanceProfiles[deviceNum] || tempprofileDistance[deviceNum];
-            //distanceprofile = (ProfilePath[deviceNum].ToLower().Contains("distance") || tempprofilename[deviceNum].ToLower().Contains("distance"));
-            if (distanceprofile && !defaultLight)
+            if (useLightRoutine)
             {
-                // Thing I did for Distance
-                float rumble = device.getLeftHeavySlowRumble() / 2.55f;
-                byte max = Max(color.red, Max(color.green, color.blue));
-                if (device.getLeftHeavySlowRumble() > 100)
+                bool distanceprofile = DistanceProfiles[deviceNum] || tempprofileDistance[deviceNum];
+                //distanceprofile = (ProfilePath[deviceNum].ToLower().Contains("distance") || tempprofilename[deviceNum].ToLower().Contains("distance"));
+                if (distanceprofile && !defaultLight)
                 {
-                    DS4Color maxCol = new DS4Color(max, max, 0);
-                    DS4Color redCol = new DS4Color(255, 0, 0);
-                    color = getTransitionedColor(ref maxCol, ref redCol, rumble);
+                    // Thing I did for Distance
+                    float rumble = device.getLeftHeavySlowRumble() / 2.55f;
+                    byte max = Max(color.red, Max(color.green, color.blue));
+                    if (device.getLeftHeavySlowRumble() > 100)
+                    {
+                        DS4Color maxCol = new DS4Color(max, max, 0);
+                        DS4Color redCol = new DS4Color(255, 0, 0);
+                        color = getTransitionedColor(ref maxCol, ref redCol, rumble);
+                    }
+                    else
+                    {
+                        DS4Color maxCol = new DS4Color(max, max, 0);
+                        DS4Color redCol = new DS4Color(255, 0, 0);
+                        DS4Color tempCol = getTransitionedColor(ref maxCol,
+                            ref redCol, 39.6078f);
+                        color = getTransitionedColor(ref color, ref tempCol,
+                            device.getLeftHeavySlowRumble());
+                    }
                 }
-                    
+
+                DS4HapticState haptics = new DS4HapticState
+                {
+                    LightBarColor = color
+                };
+
+                if (haptics.IsLightBarSet())
+                {
+                    if (useForceLight && forcedFlash[deviceNum] > 0)
+                    {
+                        haptics.LightBarFlashDurationOff = haptics.LightBarFlashDurationOn = (byte)(25 - forcedFlash[deviceNum]);
+                        haptics.LightBarExplicitlyOff = true;
+                    }
+                    else if (device.getBattery() <= lightModeInfo.flashAt && lightModeInfo.flashType == 0 && !defaultLight && !device.isCharging())
+                    {
+                        int level = device.getBattery() / 10;
+                        if (level >= 10)
+                            level = 10; // all values of >~100% are rendered the same
+
+                        haptics.LightBarFlashDurationOn = BatteryIndicatorDurations[level, 0];
+                        haptics.LightBarFlashDurationOff = BatteryIndicatorDurations[level, 1];
+                    }
+                    else if (distanceprofile && device.getLeftHeavySlowRumble() > 155) //also part of Distance
+                    {
+                        haptics.LightBarFlashDurationOff = haptics.LightBarFlashDurationOn = (byte)((-device.getLeftHeavySlowRumble() + 265));
+                        haptics.LightBarExplicitlyOff = true;
+                    }
+                    else
+                    {
+                        //haptics.LightBarFlashDurationOff = haptics.LightBarFlashDurationOn = 1;
+                        haptics.LightBarFlashDurationOff = haptics.LightBarFlashDurationOn = 0;
+                        haptics.LightBarExplicitlyOff = true;
+                    }
+                }
                 else
                 {
-                    DS4Color maxCol = new DS4Color(max, max, 0);
-                    DS4Color redCol = new DS4Color(255, 0, 0);
-                    DS4Color tempCol = getTransitionedColor(ref maxCol,
-                        ref redCol, 39.6078f);
-                    color = getTransitionedColor(ref color, ref tempCol,
-                        device.getLeftHeavySlowRumble());
-                }
-                    
-            }
-
-            DS4HapticState haptics = new DS4HapticState
-            {
-                LightBarColor = color
-            };
-
-            if (haptics.IsLightBarSet())
-            {
-                if (forcelight[deviceNum] && forcedFlash[deviceNum] > 0)
-                {
-                    haptics.LightBarFlashDurationOff = haptics.LightBarFlashDurationOn = (byte)(25 - forcedFlash[deviceNum]);
                     haptics.LightBarExplicitlyOff = true;
                 }
-                else if (device.getBattery() <= getFlashAt(deviceNum) && getFlashType(deviceNum) == 0 && !defaultLight && !device.isCharging())
-                {
-                    int level = device.getBattery() / 10;
-                    if (level >= 10)
-                        level = 10; // all values of >~100% are rendered the same
 
-                    haptics.LightBarFlashDurationOn = BatteryIndicatorDurations[level, 0];
-                    haptics.LightBarFlashDurationOff = BatteryIndicatorDurations[level, 1];
-                }
-                else if (distanceprofile && device.getLeftHeavySlowRumble() > 155) //also part of Distance
-                {
-                    haptics.LightBarFlashDurationOff = haptics.LightBarFlashDurationOn = (byte)((-device.getLeftHeavySlowRumble() + 265));
-                    haptics.LightBarExplicitlyOff = true;
-                }
-                else
-                {
-                    //haptics.LightBarFlashDurationOff = haptics.LightBarFlashDurationOn = 1;
-                    haptics.LightBarFlashDurationOff = haptics.LightBarFlashDurationOn = 0;
-                    haptics.LightBarExplicitlyOff = true;
-                }
+                byte tempLightBarOnDuration = device.getLightBarOnDuration();
+                if (tempLightBarOnDuration != haptics.LightBarFlashDurationOn && tempLightBarOnDuration != 1 && haptics.LightBarFlashDurationOn == 0)
+                    haptics.LightBarFlashDurationOff = haptics.LightBarFlashDurationOn = 1;
+
+                device.SetHapticState(ref haptics);
+                //device.pushHapticState(ref haptics);
             }
-            else
-            {
-                haptics.LightBarExplicitlyOff = true;
-            }
-
-            byte tempLightBarOnDuration = device.getLightBarOnDuration();
-            if (tempLightBarOnDuration != haptics.LightBarFlashDurationOn && tempLightBarOnDuration != 1 && haptics.LightBarFlashDurationOn == 0)
-                haptics.LightBarFlashDurationOff = haptics.LightBarFlashDurationOn = 1;
-
-            device.SetHapticState(ref haptics);
-            //device.pushHapticState(ref haptics);
         }
 
         public static bool defaultLight = false, shuttingdown = false;
