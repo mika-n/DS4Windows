@@ -1804,6 +1804,11 @@ namespace DS4Windows
             m_Config.SaveProfile(device, propath);
         }
 
+        public static void SaveAsNewProfile(int device, string propath)
+        {
+            m_Config.SaveAsNewProfile(device, propath);
+        }
+
         public static bool SaveLinkedProfiles()
         {
             return m_Config.SaveLinkedProfiles();
@@ -2420,6 +2425,14 @@ namespace DS4Windows
             }
 
             return result;
+        }
+
+        public bool SaveAsNewProfile(int device, string propath)
+        {
+            bool Saved = true;
+            ResetProfile(device);
+            Saved = SaveProfile(device, propath);
+            return Saved;
         }
 
         public bool SaveProfile(int device, string propath)
