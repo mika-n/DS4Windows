@@ -180,7 +180,14 @@ Properties.Resources.DS4Update, MessageBoxButton.YesNo, MessageBoxImage.Question
                     using (Process p = new Process())
                     {
                         p.StartInfo.FileName = System.IO.Path.Combine(Global.exedirpath, "DS4Updater.exe");
-                        p.StartInfo.Arguments = "-autolaunch";
+                        bool isAdmin = Global.IsAdministrator();
+                        List<string> argList = new List<string>();
+                        argList.Add("-autolaunch");
+                        if (!isAdmin)
+                        {
+                            argList.Add("-user");
+                        }
+                        p.StartInfo.Arguments = string.Join(" ", argList);
                         if (Global.AdminNeeded())
                             p.StartInfo.Verb = "runas";
 
@@ -1034,8 +1041,6 @@ Suspend support not enabled.", true);
         private async void UseUdpServerCk_Click(object sender, RoutedEventArgs e)
         {
             bool status = useUdpServerCk.IsChecked == true;
-            udpServerTxt.IsEnabled = status;
-            updPortNum.IsEnabled = status;
             if (!status)
             {
                 App.rootHub.ChangeMotionEventStatus(status);
