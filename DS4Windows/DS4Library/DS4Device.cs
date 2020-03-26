@@ -438,6 +438,9 @@ namespace DS4Windows
             return runCalib;
         }
 
+        private ManualResetEventSlim readWaitEv = new ManualResetEventSlim();
+        public ManualResetEventSlim ReadWaitEv { get => readWaitEv; }
+
         public DS4Device(HidDevice hidDevice, string disName, VidPidFeatureSet featureSet = VidPidFeatureSet.DefaultDS4)
         {
             hDevice = hidDevice;
