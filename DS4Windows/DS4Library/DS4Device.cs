@@ -949,6 +949,8 @@ namespace DS4Windows
                     //Latency = latencyQueue.Average();
                     Latency = latencySum / (double)tempLatencyCount;
 
+                    readWaitEv.Set();
+
                     // DEBUG patchix
                     if (conType == ConnectionType.BT && (this.featureSet & VidPidFeatureSet.OnlyInputData0x01) == 0)
                     {
@@ -1104,6 +1106,9 @@ namespace DS4Windows
                             }
                         }
                     }
+
+                    readWaitEv.Wait();
+                    readWaitEv.Reset();
 
                     curtime = Stopwatch.GetTimestamp();
                     testelapsed = curtime - oldtime;
