@@ -1712,6 +1712,13 @@ namespace DS4Windows
             m_Config.containsCustomExtras[device] = HasCustomExtras(device);
         }
 
+        public static void CacheExtraProfileInfo(int device)
+        {
+            calculateProfileActionCount(device);
+            calculateProfileActionDicts(device);
+            cacheProfileCustomsFlags(device);
+        }
+
         public static X360Controls getX360ControlsByName(string key)
         {
             return m_Config.getX360ControlsByName(key);

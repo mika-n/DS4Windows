@@ -711,8 +711,9 @@ namespace DS4Windows
                 try
                 {
                     exitInputThread = true;
-                    //ds4Input.Abort();
-                    ds4Input.Join();
+                    //ds4Input.Interrupt();
+                    if (!abortInputThread)
+                        ds4Input.Join();
                 }
                 catch (Exception e)
                 {
@@ -943,7 +944,7 @@ namespace DS4Windows
                     tempLatencyCount++;
 
                     //Latency = latencyQueue.Average();
-                    Latency = latencySum / tempLatencyCount;
+                    Latency = latencySum / (double)tempLatencyCount;
 
                     // DEBUG patchix
                     if (conType == ConnectionType.BT && (this.featureSet & VidPidFeatureSet.OnlyInputData0x01) == 0)
@@ -1848,6 +1849,12 @@ namespace DS4Windows
         public static bool isValidSerial(string test)
         {
             return !test.Equals(blankSerial);
+        }
+
+        private bool abortInputThread = false;
+        public void PrepareAbort()
+        {
+            abortInputThread = true;
         }
     }
 }
