@@ -98,7 +98,7 @@ namespace DS4Windows
 
             // Following gamepads don't work for some reason
             new VidPidInfo(NACON_VID, 0x0603, "Nacon Wired Compact"), // No gyro/lightbar/speaker but has 2xrumble motors. USB only even when inputReport is almost like BT (length 545). https://www.nacongaming.com/it/product/gamepads/gamepads-gaming/compact-controller-ps4/
-            new VidPidInfo(HORI_VID, 0x0104, "Hori Onyx PS4"), // Hori Onyx PS4 gamepad (wireless). Doesn't work. MACID cannot be read. USB report 0x11 missing (just 0x01 in PC?)
+            new VidPidInfo(HORI_VID, 0x0104, "Hori Onyx PS4", VidPidFeatureSet.OnlyInputData0x01 | VidPidFeatureSet.OnlyOutputData0x05), // Hori Onyx PS4 gamepad (wireless). Doesn't work. MACID cannot be read. USB report 0x11 missing (just 0x01 in PC?)
             new VidPidInfo(HORI_VID, 0x0123, "Hori Wireless Lite BT"), // Hori Wireless Lite BT. Special gamepad with limited DS4 functionalities (no lightbar/touchpad/rumble/gyro/L2R2 analog triggers).
             new VidPidInfo(HORI_VID, 0x0124, "Hori Wireless Lite USB"), // Hori Wireless Lite USB (uses different PID in usb connection)        
         };
