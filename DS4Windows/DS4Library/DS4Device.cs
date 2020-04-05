@@ -136,7 +136,7 @@ namespace DS4Windows
         private DS4State cState = new DS4State();
         private DS4State pState = new DS4State();
         private ConnectionType conType;
-        public VidPidFeatureSet featureSet;  // DEBUG: patchfix
+        public VidPidFeatureSet featureSet;   // DEBUG: patchfix
         //private WriteOutputType writeOutputType;
         //private ReadInputType readInputType;
         private byte[] accel = new byte[6];
