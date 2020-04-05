@@ -129,6 +129,11 @@ namespace DS4WinWPF.DS4Forms
                 CheckDrivers();
                 if (!parser.Stop)
                 {
+                    Dispatcher.BeginInvoke((Action)(() =>
+                    {
+                        StartStopBtn.IsEnabled = false;
+                    }));
+                    Thread.Sleep(500);
                     App.rootHub.Start();
                     //root.rootHubtest.Start();
                 }
@@ -1356,7 +1361,7 @@ Suspend support not enabled.", true);
 
         private void Html5GameBtn_Click(object sender, RoutedEventArgs e)
         {
-            Util.StartProcessInExplorer("https://html5gamepad.com/");
+            Util.StartProcessHelper("https://html5gamepad.com/");
         }
     }
 }

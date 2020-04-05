@@ -393,10 +393,12 @@ namespace DS4Windows
                         as Xbox360OutDevice;
                     //outputDevices[index] = tempXbox;
                     int devIndex = index;
-                    tempXbox.cont.FeedbackReceived += (sender, args) =>
-                    {
-                        SetDevRumble(device, args.LargeMotor, args.SmallMotor, devIndex);
-                    };
+                    Nefarius.ViGEm.Client.Targets.Xbox360FeedbackReceivedEventHandler p = (sender, args) =>
+                       {
+                           SetDevRumble(device, args.LargeMotor, args.SmallMotor, devIndex);
+                       };
+                    tempXbox.cont.FeedbackReceived += p;
+                    tempXbox.forceFeedbackCall = p;
 
                     outputslotMan.DeferredPlugin(tempXbox, index, outputDevices);
                     //tempXbox.Connect();
@@ -411,12 +413,12 @@ namespace DS4Windows
                         as DS4OutDevice;
                     //outputDevices[index] = tempDS4;
                     int devIndex = index;
-                    tempDS4.cont.FeedbackReceived += (sender, args) =>
-                    {
+                    Nefarius.ViGEm.Client.Targets.DualShock4FeedbackReceivedEventHandler p = (sender, args) =>
+                       {
                         //bool useRumble = false; bool useLight = false;
                         byte largeMotor = args.LargeMotor;
-                        byte smallMotor = args.SmallMotor;
-                        SetDevRumble(device, largeMotor, smallMotor, devIndex);
+                           byte smallMotor = args.SmallMotor;
+                           SetDevRumble(device, largeMotor, smallMotor, devIndex);
                         //DS4Color color = new DS4Color(args.LightbarColor.Red,
                         //        args.LightbarColor.Green,
                         //        args.LightbarColor.Blue);
@@ -468,6 +470,8 @@ namespace DS4Windows
 
                         //Console.WriteLine();
                     };
+                    tempDS4.cont.FeedbackReceived += p;
+                    tempDS4.forceFeedbackCall = p;
 
                     outputslotMan.DeferredPlugin(tempDS4, index, outputDevices);
                     //tempDS4.Connect();
@@ -714,6 +718,7 @@ namespace DS4Windows
 
                 LogDebug("Closing connection to ViGEmBus");
 
+                bool anyUnplugged = false;
                 for (int i = 0, arlength = DS4Controllers.Length; i < arlength; i++)
                 {
                     DS4Device tempDevice = DS4Controllers[i];
@@ -753,6 +758,7 @@ namespace DS4Windows
                         if (tempout != null)
                         {
                             UnplugOutDev(i, tempDevice, true);
+                            anyUnplugged = true;
                         }
 
                         //outputDevices[i] = null;
@@ -781,6 +787,11 @@ namespace DS4Windows
                 while (outputslotMan.RunningQueue)
                 {
                     Thread.SpinWait(500);
+                }
+
+                if (anyUnplugged)
+                {
+                    Thread.Sleep(OutputSlotManager.DELAY_TIME);
                 }
 
                 stopViGEm();
@@ -1260,7 +1271,7 @@ namespace DS4Windows
                     if (!lag[ind] && device.Latency >= flashWhenLateAt)
                     {
                         lag[ind] = true;
-                        LagFlashWarning(ind, true);
+                        LagFlashWarning(device, ind, true);
                         /*uiContext?.Post(new SendOrPostCallback(delegate (object state)
                         {
                             LagFlashWarning(ind, true);
@@ -1270,7 +1281,7 @@ namespace DS4Windows
                     else if (lag[ind] && device.Latency < flashWhenLateAt)
                     {
                         lag[ind] = false;
-                        LagFlashWarning(ind, false);
+                        LagFlashWarning(device, ind, false);
                         /*uiContext?.Post(new SendOrPostCallback(delegate (object state)
                         {
                             LagFlashWarning(ind, false);
@@ -1319,8 +1330,7 @@ namespace DS4Windows
 
                 if (!recordingMacro && (useTempProfile[ind] ||
                     containsCustomAction(ind) || containsCustomExtras(ind) ||
-                    getProfileActionCount(ind) > 0 ||
-                    GetSASteeringWheelEmulationAxis(ind) >= SASteeringWheelEmulationAxisType.VJoy1X))
+                    getProfileActionCount(ind) > 0))
                 {
                     Mapping.MapCustom(ind, cState, MappedState[ind], ExposedState[ind], touchPad[ind], this);
                     cState = MappedState[ind];
@@ -1381,7 +1391,7 @@ namespace DS4Windows
             }
         }
 
-        public void LagFlashWarning(int ind, bool on)
+        public void LagFlashWarning(DS4Device device, int ind, bool on)
         {
             if (on)
             {
@@ -1401,6 +1411,7 @@ namespace DS4Windows
                 LogDebug(DS4WinWPF.Properties.Resources.LatencyNotOverTen.Replace("*number*", (ind + 1).ToString()));
                 DS4LightBar.forcelight[ind] = false;
                 DS4LightBar.forcedFlash[ind] = 0;
+                device.LightBarColor = getMainColor(ind);
             }
         }
 
