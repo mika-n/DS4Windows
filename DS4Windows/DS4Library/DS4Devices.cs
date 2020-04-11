@@ -95,6 +95,7 @@ namespace DS4Windows
             new VidPidInfo(NACON_VID, 0x0D10, "Nacon Revol Infinite"), // Nacon Revolution Infinite (sometimes known as Revol Unlimited Pro v2?). Touchpad, gyro, rumble, "led indicator" lightbar.
             new VidPidInfo(HORI_VID, 0x0084, "Hori Fighting Cmd"), // Hori Fighting Commander (special kind of gamepad without touchpad or sticks. There is a hardware switch to alter d-pad type between dpad and LS/RS)
             new VidPidInfo(NACON_VID, 0x0D13, "Nacon Revol Pro v.3"),
+            new VidPidInfo(HORI_VID, 0x0066, "Horipad FPS Plus", VidPidFeatureSet.NoGyroCalib), // Horipad FPS Plus (wired only. No light bar, rumble and Gyro/Accel sensor. Cannot Hide "HID-compliant vendor-defined device" in USB Composite Device. Other feature works fine.
 
             // Following gamepads don't work for some reason
             new VidPidInfo(NACON_VID, 0x0603, "Nacon Wired Compact"), // No gyro/lightbar/speaker but has 2xrumble motors. USB only even when inputReport is almost like BT (length 545). https://www.nacongaming.com/it/product/gamepads/gamepads-gaming/compact-controller-ps4/
