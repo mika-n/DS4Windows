@@ -7,15 +7,17 @@ using System.Security.Principal;
 
 namespace DS4Windows
 {
-    // VidPidFeatureSet feature flags:
-    // DefaultDS4           = Standard DS4 compatible communication (as it has been in DS4Win app for years)
-    // OnlyInputData0x01    = The incoming HID report data structure does NOT send 0x11 packet even in DS4 mode over BT connection. If this flag is set then accept "PC-friendly" 0x01 HID report data in BT (like in USB connections)
+    // VidPidFeatureSet feature bit-flags (the default in VidPidInfo is zero value = standard DS4 behavior):
+    //
+    // DefaultDS4 (zero value) = Standard DS4 compatible communication (as it has been in DS4Win app for years)
+    // OnlyInputData0x01    = The incoming HID report data structure does NOT send 0x11 packet even in DS4 mode over BT connection. If this flag is set then accept "PC-friendly" 0x01 HID report data in BT just like how DS4 behaves in USB mode.
     // OnlyOutputData0x05   = Outgoing HID report write data structure does NOT support DS4 BT 0x11 data structure. Use only "USB type of" 0x05 data packets even in BT connections.
     // NoOutputData         = Gamepad doesn't support lightbar and rumble data writing at all. DS4Win app does not try to write out anything to gamepad.
-    // NoBatteryReading     = Gamepad doesn't send battery readings in the same format than DS4 gamepad (always 0%). Skip reading a battery fields and report fixed 99% battery level to avoid "low battery" LED flashes.
-    // NoGyroCalib          = Gamepad doesn't support or need gyro calibration routines. Skip gyro calibration if this flag is set.
+    // NoBatteryReading     = Gamepad doesn't send battery readings in the same format than DS4 gamepad (DS4Win app reports always 0% and starts to blink lightbar). Skip reading a battery fields and report fixed 99% battery level to avoid "low battery" LED flashes.
+    // NoGyroCalib          = Gamepad doesn't support or need gyro calibration routines. Skip gyro calibration if this flag is set. Some gamepad do have gyro, but don't support calibration or gyro sensors are missing.
     //
-    public enum VidPidFeatureSet : byte { DefaultDS4 = 0, OnlyInputData0x01 = 1, OnlyOutputData0x05 = 2, NoOutputData = 4, NoBatteryReading = 8, NoGyroCalib = 16 };
+    [Flags]
+    public enum VidPidFeatureSet : ushort { DefaultDS4 = 0, OnlyInputData0x01 = 1, OnlyOutputData0x05 = 2, NoOutputData = 4, NoBatteryReading = 8, NoGyroCalib = 16 };
 
     public class VidPidInfo
     {
@@ -78,16 +80,16 @@ namespace DS4Windows
             new VidPidInfo(SONY_VID, 0x5C4, "DS4 v.1"),
             new VidPidInfo(SONY_VID, 0x09CC, "DS4 v.2"),
             new VidPidInfo(RAZER_VID, 0x1000, "Razer Raiju PS4"),
-            new VidPidInfo(NACON_VID, 0x0D01, "Nacon Revol Pro v.1", VidPidFeatureSet.NoGyroCalib),
+            new VidPidInfo(NACON_VID, 0x0D01, "Nacon Revol Pro v.1", VidPidFeatureSet.NoGyroCalib), // Nacon Revolution Pro v1 and v2 doesn't support DS4 gyro calibration routines
             new VidPidInfo(NACON_VID, 0x0D02, "Nacon Revol Pro v.2", VidPidFeatureSet.NoGyroCalib),
-            new VidPidInfo(HORI_VID, 0x00EE, "Hori PS4 Mini"),    // Hori PS4 Mini Wired Gamepad
+            new VidPidInfo(HORI_VID, 0x00EE, "Hori PS4 Mini"),  // Hori PS4 Mini Wired Gamepad
             new VidPidInfo(0x7545, 0x0104, "Armor 3 LU Cobra"), // Armor 3 Level Up Cobra
             new VidPidInfo(0x2E95, 0x7725, "Scuf Vantage"), // Scuf Vantage gamepad
             new VidPidInfo(0x11C0, 0x4001, "PS4 Fun"), // PS4 Fun Controller
-            new VidPidInfo(RAZER_VID, 0x1007, "Razer Raiju TE USB"), // Razer Raiju Tournament Edition (wired)
-            new VidPidInfo(RAZER_VID, 0x100A, "Razer Raiju TE BT", VidPidFeatureSet.OnlyInputData0x01 | VidPidFeatureSet.OnlyOutputData0x05 | VidPidFeatureSet.NoBatteryReading | VidPidFeatureSet.NoGyroCalib), // DEBUG. patchfid. Razer Raiju Tournament Edition (BT). Incoming report data (32 bytes) in USB format in BT. WriteOutput uses "usb write" logic in BT.
+            new VidPidInfo(RAZER_VID, 0x1007, "Razer Raiju TE"), // Razer Raiju Tournament Edition (wired)
+            new VidPidInfo(RAZER_VID, 0x100A, "Razer Raiju TE BT", VidPidFeatureSet.OnlyInputData0x01 | VidPidFeatureSet.OnlyOutputData0x05 | VidPidFeatureSet.NoBatteryReading | VidPidFeatureSet.NoGyroCalib), // Razer Raiju Tournament Edition (BT). Incoming report data is in "ds4 USB format" (32 bytes) in BT. Also, WriteOutput uses "usb" data packet type in BT.
             new VidPidInfo(RAZER_VID, 0x1004, "Razer Raiju UE USB"), // Razer Raiju Ultimate Edition (wired)
-            new VidPidInfo(RAZER_VID, 0x1009, "Razer Raiju UE BT", VidPidFeatureSet.OnlyInputData0x01 | VidPidFeatureSet.OnlyOutputData0x05 | VidPidFeatureSet.NoBatteryReading | VidPidFeatureSet.NoGyroCalib), // DEBUG. patchfid. Razer Raiju Ultimate Edition (BT). Incoming report data (32 bytes) in USB format in BT. WriteOutput uses "usb write" logic in BT.
+            new VidPidInfo(RAZER_VID, 0x1009, "Razer Raiju UE BT", VidPidFeatureSet.OnlyInputData0x01 | VidPidFeatureSet.OnlyOutputData0x05 | VidPidFeatureSet.NoBatteryReading | VidPidFeatureSet.NoGyroCalib), // Razer Raiju Ultimate Edition (BT)
             new VidPidInfo(SONY_VID, 0x05C5, "CronusMax (PS4 Mode)"), // CronusMax (PS4 Output Mode)
             new VidPidInfo(0x0C12, 0x57AB, "Warrior Joypad JS083", VidPidFeatureSet.NoGyroCalib), // Warrior Joypad JS083 (wired). Custom lightbar color doesn't work, but everything else works OK (except touchpad and gyro because the gamepad doesnt have those).
             new VidPidInfo(0x0C12, 0x0E16, "Steel Play MetalTech"), // Steel Play Metaltech P4 (wired)
@@ -95,13 +97,7 @@ namespace DS4Windows
             new VidPidInfo(NACON_VID, 0x0D10, "Nacon Revol Infinite"), // Nacon Revolution Infinite (sometimes known as Revol Unlimited Pro v2?). Touchpad, gyro, rumble, "led indicator" lightbar.
             new VidPidInfo(HORI_VID, 0x0084, "Hori Fighting Cmd"), // Hori Fighting Commander (special kind of gamepad without touchpad or sticks. There is a hardware switch to alter d-pad type between dpad and LS/RS)
             new VidPidInfo(NACON_VID, 0x0D13, "Nacon Revol Pro v.3"),
-            new VidPidInfo(HORI_VID, 0x0066, "Horipad FPS Plus", VidPidFeatureSet.NoGyroCalib), // Horipad FPS Plus (wired only. No light bar, rumble and Gyro/Accel sensor. Cannot Hide "HID-compliant vendor-defined device" in USB Composite Device. Other feature works fine.
-
-            // Following gamepads don't work for some reason
-            new VidPidInfo(NACON_VID, 0x0603, "Nacon Wired Compact"), // No gyro/lightbar/speaker but has 2xrumble motors. USB only even when inputReport is almost like BT (length 545). https://www.nacongaming.com/it/product/gamepads/gamepads-gaming/compact-controller-ps4/
-            new VidPidInfo(HORI_VID, 0x0104, "Hori Onyx PS4", VidPidFeatureSet.OnlyInputData0x01 | VidPidFeatureSet.OnlyOutputData0x05), // Hori Onyx PS4 gamepad (wireless). Doesn't work. MACID cannot be read. USB report 0x11 missing (just 0x01 in PC?)
-            new VidPidInfo(HORI_VID, 0x0123, "Hori Wireless Lite BT"), // Hori Wireless Lite BT. Special gamepad with limited DS4 functionalities (no lightbar/touchpad/rumble/gyro/L2R2 analog triggers).
-            new VidPidInfo(HORI_VID, 0x0124, "Hori Wireless Lite USB"), // Hori Wireless Lite USB (uses different PID in usb connection)        
+            new VidPidInfo(HORI_VID, 0x0066, "Horipad FPS Plus", VidPidFeatureSet.NoGyroCalib), // Horipad FPS Plus (wired only. No light bar, rumble and Gyro/Accel sensor. Cannot Hide "HID-compliant vendor-defined device" in USB Composite Device. Other feature works fine.)
         };
 
         private static string devicePathToInstanceId(string devicePath)
@@ -123,9 +119,6 @@ namespace DS4Windows
             string deviceInstanceId = devicePathToInstanceId(hDevice.DevicePath);
             string temp = Global.GetDeviceProperty(deviceInstanceId,
                 NativeMethods.DEVPKEY_Device_UINumber);
-
-            AppLogger.LogToGui($"DEBUG: IsRealDS4. IsRealDS4={string.IsNullOrEmpty(temp)}  hDevicePath={hDevice.DevicePath}  deviceInstanceID={deviceInstanceId}  Device_UINumber={temp}", false);
-
             return string.IsNullOrEmpty(temp);
         }
 
@@ -147,31 +140,19 @@ namespace DS4Windows
                 string devicePlural = "device" + (devCount == 0 || devCount > 1 ? "s" : "");
                 //Log.LogToGui("Found " + devCount + " possible " + devicePlural + ". Examining " + devicePlural + ".", false);
 
-                AppLogger.LogToGui($"DEBUG: findControllers. Found " + devCount + " possible " + devicePlural, false);
-
                 for (int i = 0; i < devCount; i++)
                 //foreach (HidDevice hDevice in hDevices)
                 {
                     HidDevice hDevice = tempList[i];
-
-                    AppLogger.LogToGui($"DEBUG: findControllers. Idx={i} Potential DS4 gamepad. Description={hDevice.Description}  Path={hDevice.DevicePath}", false);
-
                     if (hDevice.Description == "HID-compliant vendor-defined device")
-                        //continue; // ignore the Nacon Revolution Pro programming interface
-                        // DEBUG: patchfix
-                        AppLogger.LogToGui($"DEBUG: findControllers. Idx={i}. Debug version accepts HID-compliant vendor-defined device descriptions even when those are not always real DS4 gamepad devices.", false);
+                        continue; // ignore the Nacon Revolution Pro programming interface
                     else if (DevicePaths.Contains(hDevice.DevicePath))
                         continue; // BT/USB endpoint already open once
 
-                    // DEBUG: Return null metainfo if gamepad type was not identified (Unknown gamepad but using Usage=0x05 flag)
-                    //VidPidInfo metainfo = knownDevices.Single(x => x.vid == hDevice.Attributes.VendorId &&
-                    //    x.pid == hDevice.Attributes.ProductId);
-                    VidPidInfo metainfo = knownDevices.SingleOrDefault(x => x.vid == hDevice.Attributes.VendorId &&
-                                            x.pid == hDevice.Attributes.ProductId);
+                    VidPidInfo metainfo = knownDevices.Single(x => x.vid == hDevice.Attributes.VendorId &&
+                        x.pid == hDevice.Attributes.ProductId);
                     if (!hDevice.IsOpen)
                     {
-                        AppLogger.LogToGui($"DEBUG: findControllers. idx={i} Opening device VID={hDevice.Attributes.VendorHexId}  PID={hDevice.Attributes.ProductHexId}  isExclusiveMode={isExclusiveMode}", false);
-
                         hDevice.OpenDevice(isExclusiveMode);
                         if (!hDevice.IsOpen && isExclusiveMode)
                         {
@@ -207,15 +188,10 @@ namespace DS4Windows
                             hDevice.OpenDevice(false);
                     }
 
-                    AppLogger.LogToGui($"DEBUG: findControllers. idx={i} IsOpen={hDevice.IsOpen}", false);
-
                     if (hDevice.IsOpen)
                     {
                         string serial = hDevice.readSerial();
                         bool validSerial = !serial.Equals(DS4Device.blankSerial);
-                        
-                        AppLogger.LogToGui($"DEBUG: findControllers. idx={i} IsValidSerial={validSerial}  Serial={serial}", false);
-
                         if (validSerial && deviceSerials.Contains(serial))
                         {
                             // happens when the BT endpoint already is open and the USB is plugged into the same host
@@ -232,26 +208,13 @@ namespace DS4Windows
                         }
                         else
                         {
-                            // DEBUG: Accept unknown device if those were with usage=0x5 flag
-                            if (metainfo != null)
-                                AppLogger.LogToGui($"DEBUG: findControllers. idx={i} Using device {hDevice.DevicePath}  metainfo.name={metainfo.name}  metainfo.featureSet={metainfo.featureSet}", false);
-                            else
-                                AppLogger.LogToGui($"DEBUG: findControllers. idx={i} Using device {hDevice.DevicePath}  metainfo.name=UNKNOWN", false);
-
-                            // DEBUG:
-                            DS4Device ds4Device = new DS4Device(hDevice, (metainfo != null ? metainfo.name : "UNKNOWN"), (metainfo != null ? metainfo.featureSet : VidPidFeatureSet.DefaultDS4) /* DEBUG patchfix */);
+                            DS4Device ds4Device = new DS4Device(hDevice, metainfo.name, metainfo.featureSet);
                             //ds4Device.Removal += On_Removal;
                             if (!ds4Device.ExitOutputThread)
                             {
-                                AppLogger.LogToGui($"DEBUG: findControllers. idx={i} OK. DS4Win uses the device as input source", false);
-
                                 Devices.Add(hDevice.DevicePath, ds4Device);
                                 DevicePaths.Add(hDevice.DevicePath);
                                 deviceSerials.Add(serial);
-                            }
-                            else
-                            {
-                                AppLogger.LogToGui($"DEBUG: findControllers. ERROR. idx={i} {hDevice.DevicePath} is in ExitOutputThread state. Failed to read inputData from the controller", false);
                             }
                         }
                     }
@@ -423,7 +386,7 @@ namespace DS4Windows
 
             //System.Threading.Thread.Sleep(50);
             sw.Restart();
-            while (sw.ElapsedMilliseconds < 50)
+            while (sw.ElapsedMilliseconds < 100)
             {
                 // Use SpinWait to keep control of current thread. Using Sleep could potentially
                 // cause other events to get run out of order
