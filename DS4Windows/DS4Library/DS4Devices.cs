@@ -98,6 +98,12 @@ namespace DS4Windows
             new VidPidInfo(HORI_VID, 0x0084, "Hori Fighting Cmd"), // Hori Fighting Commander (special kind of gamepad without touchpad or sticks. There is a hardware switch to alter d-pad type between dpad and LS/RS)
             new VidPidInfo(NACON_VID, 0x0D13, "Nacon Revol Pro v.3"),
             new VidPidInfo(HORI_VID, 0x0066, "Horipad FPS Plus", VidPidFeatureSet.NoGyroCalib), // Horipad FPS Plus (wired only. No light bar, rumble and Gyro/Accel sensor. Cannot Hide "HID-compliant vendor-defined device" in USB Composite Device. Other feature works fine.)
+
+            // Following gamepads don't work for some reason
+            new VidPidInfo(NACON_VID, 0x0603, "Nacon Wired Compact", VidPidFeatureSet.NoGyroCalib), // No gyro/lightbar/speaker but has 2xrumble motors. USB only even when inputReport is almost like BT (length 545). https://www.nacongaming.com/it/product/gamepads/gamepads-gaming/compact-controller-ps4/
+            new VidPidInfo(HORI_VID, 0x0104, "Hori Onyx PS4", VidPidFeatureSet.OnlyInputData0x01 | VidPidFeatureSet.OnlyOutputData0x05), // Hori Onyx PS4 gamepad (wireless). Doesn't work. MACID cannot be read. USB report 0x11 missing (just 0x01 in PC?)
+            new VidPidInfo(HORI_VID, 0x0123, "Hori Wireless Lite BT", VidPidFeatureSet.NoGyroCalib), // Hori Wireless Lite BT. Special gamepad with limited DS4 functionalities (no lightbar/touchpad/rumble/gyro/L2R2 analog triggers).
+            new VidPidInfo(HORI_VID, 0x0124, "Hori Wireless Lite USB", VidPidFeatureSet.NoGyroCalib), // Hori Wireless Lite USB (uses different PID in usb connection)        
         };
 
         private static string devicePathToInstanceId(string devicePath)
@@ -119,6 +125,9 @@ namespace DS4Windows
             string deviceInstanceId = devicePathToInstanceId(hDevice.DevicePath);
             string temp = Global.GetDeviceProperty(deviceInstanceId,
                 NativeMethods.DEVPKEY_Device_UINumber);
+
+            AppLogger.LogToGui($"DEBUG: IsRealDS4. IsRealDS4={string.IsNullOrEmpty(temp)}  hDevicePath={hDevice.DevicePath}  deviceInstanceID={deviceInstanceId}  Device_UINumber={temp}", false);
+
             return string.IsNullOrEmpty(temp);
         }
 
@@ -140,19 +149,31 @@ namespace DS4Windows
                 string devicePlural = "device" + (devCount == 0 || devCount > 1 ? "s" : "");
                 //Log.LogToGui("Found " + devCount + " possible " + devicePlural + ". Examining " + devicePlural + ".", false);
 
+                AppLogger.LogToGui($"DEBUG: findControllers. Found " + devCount + " possible " + devicePlural, false);
+
                 for (int i = 0; i < devCount; i++)
                 //foreach (HidDevice hDevice in hDevices)
                 {
                     HidDevice hDevice = tempList[i];
+
+                    AppLogger.LogToGui($"DEBUG: findControllers. Idx={i} Potential DS4 gamepad. Description={hDevice.Description}  Path={hDevice.DevicePath}", false);
+
                     if (hDevice.Description == "HID-compliant vendor-defined device")
-                        continue; // ignore the Nacon Revolution Pro programming interface
+                        //continue; // ignore the Nacon Revolution Pro programming interface
+                        AppLogger.LogToGui($"DEBUG: findControllers. Idx={i}. Debug version accepts HID-compliant vendor-defined device descriptions even when those are not always real DS4 gamepad devices.", false);
                     else if (DevicePaths.Contains(hDevice.DevicePath))
                         continue; // BT/USB endpoint already open once
 
-                    VidPidInfo metainfo = knownDevices.Single(x => x.vid == hDevice.Attributes.VendorId &&
-                        x.pid == hDevice.Attributes.ProductId);
+                    // DEBUG: Return null metainfo if gamepad type was not identified (Unknown gamepad but using Usage=0x05 flag)
+                    //VidPidInfo metainfo = knownDevices.Single(x => x.vid == hDevice.Attributes.VendorId &&
+                    //    x.pid == hDevice.Attributes.ProductId);
+                    VidPidInfo metainfo = knownDevices.SingleOrDefault(x => x.vid == hDevice.Attributes.VendorId &&
+                                            x.pid == hDevice.Attributes.ProductId);
+
                     if (!hDevice.IsOpen)
                     {
+                        AppLogger.LogToGui($"DEBUG: findControllers. idx={i} Opening device VID={hDevice.Attributes.VendorHexId}  PID={hDevice.Attributes.ProductHexId}  isExclusiveMode={isExclusiveMode}", false);
+
                         hDevice.OpenDevice(isExclusiveMode);
                         if (!hDevice.IsOpen && isExclusiveMode)
                         {
@@ -188,10 +209,15 @@ namespace DS4Windows
                             hDevice.OpenDevice(false);
                     }
 
+                    AppLogger.LogToGui($"DEBUG: findControllers. idx={i} IsOpen={hDevice.IsOpen}", false);
+
                     if (hDevice.IsOpen)
                     {
                         string serial = hDevice.readSerial();
                         bool validSerial = !serial.Equals(DS4Device.blankSerial);
+
+                        AppLogger.LogToGui($"DEBUG: findControllers. idx={i} IsValidSerial={validSerial}  Serial={serial}", false);
+
                         if (validSerial && deviceSerials.Contains(serial))
                         {
                             // happens when the BT endpoint already is open and the USB is plugged into the same host
@@ -208,13 +234,27 @@ namespace DS4Windows
                         }
                         else
                         {
-                            DS4Device ds4Device = new DS4Device(hDevice, metainfo.name, metainfo.featureSet);
+                            // DEBUG: Accept unknown device if those were with usage=0x5 flag
+                            if (metainfo != null)
+                                AppLogger.LogToGui($"DEBUG: findControllers. idx={i} Using device {hDevice.DevicePath}  metainfo.name={metainfo.name}  metainfo.featureSet={metainfo.featureSet}", false);
+                            else
+                                AppLogger.LogToGui($"DEBUG: findControllers. idx={i} Using device {hDevice.DevicePath}  metainfo.name=UNKNOWN", false);
+
+                            //DS4Device ds4Device = new DS4Device(hDevice, metainfo.name, metainfo.featureSet);
+                            DS4Device ds4Device = new DS4Device(hDevice, (metainfo != null ? metainfo.name : "UNKNOWN"), (metainfo != null ? metainfo.featureSet : VidPidFeatureSet.DefaultDS4) /* DEBUG patchfix */);
+
                             //ds4Device.Removal += On_Removal;
                             if (!ds4Device.ExitOutputThread)
                             {
+                                AppLogger.LogToGui($"DEBUG: findControllers. idx={i} OK. DS4Win uses the device as input source", false);
+
                                 Devices.Add(hDevice.DevicePath, ds4Device);
                                 DevicePaths.Add(hDevice.DevicePath);
                                 deviceSerials.Add(serial);
+                            }
+                            else
+                            {
+                                AppLogger.LogToGui($"DEBUG: findControllers. ERROR. idx={i} {hDevice.DevicePath} is in ExitOutputThread state. Failed to read inputData from the controller", false);
                             }
                         }
                     }
