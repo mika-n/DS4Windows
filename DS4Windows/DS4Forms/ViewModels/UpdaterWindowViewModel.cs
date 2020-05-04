@@ -41,7 +41,7 @@ namespace DS4WinWPF.DS4Forms.ViewModels
         public async void RetrieveChangelogInfo()
         {
             // Sorry other devs, gonna have to find your own server
-            Uri url = new Uri("https://raw.githubusercontent.com/Ryochan7/DS4Windows/changelog_draft/DS4Windows/Changelog.min.json");
+            Uri url = new Uri("https://raw.githubusercontent.com/Ryochan7/DS4Windows/jay/DS4Windows/Changelog.min.json");
             string filename = Path.Combine(Path.GetTempPath(), "Changelog.min.json");
             bool readFile = false;
             using (var downloadStream = new FileStream(filename, FileMode.Create))
@@ -83,24 +83,28 @@ namespace DS4WinWPF.DS4Forms.ViewModels
             FlowDocument flow = new FlowDocument();
             foreach (ChangeVersionInfo versionInfo in tempInfo.Changelog.Versions)
             {
-                VersionLogLocale tmpLog = versionInfo.ApplicableInfo(DS4Windows.Global.UseLang);
-                if (tmpLog != null)
+                ulong versionNumber = versionInfo.VersionNumberInfo.GetVersionNumber();
+                if (versionNumber > DS4Windows.Global.exeversionLong)
                 {
-                    Paragraph tmpPar = new Paragraph();
-                    string tmp = tmpLog.Header;
-                    tmpPar.Inlines.Add(new Run(tmp) { Tag = "Header" });
-                    flow.Blocks.Add(tmpPar);
+                    VersionLogLocale tmpLog = versionInfo.ApplicableInfo(DS4Windows.Global.UseLang);
+                    if (tmpLog != null)
+                    {
+                        Paragraph tmpPar = new Paragraph();
+                        string tmp = tmpLog.Header;
+                        tmpPar.Inlines.Add(new Run(tmp) { Tag = "Header" });
+                        flow.Blocks.Add(tmpPar);
 
-                    tmpPar.Inlines.Add(new LineBreak());
-                    tmpPar.Inlines.Add(new Run(versionInfo.ReleaseDate.ToUniversalTime().ToString("r")) { Tag = "ReleaseDate" });
+                        tmpPar.Inlines.Add(new LineBreak());
+                        tmpPar.Inlines.Add(new Run(versionInfo.ReleaseDate.ToUniversalTime().ToString("r")) { Tag = "ReleaseDate" });
 
-                    tmpLog.BuildDisplayText();
+                        tmpLog.BuildDisplayText();
 
-                    FlowDocument tmpDoc = engine.Transform(tmpLog.DisplayLogText);
-                    flow.Blocks.AddRange(new List<Block>(tmpDoc.Blocks));
+                        FlowDocument tmpDoc = engine.Transform(tmpLog.DisplayLogText);
+                        flow.Blocks.AddRange(new List<Block>(tmpDoc.Blocks));
 
-                    tmpPar = new Paragraph();
-                    flow.Blocks.Add(tmpPar);
+                        tmpPar = new Paragraph();
+                        flow.Blocks.Add(tmpPar);
+                    }
                 }
             }
 
@@ -118,17 +122,53 @@ namespace DS4WinWPF.DS4Forms.ViewModels
     public class ChangelogInfo
     {
         private string latestVersion;
+        private ChangeVersionNumberInfo latestVersionInfo;
         private DateTime updatedAt;
         private ChangelogVersions changelog;
 
         [JsonProperty("latest_version")]
         public string LatestVersion { get => latestVersion; set => latestVersion = value; }
 
+
         [JsonProperty("updated_at")]
         public DateTime UpdatedAt { get => updatedAt; set => updatedAt = value; }
 
         [JsonProperty("changelog")]
         public ChangelogVersions Changelog { get => changelog; set => changelog = value; }
+
+        [JsonProperty("latest_version_number_info", Required = Required.Always)]
+        public ChangeVersionNumberInfo LatestVersionInfo
+        {
+            get => latestVersionInfo;
+            set => latestVersionInfo = value;
+        }
+    }
+
+    public class ChangeVersionNumberInfo
+    {
+        private ushort majorPart;
+        private ushort minorPart;
+        private ushort buildPart;
+        private ushort privatePart;
+
+        [JsonProperty("majorPart")]
+        public ushort MajorPart { get => majorPart; set => majorPart = value; }
+
+        [JsonProperty("minorPart")]
+        public ushort MinorPart { get => minorPart; set => minorPart = value; }
+
+        [JsonProperty("buildPart")]
+        public ushort BuildPart { get => buildPart; set => buildPart = value; }
+
+        [JsonProperty("privatePart")]
+        public ushort PrivatePart { get => privatePart; set => privatePart = value; }
+
+        public ulong GetVersionNumber()
+        {
+            ulong temp = (ulong)majorPart << 48 | (ulong)minorPart << 32 |
+                (ulong)buildPart << 16 | privatePart;
+            return temp;
+        }
     }
 
     public class ChangelogVersions
@@ -142,6 +182,7 @@ namespace DS4WinWPF.DS4Forms.ViewModels
     public class ChangeVersionInfo
     {
         private string version;
+        private ChangeVersionNumberInfo versionNumberInfo;
         private string baseHeader;
         private DateTime releaseDate;
         private List<VersionLogLocale> versionLocales;
@@ -157,6 +198,12 @@ namespace DS4WinWPF.DS4Forms.ViewModels
 
         [JsonProperty("locales")]
         public List<VersionLogLocale> VersionLocales { get => versionLocales; set => versionLocales = value; }
+
+        [JsonProperty("version_number_info", Required = Required.Always)]
+        public ChangeVersionNumberInfo VersionNumberInfo
+        {
+            get => versionNumberInfo; set => versionNumberInfo = value;
+        }
 
         public VersionLogLocale ApplicableInfo(string culture)
         {

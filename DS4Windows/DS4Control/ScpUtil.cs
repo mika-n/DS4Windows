@@ -245,6 +245,9 @@ namespace DS4Windows
         public static string exedirpath = Directory.GetParent(exelocation).FullName;
         public static FileVersionInfo fileVersion = FileVersionInfo.GetVersionInfo(exelocation);
         public static string exeversion = fileVersion.ProductVersion;
+        public static ulong exeversionLong = (ulong)fileVersion.ProductMajorPart << 48 |
+            (ulong)fileVersion.ProductMinorPart << 32 | (ulong)fileVersion.ProductBuildPart << 16;
+        public static ulong fullExeVersionLong = exeversionLong | (ushort)fileVersion.ProductPrivatePart;
         public static string appdatapath;
         public static bool firstRun = false;
         public static bool multisavespots = false;
