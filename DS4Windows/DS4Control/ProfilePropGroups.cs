@@ -44,6 +44,23 @@ namespace DS4Windows
         public double smoothWeight;
     }
 
+    public class ButtonMouseInfo
+    {
+        //public const double MOUSESTICKANTIOFFSET = 0.0128;
+        public const double MOUSESTICKANTIOFFSET = 0.005;
+
+        public int buttonSensitivity = 25;
+        public bool mouseAccel;
+        public int activeButtonSensitivity = 25;
+        public int tempButtonSensitivity = -1;
+        public double mouseVelocityOffset = MOUSESTICKANTIOFFSET;
+
+        public void SetActiveButtonSensitivity(int sens)
+        {
+            activeButtonSensitivity = sens;
+        }
+    }
+
     public enum LightbarMode : uint
     {
         None,

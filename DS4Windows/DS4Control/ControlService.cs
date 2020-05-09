@@ -6,6 +6,7 @@ using System.Threading;
 using System.Diagnostics;
 using static DS4Windows.Global;
 using Nefarius.ViGEm.Client;
+using System.Windows.Threading;
 
 namespace DS4Windows
 {
@@ -30,6 +31,8 @@ namespace DS4Windows
         public OutputDevice[] outputDevices = new OutputDevice[4] { null, null, null, null };
         Thread tempThread;
         Thread tempBusThread;
+        Thread eventDispatchThread;
+        Dispatcher eventDispatcher;
         public List<string> affectedDevs = new List<string>()
         {
             @"HID\VID_054C&PID_05C4",
@@ -56,7 +59,6 @@ namespace DS4Windows
             new byte[100], new byte[100],
             new byte[100], new byte[100]
         };
-
 
         void GetPadDetailForIdx(int padIdx, ref DualShockPadMeta meta)
         {
@@ -166,6 +168,17 @@ namespace DS4Windows
             //    Thread.SpinWait(500);
             //}
 
+            eventDispatchThread = new Thread(() =>
+            {
+                Dispatcher currentDis = Dispatcher.CurrentDispatcher;
+                eventDispatcher = currentDis;
+                Dispatcher.Run();
+            });
+            eventDispatchThread.IsBackground = true;
+            eventDispatchThread.Priority = ThreadPriority.AboveNormal;
+            eventDispatchThread.Name = "ControlService Events";
+            eventDispatchThread.Start();
+
             for (int i = 0, arlength = DS4Controllers.Length; i < arlength; i++)
             {
                 MappedState[i] = new DS4State();
@@ -177,6 +190,17 @@ namespace DS4Windows
 
             outputslotMan = new OutputSlotManager();
             DS4Devices.RequestElevation += DS4Devices_RequestElevation;
+        }
+
+        public void ShutDown()
+        {
+            outputslotMan.ShutDown();
+
+            eventDispatcher.InvokeShutdown();
+            eventDispatcher = null;
+
+            eventDispatchThread.Join();
+            eventDispatchThread = null;
         }
 
         private void DS4Devices_RequestElevation(RequestElevationArgs args)
@@ -385,7 +409,7 @@ namespace DS4Windows
             {
                 if (contType == OutContType.X360)
                 {
-                    LogDebug("Plugging in X360 Controller for input #" + (index + 1));
+                    LogDebug("Plugging in X360 Controller for input DS4 #" + (index + 1));
                     activeOutDevType[index] = OutContType.X360;
 
                     //Xbox360OutDevice tempXbox = new Xbox360OutDevice(vigemTestClient);
@@ -406,7 +430,7 @@ namespace DS4Windows
                 }
                 else if (contType == OutContType.DS4)
                 {
-                    LogDebug("Plugging in DS4 Controller for input #" + (index + 1));
+                    LogDebug("Plugging in DS4 Controller for input DS4 #" + (index + 1));
                     activeOutDevType[index] = OutContType.DS4;
                     //DS4OutDevice tempDS4 = new DS4OutDevice(vigemTestClient);
                     DS4OutDevice tempDS4 = outputslotMan.AllocateController(OutContType.DS4, vigemTestClient)
@@ -491,7 +515,7 @@ namespace DS4Windows
                 if (dev != null)
                 {
                     string tempType = dev.GetDeviceType();
-                    LogDebug("Unplugging " + tempType + " Controller for input #" + (index + 1), false);
+                    LogDebug("Unplugging " + tempType + " Controller for input DS4 #" + (index + 1), false);
 
                     outputDevices[index] = null;
                     activeOutDevType[index] = OutContType.None;
@@ -533,7 +557,12 @@ namespace DS4Windows
 
                 try
                 {
-                    DS4Devices.findControllers();
+                    eventDispatcher.Invoke(() =>
+                    {
+                        DS4Devices.findControllers();
+                    });
+                    //DS4Devices.FindControllersWrapper();
+                    //DS4Devices.findControllers();
                     IEnumerable<DS4Device> devices = DS4Devices.getDS4Controllers();
                     //int ind = 0;
                     DS4LightBar.defaultLight = false;
@@ -811,7 +840,12 @@ namespace DS4Windows
         {
             if (running)
             {
-                DS4Devices.findControllers();
+                eventDispatcher.Invoke(() =>
+                {
+                    DS4Devices.findControllers();
+                });
+                //DS4Devices.FindControllersWrapper();
+                //DS4Devices.findControllers();
                 IEnumerable<DS4Device> devices = DS4Devices.getDS4Controllers();
                 //foreach (DS4Device device in devices)
                 //for (int i = 0, devlen = devices.Count(); i < devlen; i++)
@@ -1497,6 +1531,8 @@ namespace DS4Windows
 
         public bool[] touchreleased = new bool[4] { true, true, true, true },
             touchslid = new bool[4] { false, false, false, false };
+
+        public Dispatcher EventDispatcher { get => eventDispatcher; }
 
         protected virtual void CheckForTouchToggle(int deviceID, DS4State cState, DS4State pState)
         {

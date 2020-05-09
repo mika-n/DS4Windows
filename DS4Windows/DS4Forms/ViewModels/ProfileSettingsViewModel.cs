@@ -434,16 +434,34 @@ namespace DS4WinWPF.DS4Forms.ViewModels
 
         public int ButtonMouseSensitivity
         {
-            get => Global.ButtonMouseSensitivity[device];
+            get => Global.ButtonMouseInfos[device].buttonSensitivity;
             set
             {
-                int temp = Global.ButtonMouseSensitivity[device];
+                int temp = Global.ButtonMouseInfos[device].buttonSensitivity;
                 if (temp == value) return;
-                Global.ButtonMouseSensitivity[device] = value;
+                Global.ButtonMouseInfos[device].buttonSensitivity = value;
                 ButtonMouseSensitivityChanged?.Invoke(this, EventArgs.Empty);
             }
         }
         public event EventHandler ButtonMouseSensitivityChanged;
+
+        private double RawButtonMouseOffset
+        {
+            get => Global.ButtonMouseInfos[device].mouseVelocityOffset;
+        }
+
+        public double ButtonMouseOffset
+        {
+            get => Global.ButtonMouseInfos[device].mouseVelocityOffset * 100.0;
+            set
+            {
+                double temp = Global.ButtonMouseInfos[device].mouseVelocityOffset * 100.0;
+                if (temp == value) return;
+                Global.ButtonMouseInfos[device].mouseVelocityOffset = value * 0.01;
+                ButtonMouseOffsetChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler ButtonMouseOffsetChanged;
 
         private int outputMouseSpeed;
         public int OutputMouseSpeed
@@ -458,10 +476,23 @@ namespace DS4WinWPF.DS4Forms.ViewModels
         }
         public event EventHandler OutputMouseSpeedChanged;
 
+        private double mouseOffsetSpeed;
+        public double MouseOffsetSpeed
+        {
+            get => mouseOffsetSpeed;
+            set
+            {
+                if (mouseOffsetSpeed == value) return;
+                mouseOffsetSpeed = value;
+                MouseOffsetSpeedChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler MouseOffsetSpeedChanged;
+
         public bool MouseAcceleration
         {
-            get => Global.MouseAccel[device];
-            set => Global.MouseAccel[device] = value;
+            get => Global.ButtonMouseInfos[device].mouseAccel;
+            set => Global.ButtonMouseInfos[device].mouseAccel = value;
         }
 
         public bool EnableTouchpadToggle
@@ -1530,6 +1561,7 @@ namespace DS4WinWPF.DS4Forms.ViewModels
             tempBtPollRate = Global.BTPollRate[device];
 
             outputMouseSpeed = CalculateOutputMouseSpeed(ButtonMouseSensitivity);
+            mouseOffsetSpeed = RawButtonMouseOffset * outputMouseSpeed;
 
             ImageSourceConverter sourceConverter = new ImageSourceConverter();
             ImageSource temp = sourceConverter.
@@ -1538,6 +1570,16 @@ namespace DS4WinWPF.DS4Forms.ViewModels
 
             presetMenuUtil = new PresetMenuHelper(device);
 
+            SetupEvents();
+        }
+
+        private void CalcProfileFlags(object sender, EventArgs e)
+        {
+            Global.cacheProfileCustomsFlags(device);
+        }
+
+        private void SetupEvents()
+        {
             MainColorChanged += ProfileSettingsViewModel_MainColorChanged;
             MainColorRChanged += (sender, args) =>
             {
@@ -1566,6 +1608,7 @@ namespace DS4WinWPF.DS4Forms.ViewModels
             ButtonMouseSensitivityChanged += (sender, args) =>
             {
                 OutputMouseSpeed = CalculateOutputMouseSpeed(ButtonMouseSensitivity);
+                MouseOffsetSpeed = RawButtonMouseOffset * OutputMouseSpeed;
             };
 
             LightbarModeIndexChanged += (sender, args) =>
@@ -1575,11 +1618,13 @@ namespace DS4WinWPF.DS4Forms.ViewModels
 
             GyroOutModeIndexChanged += CalcProfileFlags;
             SASteeringWheelEmulationAxisIndexChanged += CalcProfileFlags;
+            ButtonMouseOffsetChanged += ProfileSettingsViewModel_ButtonMouseOffsetChanged;
         }
 
-        private void CalcProfileFlags(object sender, EventArgs e)
+        private void ProfileSettingsViewModel_ButtonMouseOffsetChanged(object sender,
+            EventArgs e)
         {
-            Global.cacheProfileCustomsFlags(device);
+            MouseOffsetSpeed = RawButtonMouseOffset * OutputMouseSpeed;
         }
 
         private void ProfileSettingsViewModel_MainColorChanged(object sender, EventArgs e)
@@ -1947,6 +1992,7 @@ namespace DS4WinWPF.DS4Forms.ViewModels
             Global.outDevTypeTemp[device] = Global.OutContType[device];
             tempBtPollRate = Global.BTPollRate[device];
             outputMouseSpeed = CalculateOutputMouseSpeed(ButtonMouseSensitivity);
+            mouseOffsetSpeed = RawButtonMouseOffset * outputMouseSpeed;
         }
     }
 
