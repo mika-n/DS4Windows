@@ -5082,7 +5082,7 @@ namespace DS4Windows
                         if (tempOutDev != null)
                         {
                             tempOutDev = null;
-                            Global.activeOutDevType[device] = OutContType.None;
+                            //Global.activeOutDevType[device] = OutContType.None;
                             control.UnplugOutDev(device, tempDev);
                         }
 
@@ -5093,7 +5093,7 @@ namespace DS4Windows
                     }
                     else if (xinputStatus && !xinputPlug)
                     {
-                        Global.activeOutDevType[device] = OutContType.None;
+                        //Global.activeOutDevType[device] = OutContType.None;
                         control.UnplugOutDev(device, tempDev);
                     }
 

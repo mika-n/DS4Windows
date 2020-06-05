@@ -188,6 +188,8 @@
     <Compile Include="DS4Control\MouseWheel.cs" />
     <Compile Include="DS4Control\OutputDevice.cs" />
     <Compile Include="DS4Control\OutputSlotManager.cs" />
+    <Compile Include="DS4Control\OutputSlotPersist.cs" />
+    <Compile Include="DS4Control\OutSlotDevice.cs" />
     <Compile Include="DS4Control\ProfilePropGroups.cs" />
     <Compile Include="DS4Control\Program.cs" />
     <Compile Include="DS4Control\ScpUtil.cs" />
@@ -215,6 +217,12 @@
     <Compile Include="DS4Forms\LanguagePackControl.xaml.cs">
       <DependentUpon>LanguagePackControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="DS4Forms\OutputSlotManagerControl.xaml.cs">
+      <DependentUpon>OutputSlotManagerControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="DS4Forms\PluginOutDevWindow.xaml.cs">
+      <DependentUpon>PluginOutDevWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="DS4Forms\ProfileEditor.xaml.cs">
       <DependentUpon>ProfileEditor.xaml</DependentUpon>
     </Compile>
@@ -236,9 +244,11 @@
     <Compile Include="DS4Forms\ViewModels\AutoProfilesViewModel.cs" />
     <Compile Include="DS4Forms\ViewModels\BindingWindowViewModel.cs" />
     <Compile Include="DS4Forms\ViewModels\ControllerListViewModel.cs" />
+    <Compile Include="DS4Forms\ViewModels\CurrentOutDeviceViewModel.cs" />
     <Compile Include="DS4Forms\ViewModels\LanguagePackViewModel.cs" />
     <Compile Include="DS4Forms\ViewModels\MainWindowsViewModel.cs" />
     <Compile Include="DS4Forms\ViewModels\MappingListViewModel.cs" />
+    <Compile Include="DS4Forms\ViewModels\PermanentOutDevViewModel.cs" />
     <Compile Include="DS4Forms\ViewModels\ProfileSettingsViewModel.cs" />
     <Compile Include="DS4Forms\ViewModels\RecordBoxViewModel.cs" />
     <Compile Include="DS4Forms\ViewModels\SpecialActEditorViewModel.cs" />
@@ -328,6 +338,14 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="DS4Forms\OutputSlotManagerControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="DS4Forms\PluginOutDevWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="DS4Forms\ProfileEditor.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
