@@ -117,6 +117,19 @@ namespace DS4WinWPF.DS4Forms.ViewModels
             flow.Blocks.Add(new Paragraph(new Run(message)));
             ChangelogDocument = flow;
         }
+
+        public void SetSkippedVersion()
+        {
+            if (!string.IsNullOrEmpty(newversion))
+            {
+                DS4Windows.Global.LastVersionChecked = newversion;
+            }
+        }
+
+        public void BlankSkippedVersion()
+        {
+            DS4Windows.Global.LastVersionChecked = string.Empty;
+        }
     }
 
     public class ChangelogInfo

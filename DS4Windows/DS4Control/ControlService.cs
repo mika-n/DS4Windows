@@ -695,7 +695,7 @@ namespace DS4Windows
                 //OutContType contType = Global.OutContType[index];
                 OutputDevice dev = outputDevices[index];
                 OutSlotDevice slotDevice = outputslotMan.GetOutSlotDevice(dev);
-                if (dev != null)
+                if (dev != null && slotDevice != null)
                 {
                     string tempType = dev.GetDeviceType();
                     LogDebug("Disassociate " + tempType + " Controller for input DS4 #" + (index + 1), false);
@@ -1491,9 +1491,6 @@ namespace DS4Windows
 
             if (ind != -1)
             {
-                if (getFlushHIDQueue(ind))
-                    device.FlushHID();
-
                 string devError = tempStrings[ind] = device.error;
                 if (!string.IsNullOrEmpty(devError))
                 {
