@@ -698,7 +698,14 @@ namespace DS4WinWPF.DS4Forms.ViewModels
         public int SASteeringWheelEmulationAxisIndex
         {
             get => (int)Global.SASteeringWheelEmulationAxis[device];
-            set => Global.SASteeringWheelEmulationAxis[device] = (SASteeringWheelEmulationAxisType)value;
+            set
+            {
+                int temp = (int)Global.SASteeringWheelEmulationAxis[device];
+                if (temp == value) return;
+
+                Global.SASteeringWheelEmulationAxis[device] = (SASteeringWheelEmulationAxisType)value;
+                SASteeringWheelEmulationAxisIndexChanged?.Invoke(this, EventArgs.Empty);
+            }
         }
         public event EventHandler SASteeringWheelEmulationAxisIndexChanged;
 
@@ -1569,7 +1576,7 @@ namespace DS4WinWPF.DS4Forms.ViewModels
 
         private void CalcProfileFlags(object sender, EventArgs e)
         {
-            Global.cacheProfileCustomsFlags(device);
+            Global.CacheProfileCustomsFlags(device);
         }
 
         private void SetupEvents()
