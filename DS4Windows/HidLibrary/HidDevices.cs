@@ -161,7 +161,7 @@ namespace DS4Windows
                 interfaceDetail.DevicePath : null;
         }
 
-        private static Guid HidClassGuid
+        public static Guid HidClassGuid
         {
             get
             {
