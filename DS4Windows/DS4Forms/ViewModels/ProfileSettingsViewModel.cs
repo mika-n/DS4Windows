@@ -754,6 +754,31 @@ namespace DS4WinWPF.DS4Forms.ViewModels
             set => Global.SASteeringWheelEmulationRange[device] = value;
         }
 
+        public bool SASteeringWheelUseSmoothing
+        {
+            get => Global.WheelSmoothInfo[device].Enabled;
+            set
+            {
+                bool temp = Global.WheelSmoothInfo[device].Enabled;
+                if (temp == value) return;
+                Global.WheelSmoothInfo[device].Enabled = value;
+                SASteeringWheelUseSmoothingChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler SASteeringWheelUseSmoothingChanged;
+
+        public double SASteeringWheelSmoothMinCutoff
+        {
+            get => Global.WheelSmoothInfo[device].MinCutoff;
+            set => Global.WheelSmoothInfo[device].MinCutoff = value;
+        }
+
+        public double SASteeringWheelSmoothBeta
+        {
+            get => Global.WheelSmoothInfo[device].Beta;
+            set => Global.WheelSmoothInfo[device].Beta = value;
+        }
+
         public double LSDeadZone
         {
             get => Math.Round(Global.LSModInfo[device].deadZone / 127d, 2);
@@ -1465,6 +1490,23 @@ namespace DS4WinWPF.DS4Forms.ViewModels
 
         public bool GyroMouseStickInvertX
         {
+            get => (Global.GyroMouseStickInf[device].inverted & 1) == 1;
+            set
+            {
+                if (value)
+                {
+                    Global.GyroMouseStickInf[device].inverted |= 1;
+                }
+                else
+                {
+                    uint temp = Global.GyroMouseStickInf[device].inverted;
+                    Global.GyroMouseStickInf[device].inverted = (uint)(temp & ~1);
+                }
+            }
+        }
+
+        public bool GyroMouseStickInvertY
+        {
             get => (Global.GyroMouseStickInf[device].inverted & 2) == 2;
             set
             {
@@ -1474,23 +1516,8 @@ namespace DS4WinWPF.DS4Forms.ViewModels
                 }
                 else
                 {
-                    Global.GyroMouseStickInf[device].inverted &= 1;
-                }
-            }
-        }
-
-        public bool GyroMouseStickInvertY
-        {
-            get => (Global.GyroInvert[device] & 1) == 1;
-            set
-            {
-                if (value)
-                {
-                    Global.GyroInvert[device] |= 1;
-                }
-                else
-                {
-                    Global.GyroInvert[device] &= 2;
+                    uint temp = Global.GyroMouseStickInf[device].inverted;
+                    Global.GyroMouseStickInf[device].inverted = (uint)(temp & ~2);
                 }
             }
         }
@@ -1566,7 +1593,7 @@ namespace DS4WinWPF.DS4Forms.ViewModels
 
             ImageSourceConverter sourceConverter = new ImageSourceConverter();
             ImageSource temp = sourceConverter.
-                ConvertFromString("pack://application:,,,/DS4Windows;component/Resources/rainbowCCrop.png") as ImageSource;
+                ConvertFromString($"{Global.ASSEMBLY_RESOURCE_PREFIX}component/Resources/rainbowCCrop.png") as ImageSource;
             lightbarImgBrush.ImageSource = temp.Clone();
 
             presetMenuUtil = new PresetMenuHelper(device);

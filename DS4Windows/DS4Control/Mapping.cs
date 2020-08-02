@@ -157,11 +157,24 @@ namespace DS4Windows
             }
         }
 
-        static DS4SquareStick[] outSqrStk = new DS4SquareStick[4] { new DS4SquareStick(),
-        new DS4SquareStick(), new DS4SquareStick(), new DS4SquareStick()};
+        private static DS4SquareStick[] outSqrStk = new DS4SquareStick[4]
+        {
+            new DS4SquareStick(), new DS4SquareStick(), new DS4SquareStick(), new DS4SquareStick()
+        };
 
         public static byte[] gyroStickX = new byte[4] { 128, 128, 128, 128 };
         public static byte[] gyroStickY = new byte[4] { 128, 128, 128, 128 };
+        //static int lastGyroX = 0;
+        //static int lastGyroZ = 0;
+
+        //private static OneEuroFilter filterX = new OneEuroFilter(minCutoff: 1, beta: 0);
+        //private static OneEuroFilter filterZ = new OneEuroFilter(minCutoff: 1, beta: 0);
+        //private static OneEuroFilter filterX = new OneEuroFilter(minCutoff: 0.0001, beta: 0.001);
+        //private static OneEuroFilter filterZ = new OneEuroFilter(minCutoff: 0.0001, beta: 0.001);
+        //private static OneEuroFilter wheel360FilterX = new OneEuroFilter(minCutoff: 0.1, beta: 0.02);
+        //private static OneEuroFilter wheel360FilterZ = new OneEuroFilter(minCutoff: 0.1, beta: 0.02);
+
+        public static OneEuroFilterPair[] wheelFilterPairs = new OneEuroFilterPair[ControlService.DS4_CONTROLLER_COUNT];
 
         static ReaderWriterLockSlim syncStateLock = new ReaderWriterLockSlim();
 
@@ -974,8 +987,8 @@ namespace DS4Windows
                 double absSideX = Math.Abs(sideX); double absSideY = Math.Abs(sideY);
                 if (absSideX > capX) capX = absSideX;
                 if (absSideY > capY) capY = absSideY;
-                double tempRatioX = (dState.LX - 128.0) / capX;
-                double tempRatioY = (dState.LY - 128.0) / capY;
+                double tempRatioX = capX > 0 ? (dState.LX - 128.0) / capX : 0;
+                double tempRatioY = capY > 0 ? (dState.LY - 128.0) / capY : 0;
                 double signX = tempRatioX >= 0.0 ? 1.0 : -1.0;
                 double signY = tempRatioY >= 0.0 ? 1.0 : -1.0;
 
@@ -4247,6 +4260,23 @@ namespace DS4Windows
             }
         }
 
+        //private static void CalcWheelFuzz(int gyroX, int gyroZ,
+        //    out int useGyroX, out int useGyroZ)
+        //{
+        //    const int delta = 1;
+        //    useGyroX = lastGyroX;
+        //    if (gyroX == 0 || gyroX == 128 || gyroX == -128 || Math.Abs(gyroX - lastGyroX) > delta)
+        //    {
+        //        useGyroX = gyroX;
+        //    }
+
+        //    useGyroZ = lastGyroZ;
+        //    if (gyroZ == 0 || gyroZ == 128 || gyroZ == -128 || Math.Abs(gyroZ - lastGyroZ) > delta)
+        //    {
+        //        useGyroZ = gyroZ;
+        //    }
+        //}
+
         protected static Int32 Scale360degreeGyroAxis(int device, DS4StateExposed exposedState, ControlService ctrl)
         {
             unchecked
@@ -4309,6 +4339,21 @@ namespace DS4Windows
                 int maxRangeRight = Global.GetSASteeringWheelEmulationRange(device) / 2 * C_WHEEL_ANGLE_PRECISION;
                 int maxRangeLeft = -maxRangeRight;
 
+                //Console.WriteLine("Values {0} {1}", gyroAccelX, gyroAccelZ);
+
+                if (WheelSmoothInfo[device].enabled)
+                {
+                    double currentRate = 1.0 / currentDeviceState.elapsedTime; // Need to express poll time in Hz
+                    OneEuroFilterPair wheelFilters = wheelFilterPairs[device];
+                    gyroAccelX = (int)(wheelFilters.axis1Filter.Filter(gyroAccelX, currentRate));
+                    gyroAccelZ = (int)(wheelFilters.axis2Filter.Filter(gyroAccelZ, currentRate));
+                }
+
+                //gyroAccelX = (int)(wheel360FilterX.Filter(gyroAccelX, currentRate));
+                //gyroAccelZ = (int)(wheel360FilterZ.Filter(gyroAccelZ, currentRate));
+
+                //CalcWheelFuzz(gyroAccelX, gyroAccelZ, out gyroAccelX, out gyroAccelZ);
+                //lastGyroX = gyroAccelX; lastGyroZ = gyroAccelZ;
                 result = CalculateControllerAngle(gyroAccelX, gyroAccelZ, controller);
 
                 // Apply deadzone (SA X-deadzone value). This code assumes that 20deg is the max deadzone anyone ever might wanna use (in practice effective deadzone 
