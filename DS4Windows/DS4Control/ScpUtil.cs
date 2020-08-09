@@ -108,15 +108,18 @@ namespace DS4Windows
         protected DateTime m_Time = DateTime.Now;
         protected string m_Data = string.Empty;
         protected bool warning = false;
-        public DebugEventArgs(string Data, bool warn)
+        protected bool temporary = false;
+        public DebugEventArgs(string Data, bool warn, bool temporary = false)
         {
             m_Data = Data;
             warning = warn;
+            this.temporary = temporary;
         }
 
         public DateTime Time => m_Time;
         public string Data => m_Data;
         public bool Warning => warning;
+        public bool Temporary => temporary;
     }
 
     public class MappingDoneEventArgs : EventArgs
@@ -253,6 +256,7 @@ namespace DS4Windows
         protected static Int32 m_IdleTimeout = 600000;
         public static string exelocation = Assembly.GetExecutingAssembly().Location;
         public static string exedirpath = Directory.GetParent(exelocation).FullName;
+        public static string exeFileName = Path.GetFileName(exelocation);
         public static FileVersionInfo fileVersion = FileVersionInfo.GetVersionInfo(exelocation);
         public static string exeversion = fileVersion.ProductVersion;
         public static ulong exeversionLong = (ulong)fileVersion.ProductMajorPart << 48 |
@@ -282,6 +286,7 @@ namespace DS4Windows
         public static string vigembusVersion = ViGEmBusVersion();
         public const int CONFIG_VERSION = 3;
         public const string ASSEMBLY_RESOURCE_PREFIX = "pack://application:,,,/DS4Windows;";
+        public const string CUSTOM_EXE_CONFIG_FILENAME = "custom_exe_name.txt";
 
         public static X360Controls[] defaultButtonMapping = { X360Controls.None, X360Controls.LXNeg, X360Controls.LXPos,
             X360Controls.LYNeg, X360Controls.LYPos, X360Controls.RXNeg, X360Controls.RXPos, X360Controls.RYNeg, X360Controls.RYPos,
@@ -1114,6 +1119,19 @@ namespace DS4Windows
         {
             set { m_Config.autoProfileRevertDefaultProfile = value; }
             get { return m_Config.autoProfileRevertDefaultProfile; }
+        }
+
+        public static string FakeExeName
+        {
+            get { return m_Config.fakeExeFileName; }
+            set
+            {
+                bool valid = !(value.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0);
+                if (valid)
+                {
+                    m_Config.fakeExeFileName = value;
+                }
+            }
         }
 
         // controller/profile specfic values
@@ -2283,6 +2301,8 @@ namespace DS4Windows
         public string udpServListenAddress = "127.0.0.1"; // 127.0.0.1=IPAddress.Loopback (default), 0.0.0.0=IPAddress.Any as all interfaces, x.x.x.x = Specific ipv4 interface address or hostname
         public bool useCustomSteamFolder;
         public string customSteamFolder;
+        public string fakeExeFileName = string.Empty;
+
         // Cache whether profile has custom action
         public bool[] containsCustomAction = new bool[5] { false, false, false, false, false };
 
@@ -2766,6 +2786,8 @@ namespace DS4Windows
                 XmlNode xmlGyroMStickAntiDY = m_Xdoc.CreateNode(XmlNodeType.Element, "GyroMouseStickAntiDeadY", null); xmlGyroMStickAntiDY.InnerText = gyroMStickInfo[device].antiDeadY.ToString(); rootElement.AppendChild(xmlGyroMStickAntiDY);
                 XmlNode xmlGyroMStickInvert = m_Xdoc.CreateNode(XmlNodeType.Element, "GyroMouseStickInvert", null); xmlGyroMStickInvert.InnerText = gyroMStickInfo[device].inverted.ToString(); rootElement.AppendChild(xmlGyroMStickInvert);
                 XmlNode xmlGyroMStickToggle = m_Xdoc.CreateNode(XmlNodeType.Element, "GyroMouseStickToggle", null); xmlGyroMStickToggle.InnerText = gyroMouseStickToggle[device].ToString(); rootElement.AppendChild(xmlGyroMStickToggle);
+                XmlNode xmlGyroMStickMaxOutput = m_Xdoc.CreateNode(XmlNodeType.Element, "GyroMouseStickMaxOutput", null); xmlGyroMStickMaxOutput.InnerText = gyroMStickInfo[device].maxOutput.ToString(); rootElement.AppendChild(xmlGyroMStickMaxOutput);
+                XmlNode xmlGyroMStickMaxOutputEnabled = m_Xdoc.CreateNode(XmlNodeType.Element, "GyroMouseStickMaxOutputEnabled", null); xmlGyroMStickMaxOutputEnabled.InnerText = gyroMStickInfo[device].maxOutputEnabled.ToString(); rootElement.AppendChild(xmlGyroMStickMaxOutputEnabled);
                 XmlNode xmlGyroMStickVerticalScale = m_Xdoc.CreateNode(XmlNodeType.Element, "GyroMouseStickVerticalScale", null); xmlGyroMStickVerticalScale.InnerText = gyroMStickInfo[device].vertScale.ToString(); rootElement.AppendChild(xmlGyroMStickVerticalScale);
                 XmlNode xmlGyroMStickSmoothing = m_Xdoc.CreateNode(XmlNodeType.Element, "GyroMouseStickSmoothing", null); xmlGyroMStickSmoothing.InnerText = gyroMStickInfo[device].useSmoothing.ToString(); rootElement.AppendChild(xmlGyroMStickSmoothing);
                 XmlNode xmlGyroMStickSmoothWeight = m_Xdoc.CreateNode(XmlNodeType.Element, "GyroMouseStickSmoothingWeight", null); xmlGyroMStickSmoothWeight.InnerText = Convert.ToInt32(gyroMStickInfo[device].smoothWeight * 100).ToString(); rootElement.AppendChild(xmlGyroMStickSmoothWeight);
@@ -3747,7 +3769,7 @@ namespace DS4Windows
                 try
                 {
                     Item = m_Xdoc.SelectSingleNode("/" + rootname + "/GyroMouseStickMaxZone"); int.TryParse(Item.InnerText, out int temp);
-                    gyroMStickInfo[device].maxZone = temp;
+                    gyroMStickInfo[device].maxZone = Math.Max(temp, 1);
                 }
                 catch { gyroMStickInfo[device].maxZone = 830; missingSetting = true; }
 
@@ -3774,6 +3796,22 @@ namespace DS4Windows
                     gyroMouseStickToggle[device] = temp;
                 }
                 catch { gyroMouseStickToggle[device] = false; missingSetting = true; }
+
+                try
+                {
+                    Item = m_Xdoc.SelectSingleNode("/" + rootname + "/GyroMouseStickMaxOutput"); double temp = 100.0;
+                    temp = double.Parse(Item.InnerText);
+                    gyroMStickInfo[device].maxOutput = Math.Min(Math.Max(temp, 0.0), 100.0);
+                }
+                catch { gyroMStickInfo[device].maxOutput = 100.0; missingSetting = true; }
+
+                try
+                {
+                    Item = m_Xdoc.SelectSingleNode("/" + rootname + "/GyroMouseStickMaxOutputEnabled");
+                    bool.TryParse(Item.InnerText, out bool temp);
+                    gyroMStickInfo[device].maxOutputEnabled = temp;
+                }
+                catch { gyroMStickInfo[device].maxOutputEnabled = false; missingSetting = true; }
 
                 try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/GyroMouseStickVerticalScale"); int.TryParse(Item.InnerText, out gyroMStickInfo[device].vertScale); }
                 catch { gyroMStickInfo[device].vertScale = 100; missingSetting = true; }
@@ -4369,6 +4407,21 @@ namespace DS4Windows
             if (missingSetting)
                 Save();
 
+            if (Loaded)
+            {
+                string custom_exe_name_path = Path.Combine(Global.exedirpath, Global.CUSTOM_EXE_CONFIG_FILENAME);
+                bool fakeExeFileExists = File.Exists(custom_exe_name_path);
+                if (fakeExeFileExists)
+                {
+                    string fake_exe_name = File.ReadAllText(custom_exe_name_path).Trim();
+                    bool valid = !(fake_exe_name.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0);
+                    if (valid)
+                    {
+                        fakeExeFileName = fake_exe_name;
+                    }
+                }
+            }
+
             return Loaded;
         }
 
@@ -4442,8 +4495,24 @@ namespace DS4Windows
 
             m_Xdoc.AppendChild(rootElement);
 
-            try { m_Xdoc.Save(m_Profile); }
+            try
+            {
+                m_Xdoc.Save(m_Profile);
+            }
             catch (UnauthorizedAccessException) { Saved = false; }
+
+            bool adminNeeded = Global.AdminNeeded();
+            if (Saved &&
+                (!adminNeeded || (adminNeeded && Global.IsAdministrator())))
+            {
+                string custom_exe_name_path = Path.Combine(Global.exedirpath, Global.CUSTOM_EXE_CONFIG_FILENAME);
+                bool fakeExeFileExists = File.Exists(custom_exe_name_path);
+                if (!string.IsNullOrEmpty(fakeExeFileName) || fakeExeFileExists)
+                {
+                    File.WriteAllText(custom_exe_name_path, fakeExeFileName);
+                }
+            }
+
             return Saved;
         }
 
@@ -5189,6 +5258,7 @@ namespace DS4Windows
             gyroMStickInfo[device].deadZone = 30; gyroMStickInfo[device].maxZone = 830;
             gyroMStickInfo[device].antiDeadX = 0.4; gyroMStickInfo[device].antiDeadY = 0.4;
             gyroMStickInfo[device].inverted = 0; gyroMStickInfo[device].vertScale = 100;
+            gyroMStickInfo[device].maxOutputEnabled = false; gyroMStickInfo[device].maxOutput = 100.0;
             gyroMouseStickToggle[device] = false;
             gyroMStickInfo[device].useSmoothing = false; gyroMStickInfo[device].smoothWeight = 0.5;
             gyroMouseStickTriggerTurns[device] = true;

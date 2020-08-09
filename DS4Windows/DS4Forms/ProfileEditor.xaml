@@ -922,7 +922,7 @@
                     <StackPanel x:Name="gyroMouseJoystickPanel" Visibility="Collapsed">
                         <StackPanel Orientation="Horizontal" Margin="{StaticResource spaceMargin}">
                             <Label Content="Triggers" />
-                            <Button x:Name="gyroMouseStickTrigBtn" Content="{Binding GyroMouseStickTrigDisplay,FallbackValue=Always On}" MinWidth="160"
+                            <Button x:Name="gyroMouseStickTrigBtn" Content="{Binding GyroMouseStickTrigDisplay,FallbackValue='Always On'}" MinWidth="160"
                                     Margin="8,0,0,0" Click="GyroMouseStickTrigBtn_Click" >
                                 <Button.ContextMenu>
                                     <ContextMenu>
@@ -961,22 +961,33 @@
                             <Label Content="Dead Zone" />
                             <xctk:IntegerUpDown d:IsHidden="True" Margin="8,0,0,0" Value="{Binding GyroMouseStickDeadZone}" MinWidth="60" />
                             <Label Content="Max Zone" Margin="8,0,0,0" />
-                            <xctk:IntegerUpDown d:IsHidden="True" Margin="8,0,0,0" Value="{Binding GyroMouseStickMaxZone}" MinWidth="60" />
+                            <xctk:IntegerUpDown d:IsHidden="True" Margin="8,0,0,0" Value="{Binding GyroMouseStickMaxZone}" MinWidth="60"
+                                                Minimum="1" />
                         </StackPanel>
 
                         <StackPanel Orientation="Horizontal" Height="30" Margin="{StaticResource spaceMargin}">
                             <Label Content="Minimum X" />
                             <xctk:DoubleUpDown d:IsHidden="True" Margin="8,0,0,0" Value="{Binding GyroMouseStickAntiDeadX}" MinWidth="60"
-                                               Minimum="0.0" Maximum="1.0" Increment="0.1" />
+                                               FormatString="F0" Minimum="0.0" Maximum="100.0" Increment="10.0" />
+                            <Label Content="%" />
+
                             <Label Content="Minimum Y" Margin="8,0,0,0" />
                             <xctk:DoubleUpDown d:IsHidden="True" Margin="8,0,0,0" Value="{Binding GyroMouseStickAntiDeadY}" MinWidth="60"
-                                               Minimum="0.0" Maximum="1.0" Increment="0.1" />
+                                               FormatString="F0" Minimum="0.0" Maximum="100.0" Increment="10.0" />
+                            <Label Content="%" />
                         </StackPanel>
 
                         <StackPanel Orientation="Horizontal" Margin="{StaticResource spaceMargin}">
                             <Label Content="Vertical Scale" />
                             <xctk:IntegerUpDown d:IsHidden="True" Margin="8,0,0,0" Value="{Binding GyroMouseStickVertScale}" MinWidth="60"
                                                 Minimum="0" Maximum="400" Increment="10" />
+                            <Label Content="%" />
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" Margin="{StaticResource spaceMargin}">
+                            <CheckBox Content="Max Output" IsChecked="{Binding GyroMouseStickMaxOutputEnabled,FallbackValue=False}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <xctk:DoubleUpDown d:IsHidden="True" Margin="8,0,0,0" Value="{Binding GyroMouseStickMaxOutput}" IsEnabled="{Binding GyroMouseStickMaxOutputEnabled,FallbackValue=False}"
+                                               FormatString="F0" MinWidth="60" Maximum="100.0" Minimum="0.0" Increment="10.0" />
                             <Label Content="%" />
                         </StackPanel>
 
