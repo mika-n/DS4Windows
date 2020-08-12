@@ -309,9 +309,10 @@ namespace DS4Windows
         public static bool debug_ReadGyroData = true;
         public static bool debug_ReadBatteryData = true;
         public static bool debug_PrintoutInputDataBuffer = false;
-        public static int debug_ForceConnectionType = 0;  // 0=No Force (default, autodetected), 1=USB, 2=BT
-        public static int debug_CustomHIDUsageFlag = -1;  // -1=No custom (default 0x05 only), >=0 custom usage flag
-
+        public static int debug_ForceConnectionType = 0;   // 0=No Force (default, autodetected), 1=USB, 2=BT
+        public static int debug_CustomHIDUsageFlag = -1;   // -1=No custom (default 0x05 only), >=0 custom usage flag
+        public static int debug_WriteOutputErrorCount = 0; // Number of consequtive writeOutput errors. If this is repeated 100 times then disconnect the gamepad
+        public static int debug_ReadInputErrorCount = 0;   // Number of consequtive readInput errors. If this is repeated 100 times then disconnect the gamepad
 
         // Create mapping array at runtime
         public static DS4Controls[] reverseX360ButtonMapping = new Func<DS4Controls[]>(() =>

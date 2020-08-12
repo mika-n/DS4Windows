@@ -977,6 +977,9 @@ namespace DS4Windows
                         timeoutEvent = false;
                         if (res == HidDevice.ReadStatus.Success)
                         {
+                            // DEBUG:
+                            Global.debug_ReadInputErrorCount = 0;
+
                             // DEBUG: Printout debug buffer data
                             if (Global.debug_PrintoutInputDataBuffer && debugPrintoutInputReportCount <= 30 && DateTime.Now.Subtract(debugPrintoutPrevTimestamp).TotalSeconds >= 2)
                             {
@@ -1054,10 +1057,17 @@ namespace DS4Windows
                             else
                             {
                                 int winError = Marshal.GetLastWin32Error();
-                                Console.WriteLine(Mac.ToString() + " " + DateTime.UtcNow.ToString("o") + "> disconnect due to read failure: " + winError);
+                                //Console.WriteLine(Mac.ToString() + " " + DateTime.UtcNow.ToString("o") + "> disconnect due to read failure: " + winError);
                                 //Log.LogToGui(Mac.ToString() + " disconnected due to read failure: " + winError, true);
 
-                                AppLogger.LogToGui($"DEBUG: performDs4Input. BT ReadWithFileStream failed. ErrorCode={res} WinError={winError}", false);
+                                // DEBUG:
+                                if((Global.debug_ReadInputErrorCount % 20) == 0)
+                                    AppLogger.LogToGui($"DEBUG: performDs4Input. BT ReadWithFileStream failed. ErrorCode={res} WinError={winError} ReadInputErrorCount={Global.debug_ReadInputErrorCount}", false);
+
+                                // DEBUG: Do not force quite connection until there are 100 consequtive reading errors
+                                Global.debug_ReadInputErrorCount++;
+                                if (Global.debug_ReadInputErrorCount < 100)
+                                    continue;
                             }
 
                             sendOutputReport(true, true); // Kick Windows into noticing the disconnection.
@@ -1572,16 +1582,24 @@ namespace DS4Windows
                                     int winError = Marshal.GetLastWin32Error();
 
                                     // Logfile notification that the gamepad is force disconnected because of writeOutput failed
-                                    if (quitOutputThread == false)
+                                    if (quitOutputThread == false && Global.debug_WriteOutputErrorCount == 0 /* DEBUG */)
                                         AppLogger.LogToGui($"Gamepad data write connection is lost. Disconnecting the gamepad. LastErrorCode={winError}", false);
 
                                     // DEBUG:
-                                    if (quitOutputThread == false)
-                                        AppLogger.LogToGui($"DEBUG: sendOutputReport. ERROR. writeOutput failed. Force quiting output thread. LastErrorCode={winError}", false);
+                                    if (quitOutputThread == false && (Global.debug_WriteOutputErrorCount % 20) == 0 /* DEBUG */)
+                                        AppLogger.LogToGui($"DEBUG: sendOutputReport. ERROR. writeOutput failed. Force quiting output thread. Force={force} LastErrorCode={winError} WriteOutputErrorCount={Global.debug_WriteOutputErrorCount}", false);
 
-                                    quitOutputThread = true;
+                                    // DEBUG:
+                                    Global.debug_WriteOutputErrorCount++;
+
+                                    // DEBUG:
+                                    if (Global.debug_WriteOutputErrorCount >= 100)
+                                        quitOutputThread = true;
                                 }
                             }
+                            else
+                                // DEBUG: Reset error counter back to zero
+                                Global.debug_WriteOutputErrorCount = 0;
                         }
                         catch { } // If it's dead already, don't worry about it.
 
