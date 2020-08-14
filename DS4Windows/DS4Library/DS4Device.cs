@@ -1278,31 +1278,51 @@ namespace DS4Windows
                         cState.TrackPadTouch1.IsActive = (inputReport[39] & 0x80) == 0;
                         cState.TrackPadTouch1.X = (short)(((ushort)(inputReport[41] & 0x0f) << 8) | (ushort)(inputReport[40]));
                         cState.TrackPadTouch1.Y = (short)(((ushort)(inputReport[42]) << 4) | ((ushort)(inputReport[41] & 0xf0) >> 4));
-
-                        // XXX DS4State mapping needs fixup, turn touches into an array[4] of structs.  And include the touchpad details there instead.
-                        try
+                    }
+                    if (conType == ConnectionType.SONYWA)
+                    {
+                        bool controllerSynced = inputReport[31] == 0;
+                        if (controllerSynced != synced)
                         {
-                            // Only care if one touch packet is detected. Other touch packets
-                            // don't seem to contain relevant data. ds4drv does not use them either.
-                            for (int touches = Math.Max((int)(inputReport[-1 + DS4Touchpad.TOUCHPAD_DATA_OFFSET - 1]), 1), touchOffset = 0; touches > 0; touches--, touchOffset += 9)
-                            //for (int touches = inputReport[-1 + DS4Touchpad.TOUCHPAD_DATA_OFFSET - 1], touchOffset = 0; touches > 0; touches--, touchOffset += 9)
+                            runCalib = synced = controllerSynced;
+                            SyncChange?.Invoke(this, EventArgs.Empty);
+                            if (synced)
                             {
-                                cState.TouchPacketCounter = inputReport[-1 + DS4Touchpad.TOUCHPAD_DATA_OFFSET + touchOffset];
-                                cState.Touch1 = (inputReport[0 + DS4Touchpad.TOUCHPAD_DATA_OFFSET + touchOffset] >> 7) != 0 ? false : true; // finger 1 detected
-                                cState.Touch1Identifier = (byte)(inputReport[0 + DS4Touchpad.TOUCHPAD_DATA_OFFSET + touchOffset] & 0x7f);
-                                cState.Touch2 = (inputReport[4 + DS4Touchpad.TOUCHPAD_DATA_OFFSET + touchOffset] >> 7) != 0 ? false : true; // finger 2 detected
-                                cState.Touch2Identifier = (byte)(inputReport[4 + DS4Touchpad.TOUCHPAD_DATA_OFFSET + touchOffset] & 0x7f);
-                                cState.Touch1Finger = cState.Touch1 || cState.Touch2; // >= 1 touch detected
-                                cState.Touch2Fingers = cState.Touch1 && cState.Touch2; // 2 touches detected
-                                int touchX = (((inputReport[2 + DS4Touchpad.TOUCHPAD_DATA_OFFSET + touchOffset] & 0xF) << 8) | inputReport[1 + DS4Touchpad.TOUCHPAD_DATA_OFFSET + touchOffset]);
-                                cState.TouchLeft = touchX >= 1920 * 2 / 5 ? false : true;
-                                cState.TouchRight = touchX < 1920 * 2 / 5 ? false : true;
-                                // Even when idling there is still a touch packet indicating no touch 1 or 2
+                                forceWrite = true;
+                            }
+                            else
+                            {
+                                standbySw.Reset();
+                            }
+                        }
+                    }
+
+                    // XXX DS4State mapping needs fixup, turn touches into an array[4] of structs.  And include the touchpad details there instead.
+                    try
+                    {
+                        // Only care if one touch packet is detected. Other touch packets
+                        // don't seem to contain relevant data. ds4drv does not use them either.
+                        for (int touches = Math.Max((int)(inputReport[-1 + DS4Touchpad.TOUCHPAD_DATA_OFFSET - 1]), 1), touchOffset = 0; touches > 0; touches--, touchOffset += 9)
+                        //for (int touches = inputReport[-1 + DS4Touchpad.TOUCHPAD_DATA_OFFSET - 1], touchOffset = 0; touches > 0; touches--, touchOffset += 9)
+                        {
+                            cState.TouchPacketCounter = inputReport[-1 + DS4Touchpad.TOUCHPAD_DATA_OFFSET + touchOffset];
+                            cState.Touch1 = (inputReport[0 + DS4Touchpad.TOUCHPAD_DATA_OFFSET + touchOffset] >> 7) != 0 ? false : true; // finger 1 detected
+                            cState.Touch1Identifier = (byte)(inputReport[0 + DS4Touchpad.TOUCHPAD_DATA_OFFSET + touchOffset] & 0x7f);
+                            cState.Touch2 = (inputReport[4 + DS4Touchpad.TOUCHPAD_DATA_OFFSET + touchOffset] >> 7) != 0 ? false : true; // finger 2 detected
+                            cState.Touch2Identifier = (byte)(inputReport[4 + DS4Touchpad.TOUCHPAD_DATA_OFFSET + touchOffset] & 0x7f);
+                            cState.Touch1Finger = cState.Touch1 || cState.Touch2; // >= 1 touch detected
+                            cState.Touch2Fingers = cState.Touch1 && cState.Touch2; // 2 touches detected
+                            int touchX = (((inputReport[2 + DS4Touchpad.TOUCHPAD_DATA_OFFSET + touchOffset] & 0xF) << 8) | inputReport[1 + DS4Touchpad.TOUCHPAD_DATA_OFFSET + touchOffset]);
+                            cState.TouchLeft = touchX >= 1920 * 2 / 5 ? false : true;
+                            cState.TouchRight = touchX < 1920 * 2 / 5 ? false : true;
+                            // Even when idling there is still a touch packet indicating no touch 1 or 2
+                            if (synced)
+                            {
                                 touchpad.handleTouchpad(inputReport, cState, touchOffset);
                             }
                         }
-                        catch (Exception ex) { currerror = $"Touchpad: {ex.Message}"; }
                     }
+                    catch (Exception ex) { currerror = $"Touchpad: {ex.Message}"; }
 
                     // DEBUG: Feed touchpad values to DS4Win app only when debug option enables it
                     if (Global.debug_ReadGyroData)
@@ -1322,8 +1342,12 @@ namespace DS4Windows
                                 pbAccel[i - 6] = pbInput[i];
                             }
 
-                            sixAxis.handleSixaxis(pbGyro, pbAccel, cState, elapsedDeltaTime);
+                            if (synced)
+                            {
+                                sixAxis.handleSixaxis(pbGyro, pbAccel, cState, elapsedDeltaTime);
+                            }
                         }
+                    }
 
                         /* Debug output of incoming HID data:
                         if (cState.L2 == 0xff && cState.R2 == 0xff)
@@ -1334,25 +1358,7 @@ namespace DS4Windows
                             Console.WriteLine();
                         }
                         */
-                    }
-
-                    if (conType == ConnectionType.SONYWA)
-                    {
-                        bool controllerSynced = inputReport[31] == 0;
-                        if (controllerSynced != synced)
-                        {
-                            runCalib = synced = controllerSynced;
-                            SyncChange?.Invoke(this, EventArgs.Empty);
-                            if (synced)
-                            {
-                                forceWrite = true;
-                            }
-                            else
-                            {
-                                standbySw.Reset();
-                            }
-                        }
-                    }
+                    
 
                     ds4InactiveFrame = cState.FrameCounter == pState.FrameCounter;
                     if (!ds4InactiveFrame)

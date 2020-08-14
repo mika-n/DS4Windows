@@ -25,6 +25,7 @@ namespace DS4Windows
         protected Mapping.Click clicked = Mapping.Click.None;
         public int CursorGyroDead { get => cursor.GyroCursorDeadZone; set => cursor.GyroCursorDeadZone = value; }
 
+
         internal const int TRACKBALL_INIT_FICTION = 10;
         internal const int TRACKBALL_MASS = 45;
         internal const double TRACKBALL_RADIUS = 0.0245;
@@ -51,6 +52,11 @@ namespace DS4Windows
             wheel = new MouseWheel(deviceNum);
             trackballAccel = TRACKBALL_RADIUS * TRACKBALL_INIT_FICTION / TRACKBALL_INERTIA;
             firstTouch = new Touch(0, 0, 0, null);
+
+            filterPair.axis1Filter.MinCutoff = filterPair.axis2Filter.MinCutoff = GyroMouseStickInfo.DEFAULT_MINCUTOFF;
+            filterPair.axis1Filter.Beta = filterPair.axis2Filter.Beta = GyroMouseStickInfo.DEFAULT_BETA;
+            Global.GyroMouseStickInf[deviceNum].SetRefreshEvents(filterPair.axis1Filter);
+            Global.GyroMouseStickInf[deviceNum].SetRefreshEvents(filterPair.axis2Filter);
         }
 
         public void ResetTrackAccel(double friction)
@@ -71,6 +77,9 @@ namespace DS4Windows
         bool toggleGyroMouse = true;
         public bool ToggleGyroMouse { get => toggleGyroMouse;
             set { toggleGyroMouse = value; ResetToggleGyroM(); } }
+
+        public MouseCursor Cursor => cursor;
+
         bool currentToggleGyroM = false;
 
         public virtual void sixaxisMoved(DS4SixAxis sender, SixAxisEventArgs arg)
@@ -124,7 +133,7 @@ namespace DS4Windows
                 else if (!useReverseRatchet && !triggeractivated)
                     cursor.sixaxisMoved(arg);
                 else
-                    cursor.mouseRemainderReset();
+                    cursor.mouseRemainderReset(arg);
 
             }
             else if (outMode == GyroOutMode.MouseJoystick)
@@ -179,6 +188,22 @@ namespace DS4Windows
             }
         }
 
+        private OneEuroFilterPair filterPair = new OneEuroFilterPair();
+
+        public void ReplaceOneEuroFilterPair()
+        {
+            Global.GyroMouseStickInf[deviceNum].RemoveRefreshEvents();
+            filterPair = new OneEuroFilterPair();
+        }
+
+        public void SetupLateOneEuroFilters()
+        {
+            filterPair.axis1Filter.MinCutoff = filterPair.axis2Filter.MinCutoff = Global.GyroMouseStickInf[deviceNum].MinCutoff;
+            filterPair.axis1Filter.Beta = filterPair.axis2Filter.Beta = Global.GyroMouseStickInf[deviceNum].Beta;
+            Global.GyroMouseStickInf[deviceNum].SetRefreshEvents(filterPair.axis1Filter);
+            Global.GyroMouseStickInf[deviceNum].SetRefreshEvents(filterPair.axis2Filter);
+        }
+
         private const int SMOOTH_BUFFER_LEN = 3;
         private int[] xSmoothBuffer = new int[SMOOTH_BUFFER_LEN];
         private int[] ySmoothBuffer = new int[SMOOTH_BUFFER_LEN];
@@ -190,6 +215,14 @@ namespace DS4Windows
             xSmoothBuffer[iIndex] = 0;
             ySmoothBuffer[iIndex] = 0;
             smoothBufferTail = iIndex + 1;
+
+            GyroMouseStickInfo msinfo = Global.GetGyroMouseStickInfo(deviceNum);
+            if (msinfo.smoothingMethod == GyroMouseStickInfo.SmoothingMethod.OneEuro)
+            {
+                double currentRate = 1.0 / args.sixAxis.elapsed;
+                filterPair.axis1Filter.Filter(0.0, currentRate);
+                filterPair.axis2Filter.Filter(0.0, currentRate);
+            }
         }
 
         private void SixMouseStick(SixAxisEventArgs arg)
@@ -249,28 +282,37 @@ namespace DS4Windows
 
             if (msinfo.useSmoothing)
             {
-                int iIndex = smoothBufferTail % SMOOTH_BUFFER_LEN;
-                xSmoothBuffer[iIndex] = deltaX;
-                ySmoothBuffer[iIndex] = deltaY;
-                smoothBufferTail = iIndex + 1;
-
-                double currentWeight = 1.0;
-                double finalWeight = 0.0;
-                double x_out = 0.0, y_out = 0.0;
-                int idx = 0;
-                for (int i = 0; i < SMOOTH_BUFFER_LEN; i++)
+                if (msinfo.smoothingMethod == GyroMouseStickInfo.SmoothingMethod.OneEuro)
                 {
-                    idx = (smoothBufferTail - i - 1 + SMOOTH_BUFFER_LEN) % SMOOTH_BUFFER_LEN;
-                    x_out += xSmoothBuffer[idx] * currentWeight;
-                    y_out += ySmoothBuffer[idx] * currentWeight;
-                    finalWeight += currentWeight;
-                    currentWeight *= msinfo.smoothWeight;
+                    double currentRate = 1.0 / arg.sixAxis.elapsed;
+                    deltaX = (int)(filterPair.axis1Filter.Filter(deltaX, currentRate));
+                    deltaY = (int)(filterPair.axis2Filter.Filter(deltaY, currentRate));
                 }
+                else if (msinfo.smoothingMethod == GyroMouseStickInfo.SmoothingMethod.WeightedAverage)
+                {
+                    int iIndex = smoothBufferTail % SMOOTH_BUFFER_LEN;
+                    xSmoothBuffer[iIndex] = deltaX;
+                    ySmoothBuffer[iIndex] = deltaY;
+                    smoothBufferTail = iIndex + 1;
 
-                x_out /= finalWeight;
-                deltaX = (int)x_out;
-                y_out /= finalWeight;
-                deltaY = (int)y_out;
+                    double currentWeight = 1.0;
+                    double finalWeight = 0.0;
+                    double x_out = 0.0, y_out = 0.0;
+                    int idx = 0;
+                    for (int i = 0; i < SMOOTH_BUFFER_LEN; i++)
+                    {
+                        idx = (smoothBufferTail - i - 1 + SMOOTH_BUFFER_LEN) % SMOOTH_BUFFER_LEN;
+                        x_out += xSmoothBuffer[idx] * currentWeight;
+                        y_out += ySmoothBuffer[idx] * currentWeight;
+                        finalWeight += currentWeight;
+                        currentWeight *= msinfo.smoothWeight;
+                    }
+
+                    x_out /= finalWeight;
+                    deltaX = (int)x_out;
+                    y_out /= finalWeight;
+                    deltaY = (int)y_out;
+                }
 
                 maxValX = deltaX < 0 ? -msinfo.maxZone : msinfo.maxZone;
                 maxValY = deltaY < 0 ? -msinfo.maxZone : msinfo.maxZone;

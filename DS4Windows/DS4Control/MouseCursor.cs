@@ -2,12 +2,30 @@
 
 namespace DS4Windows
 {
-    class MouseCursor
+    public class MouseCursor
     {
         private readonly int deviceNumber;
         public MouseCursor(int deviceNum)
         {
             deviceNumber = deviceNum;
+            filterPair.axis1Filter.MinCutoff = filterPair.axis2Filter.MinCutoff = GyroMouseInfo.DEFAULT_MINCUTOFF;
+            filterPair.axis1Filter.Beta = filterPair.axis2Filter.Beta = GyroMouseInfo.DEFAULT_BETA;
+            Global.GyroMouseInfo[deviceNum].SetRefreshEvents(filterPair.axis1Filter);
+            Global.GyroMouseInfo[deviceNum].SetRefreshEvents(filterPair.axis2Filter);
+        }
+
+        public void ReplaceOneEuroFilterPair()
+        {
+            Global.GyroMouseInfo[deviceNumber].RemoveRefreshEvents();
+            filterPair = new OneEuroFilterPair();
+        }
+
+        public void SetupLateOneEuroFilters()
+        {
+            filterPair.axis1Filter.MinCutoff = filterPair.axis2Filter.MinCutoff = Global.GyroMouseInfo[deviceNumber].MinCutoff;
+            filterPair.axis1Filter.Beta = filterPair.axis2Filter.Beta = Global.GyroMouseInfo[deviceNumber].Beta;
+            Global.GyroMouseInfo[deviceNumber].SetRefreshEvents(filterPair.axis1Filter);
+            Global.GyroMouseInfo[deviceNumber].SetRefreshEvents(filterPair.axis2Filter);
         }
 
         // Keep track of remainders when performing moves or we lose fractional parts.
@@ -22,14 +40,16 @@ namespace DS4Windows
 
         private const double GYRO_MOUSE_COEFFICIENT = 0.0095;
         public const int GYRO_MOUSE_DEADZONE = 10;
-        private const double GYRO_MOUSE_OFFSET = 0.1463;
-        private const double GYRO_SMOOTH_MOUSE_OFFSET = 0.14698;
+        private const double GYRO_MOUSE_OFFSET = 0.2;
+        private const double GYRO_SMOOTH_MOUSE_OFFSET = 0.2;
         private const double TOUCHPAD_MOUSE_OFFSET = 0.015;
 
         private const int SMOOTH_BUFFER_LEN = 3;
         private double[] xSmoothBuffer = new double[SMOOTH_BUFFER_LEN];
         private double[] ySmoothBuffer = new double[SMOOTH_BUFFER_LEN];
         private int smoothBufferTail = 0;
+        private OneEuroFilterPair filterPair = new OneEuroFilterPair();
+
         private int gyroCursorDeadZone = GYRO_MOUSE_DEADZONE;
         public int GyroCursorDeadZone { get => gyroCursorDeadZone; set => gyroCursorDeadZone = value; }
 
@@ -51,18 +71,15 @@ namespace DS4Windows
             //tempDouble = arg.sixAxis.elapsed * 0.001 * 200.0; // Base default speed on 5 ms
             tempDouble = arg.sixAxis.elapsed * 200.0; // Base default speed on 5 ms
 
-            gyroSmooth = Global.getGyroSmoothing(deviceNumber);
+            GyroMouseInfo tempInfo = Global.GyroMouseInfo[deviceNumber];
+            gyroSmooth = tempInfo.enableSmoothing;
             double gyroSmoothWeight = 0.0;
 
             coefficient = (Global.getGyroSensitivity(deviceNumber) * 0.01) * GYRO_MOUSE_COEFFICIENT;
             double offset = GYRO_MOUSE_OFFSET;
             if (gyroSmooth)
             {
-                gyroSmoothWeight = Global.getGyroSmoothingWeight(deviceNumber);
-                if (gyroSmoothWeight > 0.0)
-                {
-                    offset = GYRO_SMOOTH_MOUSE_OFFSET;
-                }
+                offset = GYRO_SMOOTH_MOUSE_OFFSET;
             }
 
             double tempAngle = Math.Atan2(-deltaY, deltaX);
@@ -131,28 +148,37 @@ namespace DS4Windows
 
             if (gyroSmooth)
             {
-                int iIndex = smoothBufferTail % SMOOTH_BUFFER_LEN;
-                xSmoothBuffer[iIndex] = xMotion;
-                ySmoothBuffer[iIndex] = yMotion;
-                smoothBufferTail = iIndex + 1;
-
-                double currentWeight = 1.0;
-                double finalWeight = 0.0;
-                double x_out = 0.0, y_out = 0.0;
-                int idx = 0;
-                for (int i = 0; i < SMOOTH_BUFFER_LEN; i++)
+                if (tempInfo.useOneEuroSmooth)
                 {
-                    idx = (smoothBufferTail - i - 1 + SMOOTH_BUFFER_LEN) % SMOOTH_BUFFER_LEN;
-                    x_out += xSmoothBuffer[idx] * currentWeight;
-                    y_out += ySmoothBuffer[idx] * currentWeight;
-                    finalWeight += currentWeight;
-                    currentWeight *= gyroSmoothWeight;
+                    double currentRate = 1.0 / arg.sixAxis.elapsed;
+                    xMotion = filterPair.axis1Filter.Filter(xMotion, currentRate);
+                    yMotion = filterPair.axis2Filter.Filter(yMotion, currentRate);
                 }
+                else
+                {
+                    int iIndex = smoothBufferTail % SMOOTH_BUFFER_LEN;
+                    xSmoothBuffer[iIndex] = xMotion;
+                    ySmoothBuffer[iIndex] = yMotion;
+                    smoothBufferTail = iIndex + 1;
 
-                x_out /= finalWeight;
-                xMotion = x_out;
-                y_out /= finalWeight;
-                yMotion = y_out;
+                    double currentWeight = 1.0;
+                    double finalWeight = 0.0;
+                    double x_out = 0.0, y_out = 0.0;
+                    int idx = 0;
+                    for (int i = 0; i < SMOOTH_BUFFER_LEN; i++)
+                    {
+                        idx = (smoothBufferTail - i - 1 + SMOOTH_BUFFER_LEN) % SMOOTH_BUFFER_LEN;
+                        x_out += xSmoothBuffer[idx] * currentWeight;
+                        y_out += ySmoothBuffer[idx] * currentWeight;
+                        finalWeight += currentWeight;
+                        currentWeight *= gyroSmoothWeight;
+                    }
+
+                    x_out /= finalWeight;
+                    xMotion = x_out;
+                    y_out /= finalWeight;
+                    yMotion = y_out;
+                }
             }
 
             hRemainder = vRemainder = 0.0;
@@ -182,13 +208,21 @@ namespace DS4Windows
             vDirection = yMotion > 0.0 ? Direction.Positive : yMotion < 0.0 ? Direction.Negative : Direction.Neutral;
         }
 
-        public void mouseRemainderReset()
+        public void mouseRemainderReset(SixAxisEventArgs arg)
         {
             hRemainder = vRemainder = 0.0;
             int iIndex = smoothBufferTail % SMOOTH_BUFFER_LEN;
             xSmoothBuffer[iIndex] = 0.0;
             ySmoothBuffer[iIndex] = 0.0;
             smoothBufferTail = iIndex + 1;
+
+            GyroMouseInfo tempInfo = Global.GyroMouseInfo[deviceNumber];
+            if (tempInfo.useOneEuroSmooth)
+            {
+                double currentRate = 1.0 / arg.sixAxis.elapsed;
+                filterPair.axis1Filter.Filter(0.0, currentRate);
+                filterPair.axis2Filter.Filter(0.0, currentRate);
+            }
         }
 
         public void touchesBegan(TouchpadEventArgs arg)
