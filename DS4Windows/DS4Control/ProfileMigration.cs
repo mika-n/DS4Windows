@@ -215,6 +215,7 @@ namespace DS4Windows
             profileReader.MoveToContent();
             // Skip past root element
             profileReader.Read();
+            profileReader.MoveToContent();
 
             // Write replacement root element in XmlWriter
             tempWriter.WriteStartElement("DS4Windows");
@@ -222,32 +223,46 @@ namespace DS4Windows
             tempWriter.WriteAttributeString("config_version", "4");
 
             // First pass
-            while (profileReader.Read())
+            while (!profileReader.EOF)
             {
-                if (profileReader.Name == "GyroSmoothing" && profileReader.IsStartElement())
+                if (profileReader.IsStartElement() && profileReader.Depth == 1)
                 {
-                    gyroSmoothSettings.hasGyroMouseSmoothing = true;
-                    string useSmooth = profileReader.ReadElementContentAsString();
-                    bool.TryParse(useSmooth, out gyroSmoothSettings.useGyroMouseSmoothing);
+                    switch(profileReader.Name)
+                    {
+                        case "GyroSmoothing":
+                        {
+                            gyroSmoothSettings.hasGyroMouseSmoothing = true;
+                            string useSmooth = profileReader.ReadElementContentAsString();
+                            bool.TryParse(useSmooth, out gyroSmoothSettings.useGyroMouseSmoothing);
+                            break;
+                        }
+                        case "GyroSmoothingWeight":
+                        {
+                            gyroSmoothSettings.hasGyroMouseSmoothingWeight = true;
+                            string weight = profileReader.ReadElementContentAsString();
+                            double.TryParse(weight, out gyroSmoothSettings.gyroMouseSmoothingWeight);
+                            break;
+                        }
+                        case "GyroMouseStickSmoothing":
+                        {
+                            gyroSmoothSettings.hasGyroMouseStickSmoothing = true;
+                            string useSmooth = profileReader.ReadElementContentAsString();
+                            bool.TryParse(useSmooth, out gyroSmoothSettings.useGyroMouseStickSmoothing);
+                            break;
+                        }
+                        case "GyroMouseStickSmoothingWeight":
+                        {
+                            gyroSmoothSettings.hasGyroMouseStickSmoothingWeight = true;
+                            string weight = profileReader.ReadElementContentAsString();
+                            double.TryParse(weight, out gyroSmoothSettings.gyroMouseStickSmoothingWeight);
+                            break;
+                        }
+                        default:
+                            break;
+                    }
                 }
-                else if (profileReader.Name == "GyroSmoothingWeight" && profileReader.IsStartElement())
-                {
-                    gyroSmoothSettings.hasGyroMouseSmoothingWeight = true;
-                    string weight = profileReader.ReadElementContentAsString();
-                    double.TryParse(weight, out gyroSmoothSettings.gyroMouseSmoothingWeight);
-                }
-                else if (profileReader.Name == "GyroMouseStickSmoothing" && profileReader.IsStartElement())
-                {
-                    gyroSmoothSettings.hasGyroMouseStickSmoothing = true;
-                    string useSmooth = profileReader.ReadElementContentAsString();
-                    bool.TryParse(useSmooth, out gyroSmoothSettings.useGyroMouseStickSmoothing);
-                }
-                else if (profileReader.Name == "GyroMouseStickSmoothingWeight" && profileReader.IsStartElement())
-                {
-                    gyroSmoothSettings.hasGyroMouseStickSmoothingWeight = true;
-                    string weight = profileReader.ReadElementContentAsString();
-                    double.TryParse(weight, out gyroSmoothSettings.gyroMouseStickSmoothingWeight);
-                }
+
+                profileReader.Read();
             }
 
             // Close and dispose current XmlReader
@@ -261,38 +276,50 @@ namespace DS4Windows
             profileReader.MoveToContent();
             // Skip past root element
             profileReader.Read();
+            profileReader.MoveToContent();
 
             // Second pass
-            while (profileReader.Read())
+            while (!profileReader.EOF)
             {
-                if (profileReader.Name == "GyroSmoothing" && profileReader.IsStartElement())
+                if (profileReader.IsStartElement() && profileReader.Depth == 1)
                 {
-                    // Place new GyroMouseSmoothingSettings group where GyroSmoothing used to be
-                    MigrateGyroMouseSmoothingSettings(tempWriter);
-                    // Consume reset of element
-                    profileReader.ReadElementContentAsString();
+                    switch (profileReader.Name)
+                    {
+                        case "GyroSmoothing":
+                        {
+                            // Place new GyroMouseSmoothingSettings group where GyroSmoothing used to be
+                            MigrateGyroMouseSmoothingSettings(tempWriter);
+                            // Consume reset of element
+                            profileReader.ReadElementContentAsString();
+                            break;
+                        }
+                        case "GyroSmoothingWeight":
+                        {
+                            // Consume reset of element
+                            profileReader.ReadElementContentAsString();
+                            break;
+                        }
+                        case "GyroMouseStickSmoothing":
+                        {
+                            // Place new GyroMouseStickSmoothingSettings group where GyroSmoothing used to be
+                            MigrateGyroMouseStickSmoothingSettings(tempWriter);
+                            // Consume reset of element
+                            profileReader.ReadElementContentAsString();
+                            break;
+                        }
+                        case "GyroMouseStickSmoothingWeight":
+                        {
+                            // Consume reset of element
+                            profileReader.ReadElementContentAsString();
+                            break;
+                        }
+                        default:
+                            tempWriter.WriteNode(profileReader, true);
+                            break;
+                    }
                 }
-                else if (profileReader.Name == "GyroSmoothingWeight" && profileReader.IsStartElement())
-                {
-                    // Consume reset of element
-                    profileReader.ReadElementContentAsString();
-                }
-                else if (profileReader.Name == "GyroMouseStickSmoothing" && profileReader.IsStartElement())
-                {
-                    // Place new GyroMouseStickSmoothingSettings group where GyroSmoothing used to be
-                    MigrateGyroMouseStickSmoothingSettings(tempWriter);
-                    // Consume reset of element
-                    profileReader.ReadElementContentAsString();
-                }
-                else if (profileReader.Name == "GyroMouseStickSmoothingWeight" && profileReader.IsStartElement())
-                {
-                    // Consume reset of element
-                    profileReader.ReadElementContentAsString();
-                }
-                else
-                {
-                    tempWriter.WriteNode(profileReader, true);
-                }
+
+                profileReader.Read();
             }
 
             // End XML document and flush IO stream
