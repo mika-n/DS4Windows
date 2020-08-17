@@ -54,7 +54,9 @@ namespace DS4Windows
             {
                 DeviceInfo x = devEnum.Current;
                 //DeviceInfo x = temp.ElementAt(i);               
-                HidDevice tempDev = new HidDevice(x.Path, x.Description);
+                HidDevice tempDev = new HidDevice(x.Path, x.Description, x.Parent);
+                //iDebugDevCount++;
+                //AppLogger.LogToGui($"DEBUG: HID#{iDebugDevCount} Path={x.Path}  Description={x.Description}  VID={tempDev.Attributes.VendorHexId}  PID={tempDev.Attributes.ProductHexId}  Usage=0x{tempDev.Capabilities.Usage.ToString("X")}  Version=0x{tempDev.Attributes.Version.ToString("X")}", false);
 
                 // DEBUG:
                 iDebugDevCount++;
@@ -103,7 +105,12 @@ namespace DS4Windows
             return EnumerateDevices().Select(x => new HidDevice(x.Path, x.Description)).Where(x => x.Attributes.VendorId == vendorId);
         }
 
-        private class DeviceInfo { public string Path { get; set; } public string Description { get; set; } }
+        private class DeviceInfo
+        {
+            public string Path { get; set; }
+            public string Description { get; set; }
+            public string Parent { get; set; }
+        }
 
         private static IEnumerable<DeviceInfo> EnumerateDevices()
         {
@@ -130,7 +137,8 @@ namespace DS4Windows
                         var devicePath = GetDevicePath(deviceInfoSet, deviceInterfaceData);
                         var description = GetBusReportedDeviceDescription(deviceInfoSet, ref deviceInfoData) ?? 
                                           GetDeviceDescription(deviceInfoSet, ref deviceInfoData);
-                        devices.Add(new DeviceInfo { Path = devicePath, Description = description });
+                        var parent = GetDeviceParent(deviceInfoSet, ref deviceInfoData);
+                        devices.Add(new DeviceInfo { Path = devicePath, Description = description, Parent = parent });
                     }
                 }
                 NativeMethods.SetupDiDestroyDeviceInfoList(deviceInfoSet);
@@ -210,5 +218,36 @@ namespace DS4Windows
             }
             return null;
         }
-    }
+
+        private static string GetDeviceParent(IntPtr deviceInfoSet, ref NativeMethods.SP_DEVINFO_DATA devinfoData)
+        {
+            string result = string.Empty;
+
+            var requiredSize = 0;
+            ulong propertyType = 0;
+
+            NativeMethods.SetupDiGetDeviceProperty(deviceInfoSet, ref devinfoData,
+                                                        ref NativeMethods.DEVPKEY_Device_Parent, ref propertyType,
+                                                        null, 0,
+                                                        ref requiredSize, 0);
+
+            if (requiredSize > 0)
+            {
+                var descriptionBuffer = new byte[requiredSize];
+                NativeMethods.SetupDiGetDeviceProperty(deviceInfoSet, ref devinfoData,
+                                                        ref NativeMethods.DEVPKEY_Device_Parent, ref propertyType,
+                                                        descriptionBuffer, descriptionBuffer.Length,
+                                                        ref requiredSize, 0);
+
+                string tmp = System.Text.Encoding.Unicode.GetString(descriptionBuffer);
+                if (tmp.EndsWith("\0"))
+                {
+                    tmp = tmp.Remove(tmp.Length - 1);
+                }
+                result = tmp;
+            }
+
+            return result;
+        }
+   }
 }
