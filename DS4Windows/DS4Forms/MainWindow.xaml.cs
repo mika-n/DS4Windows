@@ -1428,10 +1428,11 @@ Suspend support not enabled.", true);
 
         private void MainDS4Window_LocationChanged(object sender, EventArgs e)
         {
-            if (WindowState != WindowState.Minimized)
+            int left = Convert.ToInt32(Left), top = Convert.ToInt32(Top);
+            if (left >= 0 && top >= 0)
             {
-                Global.FormLocationX = Convert.ToInt32(Left);
-                Global.FormLocationY = Convert.ToInt32(Top);
+                Global.FormLocationX = left;
+                Global.FormLocationY = top;
             }
         }
 
