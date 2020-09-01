@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using DS4Windows;
 using Microsoft.Win32.TaskScheduler;
 using Task = Microsoft.Win32.TaskScheduler.Task;
 
@@ -23,8 +24,16 @@ namespace DS4WinWPF
 
         public static bool HasTaskEntry()
         {
-            TaskService ts = new TaskService();
-            Task tasker = ts.FindTask("RunDS4Windows");
+            Task tasker = null;
+            try
+            {
+                TaskService ts = new TaskService();
+                tasker = ts.FindTask("RunDS4Windows");
+            }
+            catch (Exception ex)
+            {
+                AppLogger.LogToGui($"Error in TaskService. RunAsTask feature doesn't work. Check WinOS TaskScheduler service functionality. {ex.Message}", true);
+            }
             return tasker != null;
         }
 
