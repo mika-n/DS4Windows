@@ -18,7 +18,15 @@ namespace DS4WinWPF
 
         public static bool HasStartProgEntry()
         {
-            bool exists = File.Exists(Environment.GetFolderPath(Environment.SpecialFolder.Startup) + "\\DS4Windows.lnk");
+            bool exists = false;
+            try
+            {
+                exists = File.Exists(Environment.GetFolderPath(Environment.SpecialFolder.Startup) + "\\DS4Windows.lnk");
+            }
+            catch (Exception ex)
+            {
+                AppLogger.LogToGui($"Error while checking existence of DS4Windows.lnk shortcut. {ex.Message}", true);
+            }
             return exists;
         }
 
@@ -32,7 +40,7 @@ namespace DS4WinWPF
             }
             catch (Exception ex)
             {
-                AppLogger.LogToGui($"Error in TaskService. RunAsTask feature doesn't work. Check WinOS TaskScheduler service functionality. {ex.Message}", true);
+                AppLogger.LogToGui($"Error in TaskService. Check WinOS TaskScheduler service functionality. {ex.Message}", true);
             }
             return tasker != null;
         }
