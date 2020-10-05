@@ -42,8 +42,7 @@ namespace DS4Windows
         public bool RequiresMigration()
         {
             bool result = false;
-            // Skip configFileVersion == 1 and pass profile XML as is
-            if (configFileVersion > 1 && configFileVersion < Global.CONFIG_VERSION)
+            if (configFileVersion >= 1 && configFileVersion < Global.CONFIG_VERSION)
             {
                 result = true;
             }
@@ -69,6 +68,11 @@ namespace DS4Windows
                         migratedText = Version0004Migration();
                         PrepareReaderMigration(migratedText);
                         tempVersion = 4;
+                        goto default;
+                    case 4:
+                        migratedText = Version0005Migration();
+                        PrepareReaderMigration(migratedText);
+                        tempVersion = 5;
                         goto default;
 
                     default:
@@ -402,6 +406,61 @@ namespace DS4Windows
                     profileReader.Read();
                 }
              }
+
+            // End XML document and flush IO stream
+            tempWriter.WriteEndElement();
+            tempWriter.WriteEndDocument();
+            tempWriter.Close();
+            return stringWrite.ToString();
+        }
+
+        private string Version0005Migration()
+        {
+            StringWriter stringWrite = new StringWriter();
+            XmlWriter tempWriter = XmlWriter.Create(stringWrite, new XmlWriterSettings()
+            {
+                Encoding = Encoding.UTF8,
+                Indent = true,
+            });
+            tempWriter.WriteStartDocument();
+            // Move stream to root element
+            profileReader.MoveToContent();
+            // Skip past root element
+            profileReader.Read();
+            profileReader.MoveToContent();
+
+            // Write replacement root element in XmlWriter
+            tempWriter.WriteStartElement("DS4Windows");
+            tempWriter.WriteAttributeString("app_version", Global.exeversion);
+            tempWriter.WriteAttributeString("config_version", "5");
+
+            while (!profileReader.EOF)
+            {
+                if (profileReader.IsStartElement() && profileReader.Depth == 1)
+                {
+                    switch (profileReader.Name)
+                    {
+                        case "UseTPforControls":
+                            {
+                                string tpControls = profileReader.ReadElementContentAsString();
+                                bool valid = bool.TryParse(tpControls, out bool temp);
+                                if (valid && temp)
+                                {
+                                    tempWriter.WriteElementString("TouchpadOutputMode", TouchpadOutMode.Controls.ToString());
+                                }
+
+                                break;
+                            }
+                        default:
+                            tempWriter.WriteNode(profileReader, true);
+                            break;
+                    }
+                }
+                else
+                {
+                    profileReader.Read();
+                }
+            }
 
             // End XML document and flush IO stream
             tempWriter.WriteEndElement();
