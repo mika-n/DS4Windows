@@ -476,7 +476,7 @@ namespace DS4Windows
             serial = null;
         }
 
-        public string readSerial()
+        public string ReadSerial(byte featureID = 18)
         {
             if (serial != null)
                 return serial;
@@ -490,8 +490,9 @@ namespace DS4Windows
 
             if (Capabilities.InputReportByteLength == 64)
             {
-                byte[] buffer = new byte[16];
-                buffer[0] = 18;
+                byte[] buffer = new byte[64];
+                //buffer[0] = 18;
+                buffer[0] = featureID;
                 if (readFeatureData(buffer))
                 {
                     serial = String.Format("{0:X02}:{1:X02}:{2:X02}:{3:X02}:{4:X02}:{5:X02}",
