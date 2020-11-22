@@ -920,7 +920,6 @@ namespace DS4Windows
         private int debugPerformDs4InputReportTypeErrCount = 0;
         private int debugPrintoutInputReportCount = 0;
         private DateTime debugPrintoutPrevTimestamp = DateTime.Now;
-        private int debugPerformDS4InputErrCount = 0;
 
         protected unsafe void performDs4Input()
         {
