@@ -120,6 +120,43 @@ namespace DS4Windows
         }
     }
 
+    public class ControlSettingsGroup
+    {
+        public List<DS4ControlSettings> LS = new List<DS4ControlSettings>();
+        public List<DS4ControlSettings> RS = new List<DS4ControlSettings>();
+        public DS4ControlSettings L2;
+        public DS4ControlSettings R2;
+
+        public List<DS4ControlSettings> ControlButtons =
+            new List<DS4ControlSettings>();
+
+        public ControlSettingsGroup(List<DS4ControlSettings> settingsList)
+        {
+            for (int i = (int)DS4Controls.LXNeg; i <= (int)DS4Controls.LYPos; i++)
+            {
+                LS.Add(settingsList[i-1]);
+            }
+
+            for (int i = (int)DS4Controls.RXNeg; i <= (int)DS4Controls.RYPos; i++)
+            {
+                RS.Add(settingsList[i-1]);
+            }
+
+            L2 = settingsList[(int)DS4Controls.L2-1];
+            R2 = settingsList[(int)DS4Controls.R2-1];
+
+            ControlButtons.Add(settingsList[(int)DS4Controls.L1-1]);
+            ControlButtons.Add(settingsList[(int)DS4Controls.L3-1]);
+            ControlButtons.Add(settingsList[(int)DS4Controls.R1-1]);
+            ControlButtons.Add(settingsList[(int)DS4Controls.R3-1]);
+
+            for (int i = (int)DS4Controls.Square; i <= (int)DS4Controls.SwipeDown; i++)
+            {
+                ControlButtons.Add(settingsList[i-1]);
+            }
+        }
+    }
+
     public class DebugEventArgs : EventArgs
     {
         protected DateTime m_Time = DateTime.Now;
@@ -986,17 +1023,17 @@ namespace DS4Windows
         }
 
         // general values
+        // -- Re-Enable Exclusive Mode Starts Here --
         public static bool UseExclusiveMode
         {
             set { m_Config.useExclusiveMode = value; }
             get { return m_Config.useExclusiveMode; }
-        }
+        } // -- Re-Enable Ex Mode Ends here
 
         public static bool getUseExclusiveMode()
         {
             return m_Config.useExclusiveMode;
         }
-
         public static DateTime LastChecked
         {
             set { m_Config.lastChecked = value; }
@@ -1456,6 +1493,7 @@ namespace DS4Windows
         public static GyroMouseInfo[] GyroMouseInfo => m_Config.gyroMouseInfo;
 
         public static SteeringWheelSmoothingInfo[] WheelSmoothInfo => m_Config.wheelSmoothInfo;
+        public static int[] SAWheelFuzzValues => m_Config.saWheelFuzzValues;
 
         //public static DS4Color[] MainColor => m_Config.m_Leds;
         public static ref DS4Color getMainColor(int index)
@@ -1744,11 +1782,14 @@ namespace DS4Windows
             return m_Config.btPollRate[index];
         }
 
-        public static SquareStickInfo[] SquStickInfo = m_Config.squStickInfo;
+        public static SquareStickInfo[] SquStickInfo => m_Config.squStickInfo;
         public static SquareStickInfo GetSquareStickInfo(int device)
         {
             return m_Config.squStickInfo[device];
         }
+
+        public static StickOutputSetting[] LSOutputSettings => m_Config.lsOutputSettings;
+        public static StickOutputSetting[] RSOutputSettings => m_Config.rsOutputSettings;
 
         public static void setLsOutCurveMode(int index, int value)
         {
@@ -1870,6 +1911,7 @@ namespace DS4Windows
         public static List<DS4ControlSettings> getDS4CSettings(int device) => m_Config.ds4settings[device];
         public static DS4ControlSettings getDS4CSetting(int deviceNum, string control) => m_Config.getDS4CSetting(deviceNum, control);
         public static DS4ControlSettings getDS4CSetting(int deviceNum, DS4Controls control) => m_Config.getDS4CSetting(deviceNum, control);
+        public static ControlSettingsGroup GetControlSettingsGroup(int deviceNum) => m_Config.ds4controlSettings[deviceNum];
         public static bool HasCustomActions(int deviceNum) => m_Config.HasCustomActions(deviceNum);
         public static bool HasCustomExtras(int deviceNum) => m_Config.HasCustomExtras(deviceNum);
 
@@ -2324,6 +2366,20 @@ namespace DS4Windows
             new SquareStickInfo(),
         };
 
+        public StickOutputSetting[] lsOutputSettings = new StickOutputSetting[Global.TEST_PROFILE_ITEM_COUNT]
+        {
+            new StickOutputSetting(), new StickOutputSetting(), new StickOutputSetting(),
+            new StickOutputSetting(), new StickOutputSetting(), new StickOutputSetting(),
+            new StickOutputSetting(), new StickOutputSetting(), new StickOutputSetting(),
+        };
+
+        public StickOutputSetting[] rsOutputSettings = new StickOutputSetting[Global.TEST_PROFILE_ITEM_COUNT]
+        {
+            new StickOutputSetting(), new StickOutputSetting(), new StickOutputSetting(),
+            new StickOutputSetting(), new StickOutputSetting(), new StickOutputSetting(),
+            new StickOutputSetting(), new StickOutputSetting(), new StickOutputSetting(),
+        };
+
         public SteeringWheelSmoothingInfo[] wheelSmoothInfo = new SteeringWheelSmoothingInfo[Global.TEST_PROFILE_ITEM_COUNT]
         {
             new SteeringWheelSmoothingInfo(), new SteeringWheelSmoothingInfo(),
@@ -2332,6 +2388,8 @@ namespace DS4Windows
             new SteeringWheelSmoothingInfo(), new SteeringWheelSmoothingInfo(),
             new SteeringWheelSmoothingInfo(),
         };
+
+        public int[] saWheelFuzzValues = new int[Global.TEST_PROFILE_ITEM_COUNT];
 
         private void setOutBezierCurveObjArrayItem(BezierCurve[] bezierCurveArray, int device, int curveOptionValue, BezierCurve.AxisType axisType)
         {
@@ -2444,7 +2502,7 @@ namespace DS4Windows
             new int[1] { -1 }, new int[1] { -1 }, new int[1] { -1 }, new int[1] { -1 }, new int[1] { -1 }, new int[1] { -1 } };
         public int[] lsCurve = new int[Global.TEST_PROFILE_ITEM_COUNT] { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
         public int[] rsCurve = new int[Global.TEST_PROFILE_ITEM_COUNT] { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-        public Boolean useExclusiveMode = false;
+        public Boolean useExclusiveMode = false; // Re-enable Ex Mode
         public Int32 formWidth = 782;
         public Int32 formHeight = 550;
         public int formLocationX = 0;
@@ -2465,6 +2523,7 @@ namespace DS4Windows
         public List<DS4ControlSettings>[] ds4settings = new List<DS4ControlSettings>[Global.TEST_PROFILE_ITEM_COUNT]
             { new List<DS4ControlSettings>(), new List<DS4ControlSettings>(), new List<DS4ControlSettings>(),
               new List<DS4ControlSettings>(), new List<DS4ControlSettings>(), new List<DS4ControlSettings>(), new List<DS4ControlSettings>(), new List<DS4ControlSettings>(), new List<DS4ControlSettings>() };
+        public ControlSettingsGroup[] ds4controlSettings;
 
         public List<string>[] profileActions = new List<string>[Global.TEST_PROFILE_ITEM_COUNT] { null, null, null, null, null, null, null, null, null };
         public int[] profileActionCount = new int[Global.TEST_PROFILE_ITEM_COUNT] { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
@@ -2480,7 +2539,7 @@ namespace DS4Windows
         public bool downloadLang = true;
         public TrayIconChoice useIconChoice;
         public bool flashWhenLate = true;
-        public int flashWhenLateAt = 30;
+        public int flashWhenLateAt = 40;
         public bool useUDPServ = false;
         public int udpServPort = 26760;
         public string udpServListenAddress = "127.0.0.1"; // 127.0.0.1=IPAddress.Loopback (default), 0.0.0.0=IPAddress.Any as all interfaces, x.x.x.x = Specific ipv4 interface address or hostname
@@ -2537,6 +2596,8 @@ namespace DS4Windows
 
         public BackingStore()
         {
+            ds4controlSettings = new ControlSettingsGroup[Global.TEST_PROFILE_ITEM_COUNT];
+
             for (int i = 0; i < Global.TEST_PROFILE_ITEM_COUNT; i++)
             {
                 foreach (DS4Controls dc in Enum.GetValues(typeof(DS4Controls)))
@@ -2544,6 +2605,8 @@ namespace DS4Windows
                     if (dc != DS4Controls.None)
                         ds4settings[i].Add(new DS4ControlSettings(dc));
                 }
+
+                ds4controlSettings[i] = new ControlSettingsGroup(ds4settings[i]);
 
                 EstablishDefaultSpecialActions(i);
                 CacheExtraProfileInfo(i);
@@ -2569,6 +2632,8 @@ namespace DS4Windows
             {
                 customAct = gyroOutMode[device] == GyroOutMode.MouseJoystick;
                 customAct = customAct || sASteeringWheelEmulationAxis[device] >= SASteeringWheelEmulationAxisType.VJoy1X;
+                customAct = customAct || lsOutputSettings[device].mode != StickMode.Controls;
+                customAct = customAct || rsOutputSettings[device].mode != StickMode.Controls;
                 containsCustomAction[device] = customAct;
             }
         }
@@ -2964,6 +3029,7 @@ namespace DS4Windows
                 XmlNode xmlSATriggerCond = m_Xdoc.CreateNode(XmlNodeType.Element, "SATriggerCond", null); xmlSATriggerCond.InnerText = SaTriggerCondString(sATriggerCond[device]); rootElement.AppendChild(xmlSATriggerCond);
                 XmlNode xmlSASteeringWheelEmulationAxis = m_Xdoc.CreateNode(XmlNodeType.Element, "SASteeringWheelEmulationAxis", null); xmlSASteeringWheelEmulationAxis.InnerText = sASteeringWheelEmulationAxis[device].ToString("G"); rootElement.AppendChild(xmlSASteeringWheelEmulationAxis);
                 XmlNode xmlSASteeringWheelEmulationRange = m_Xdoc.CreateNode(XmlNodeType.Element, "SASteeringWheelEmulationRange", null); xmlSASteeringWheelEmulationRange.InnerText = sASteeringWheelEmulationRange[device].ToString(); rootElement.AppendChild(xmlSASteeringWheelEmulationRange);
+                XmlNode xmlSASteeringWheelFuzz = m_Xdoc.CreateNode(XmlNodeType.Element, "SASteeringWheelFuzz", null); xmlSASteeringWheelFuzz.InnerText = saWheelFuzzValues[device].ToString(); rootElement.AppendChild(xmlSASteeringWheelFuzz);
 
                 XmlElement xmlSASteeringWheelSmoothingGroupEl = m_Xdoc.CreateElement("SASteeringWheelSmoothingOptions");
                 XmlElement xmlSASteeringWheelUseSmoothing = m_Xdoc.CreateElement("SASteeringWheelUseSmoothing"); xmlSASteeringWheelUseSmoothing.InnerText = wheelSmoothInfo[device].Enabled.ToString(); xmlSASteeringWheelSmoothingGroupEl.AppendChild(xmlSASteeringWheelUseSmoothing);
@@ -3043,6 +3109,23 @@ namespace DS4Windows
 
                 XmlNode xmlSquareStickRoundness = m_Xdoc.CreateNode(XmlNodeType.Element, "SquareStickRoundness", null); xmlSquareStickRoundness.InnerText = squStickInfo[device].lsRoundness.ToString(); rootElement.AppendChild(xmlSquareStickRoundness);
                 XmlNode xmlSquareRStickRoundness = m_Xdoc.CreateNode(XmlNodeType.Element, "SquareRStickRoundness", null); xmlSquareRStickRoundness.InnerText = squStickInfo[device].rsRoundness.ToString(); rootElement.AppendChild(xmlSquareRStickRoundness);
+
+                XmlNode xmlLsOutputMode = m_Xdoc.CreateNode(XmlNodeType.Element, "LSOutputMode", null); xmlLsOutputMode.InnerText = lsOutputSettings[device].mode.ToString(); rootElement.AppendChild(xmlLsOutputMode);
+                XmlNode xmlRsOutputMode = m_Xdoc.CreateNode(XmlNodeType.Element, "RSOutputMode", null); xmlRsOutputMode.InnerText = rsOutputSettings[device].mode.ToString(); rootElement.AppendChild(xmlRsOutputMode);
+
+                XmlElement xmlLsOutputSettingsElement = m_Xdoc.CreateElement("LSOutputSettings");
+                XmlElement xmlLsFlickStickGroupElement = m_Xdoc.CreateElement("FlickStickSettings"); xmlLsOutputSettingsElement.AppendChild(xmlLsFlickStickGroupElement);
+                XmlNode xmlLsFlickStickRWC = m_Xdoc.CreateNode(XmlNodeType.Element, "RealWorldCalibration", null); xmlLsFlickStickRWC.InnerText = lsOutputSettings[device].outputSettings.flickSettings.realWorldCalibration.ToString(); xmlLsFlickStickGroupElement.AppendChild(xmlLsFlickStickRWC);
+                XmlNode xmlLsFlickStickThreshold = m_Xdoc.CreateNode(XmlNodeType.Element, "FlickThreshold", null); xmlLsFlickStickThreshold.InnerText = lsOutputSettings[device].outputSettings.flickSettings.flickThreshold.ToString(); xmlLsFlickStickGroupElement.AppendChild(xmlLsFlickStickThreshold);
+                XmlNode xmlLsFlickStickTime = m_Xdoc.CreateNode(XmlNodeType.Element, "FlickTime", null); xmlLsFlickStickTime.InnerText = lsOutputSettings[device].outputSettings.flickSettings.flickTime.ToString(); xmlLsFlickStickGroupElement.AppendChild(xmlLsFlickStickTime);
+                rootElement.AppendChild(xmlLsOutputSettingsElement);
+
+                XmlElement xmlRsOutputSettingsElement = m_Xdoc.CreateElement("RSOutputSettings");
+                XmlElement xmlRsFlickStickGroupElement = m_Xdoc.CreateElement("FlickStickSettings"); xmlRsOutputSettingsElement.AppendChild(xmlRsFlickStickGroupElement);
+                XmlNode xmlRsFlickStickRWC = m_Xdoc.CreateNode(XmlNodeType.Element, "RealWorldCalibration", null); xmlRsFlickStickRWC.InnerText = rsOutputSettings[device].outputSettings.flickSettings.realWorldCalibration.ToString(); xmlRsFlickStickGroupElement.AppendChild(xmlRsFlickStickRWC);
+                XmlNode xmlRsFlickStickThreshold = m_Xdoc.CreateNode(XmlNodeType.Element, "FlickThreshold", null); xmlRsFlickStickThreshold.InnerText = rsOutputSettings[device].outputSettings.flickSettings.flickThreshold.ToString(); xmlRsFlickStickGroupElement.AppendChild(xmlRsFlickStickThreshold);
+                XmlNode xmlRsFlickStickTime = m_Xdoc.CreateNode(XmlNodeType.Element, "FlickTime", null); xmlRsFlickStickTime.InnerText = rsOutputSettings[device].outputSettings.flickSettings.flickTime.ToString(); xmlRsFlickStickGroupElement.AppendChild(xmlRsFlickStickTime);
+                rootElement.AppendChild(xmlRsOutputSettingsElement);
 
                 XmlNode xmlL2OutputCurveMode = m_Xdoc.CreateNode(XmlNodeType.Element, "L2OutputCurveMode", null); xmlL2OutputCurveMode.InnerText = axisOutputCurveString(getL2OutCurveMode(device)); rootElement.AppendChild(xmlL2OutputCurveMode);
                 XmlNode xmlL2OutputCurveCustom = m_Xdoc.CreateNode(XmlNodeType.Element, "L2OutputCurveCustom", null); xmlL2OutputCurveCustom.InnerText = l2OutBezierCurveObj[device].ToString(); rootElement.AppendChild(xmlL2OutputCurveCustom);
@@ -4053,6 +4136,14 @@ namespace DS4Windows
                     catch { wheelSmoothInfo[device].Beta = OneEuroFilterPair.DEFAULT_WHEEL_BETA; missingSetting = true; }
                 }
 
+                try
+                {
+                    Item = m_Xdoc.SelectSingleNode("/" + rootname + "/SASteeringWheelFuzz");
+                    int.TryParse(Item.InnerText, out int temp);
+                    saWheelFuzzValues[device] = temp >= 0 && temp <= 100 ? temp : 0;
+                }
+                catch { saWheelFuzzValues[device] = 0; missingSetting = true; }
+
                 try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/GyroOutputMode");
                     string tempMode = Item.InnerText;
                     gyroOutMode[device] = GetGyroOutModeType(tempMode);
@@ -4334,6 +4425,104 @@ namespace DS4Windows
 
                 try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/RSSquareStick"); bool.TryParse(Item.InnerText, out squStickInfo[device].rsMode); }
                 catch { squStickInfo[device].rsMode = false; missingSetting = true; }
+
+                try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/LSOutputMode"); Enum.TryParse(Item.InnerText, out lsOutputSettings[device].mode); }
+                catch { missingSetting = true; }
+
+                try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/RSOutputMode"); Enum.TryParse(Item.InnerText, out rsOutputSettings[device].mode); }
+                catch { missingSetting = true; }
+
+                XmlNode xmlLSOutputSettingsElement =
+                    m_Xdoc.SelectSingleNode("/" + rootname + "/LSOutputSettings");
+                bool lsOutputGroup = xmlLSOutputSettingsElement != null;
+                if (lsOutputGroup)
+                {
+                    bool flickStickLSGroup = false;
+                    XmlNode xmlFlickStickLSElement =
+                        xmlLSOutputSettingsElement.SelectSingleNode("FlickStickSettings");
+                    flickStickLSGroup = xmlFlickStickLSElement != null;
+
+                    if (flickStickLSGroup)
+                    {
+                        try
+                        {
+                            Item = xmlFlickStickLSElement.SelectSingleNode("RealWorldCalibration");
+                            double.TryParse(Item.InnerText, out double temp);
+                            lsOutputSettings[device].outputSettings.flickSettings.realWorldCalibration = temp;
+                        }
+                        catch { missingSetting = true; }
+
+                        try
+                        {
+                            Item = xmlFlickStickLSElement.SelectSingleNode("FlickThreshold");
+                            double.TryParse(Item.InnerText, out double temp);
+                            lsOutputSettings[device].outputSettings.flickSettings.flickThreshold = temp;
+                        }
+                        catch { missingSetting = true; }
+
+                        try
+                        {
+                            Item = xmlFlickStickLSElement.SelectSingleNode("FlickTime");
+                            double.TryParse(Item.InnerText, out double temp);
+                            lsOutputSettings[device].outputSettings.flickSettings.flickTime = temp;
+                        }
+                        catch { missingSetting = true; }
+                    }
+                    else
+                    {
+                        missingSetting = true;
+                    }
+                }
+                else
+                {
+                    missingSetting = true;
+                }
+
+                XmlNode xmlRSOutputSettingsElement =
+                    m_Xdoc.SelectSingleNode("/" + rootname + "/RSOutputSettings");
+                bool rsOutputGroup = xmlRSOutputSettingsElement != null;
+                if (rsOutputGroup)
+                {
+                    bool flickStickRSGroup = false;
+                    XmlNode xmlFlickStickRSElement =
+                        xmlRSOutputSettingsElement.SelectSingleNode("FlickStickSettings");
+                    flickStickRSGroup = xmlFlickStickRSElement != null;
+
+                    if (flickStickRSGroup)
+                    {
+                        try
+                        {
+                            Item = xmlFlickStickRSElement.SelectSingleNode("RealWorldCalibration");
+                            double.TryParse(Item.InnerText, out double temp);
+                            rsOutputSettings[device].outputSettings.flickSettings.realWorldCalibration = temp;
+                        }
+                        catch { missingSetting = true; }
+
+                        try
+                        {
+                            Item = xmlFlickStickRSElement.SelectSingleNode("FlickThreshold");
+                            double.TryParse(Item.InnerText, out double temp);
+                            rsOutputSettings[device].outputSettings.flickSettings.flickThreshold = temp;
+                        }
+                        catch { missingSetting = true; }
+
+                        try
+                        {
+                            Item = xmlFlickStickRSElement.SelectSingleNode("FlickTime");
+                            double.TryParse(Item.InnerText, out double temp);
+                            rsOutputSettings[device].outputSettings.flickSettings.flickTime = temp;
+                        }
+                        catch { missingSetting = true; }
+                    }
+                    else
+                    {
+                        missingSetting = true;
+                    }
+                }
+                else
+                {
+                    missingSetting = true;
+                }
 
                 try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/L2OutputCurveCustom"); l2OutBezierCurveObj[device].CustomDefinition = Item.InnerText; }
                 catch { missingSetting = true; }
@@ -4750,8 +4939,8 @@ namespace DS4Windows
 
                     m_Xdoc.Load(m_Profile);
 
-                    try { Item = m_Xdoc.SelectSingleNode("/Profile/useExclusiveMode"); Boolean.TryParse(Item.InnerText, out useExclusiveMode); }
-                    catch { missingSetting = true; }
+                    try { Item = m_Xdoc.SelectSingleNode("/Profile/useExclusiveMode"); Boolean.TryParse(Item.InnerText, out useExclusiveMode); } // Ex Mode
+                    catch { missingSetting = true; } // Ex Mode
                     try { Item = m_Xdoc.SelectSingleNode("/Profile/startMinimized"); Boolean.TryParse(Item.InnerText, out startMinimized); }
                     catch { missingSetting = true; }
                     try { Item = m_Xdoc.SelectSingleNode("/Profile/minimizeToTaskbar"); Boolean.TryParse(Item.InnerText, out minToTaskbar); }
@@ -4987,6 +5176,7 @@ namespace DS4Windows
             rootElement.SetAttribute("app_version", Global.exeversion);
             rootElement.SetAttribute("config_version", Global.APP_CONFIG_VERSION.ToString());
 
+            // Ex Mode (+1 line)
             XmlNode xmlUseExclNode = m_Xdoc.CreateNode(XmlNodeType.Element, "useExclusiveMode", null); xmlUseExclNode.InnerText = useExclusiveMode.ToString(); rootElement.AppendChild(xmlUseExclNode);
             XmlNode xmlStartMinimized = m_Xdoc.CreateNode(XmlNodeType.Element, "startMinimized", null); xmlStartMinimized.InnerText = startMinimized.ToString(); rootElement.AppendChild(xmlStartMinimized);
             XmlNode xmlminToTaskbar = m_Xdoc.CreateNode(XmlNodeType.Element, "minimizeToTaskbar", null); xmlminToTaskbar.InnerText = minToTaskbar.ToString(); rootElement.AppendChild(xmlminToTaskbar);
@@ -5720,7 +5910,7 @@ namespace DS4Windows
             buttonMouseInfos[device].activeButtonSensitivity = 25;
             buttonMouseInfos[device].mouseVelocityOffset = ButtonMouseInfo.MOUSESTICKANTIOFFSET;
             enableTouchToggle[device] = true;
-            idleDisconnectTimeout[device] = 300;
+            idleDisconnectTimeout[device] = 0;
             enableOutputDataToDS4[device] = true;
             touchpadJitterCompensation[device] = true;
             lowerRCOn[device] = false;
@@ -5751,6 +5941,9 @@ namespace DS4Windows
             touchpadInvert[device] = 0;
             buttonMouseInfos[device].mouseAccel = false;
             btPollRate[device] = 4;
+
+            lsOutputSettings[device].ResetSettings();
+            rsOutputSettings[device].ResetSettings();
 
             LightbarSettingInfo lightbarSettings = lightbarSettingInfo[device];
             LightbarDS4WinInfo lightInfo = lightbarSettings.ds4winSettings;
@@ -5799,6 +5992,7 @@ namespace DS4Windows
             gyroMouseStickTriggerTurns[device] = true;
             sASteeringWheelEmulationAxis[device] = SASteeringWheelEmulationAxisType.None;
             sASteeringWheelEmulationRange[device] = 360;
+            saWheelFuzzValues[device] = 0;
             wheelSmoothInfo[device].Reset();
             touchDisInvertTriggers[device] = new int[1] { -1 };
             lsCurve[device] = rsCurve[device] = 0;
