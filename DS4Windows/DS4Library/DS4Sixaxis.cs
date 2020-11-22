@@ -218,7 +218,7 @@ namespace DS4Windows
                 accelRange != 0;
 
             // DEBUG. Debug output of calibration data
-            AppLogger.LogToGui($"DEBUG: setCalibrationData. calibrationDone={calibrationDone}  FromUsb={fromUSB}", false);
+            AppLogger.LogToGui($"DEBUG: setCalibrationData. calibrationDone={calibrationDone}", false);
 
             for (int idx = 0; idx < 6; idx++)
                 AppLogger.LogToGui($"DEBUG: setCalibrationData. calibrationData[{idx}] bias={calibrationData[idx].bias}  sensNumer={calibrationData[idx].sensNumer}  sensDenom={calibrationData[idx].sensDenom}", false);
