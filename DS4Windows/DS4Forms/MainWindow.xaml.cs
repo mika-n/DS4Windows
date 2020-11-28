@@ -803,6 +803,7 @@ Suspend support not enabled.", true);
                 }
 
                 StartStopBtn.IsEnabled = true;
+                slotManControl.IsEnabled = service.running;
             }));
         }
 
@@ -1104,7 +1105,7 @@ Suspend support not enabled.", true);
                                     //    OutputSlot.slot#.PlugDS4
                                     //    OutputSlot.slot#.PlugX360
                                     if (int.TryParse(strData[1], out tdevice))
-                                    tdevice--;
+                                        tdevice--;
 
                                     if (tdevice >= 0 && tdevice < ControlService.MAX_DS4_CONTROLLER_COUNT)
                                     {
