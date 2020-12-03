@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -53,7 +53,6 @@
     value   : The object must be serialized with 
             : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
             : and then encoded with base64 encoding.
-
     mimetype: application/x-microsoft.net.object.bytearray.base64
     value   : The object must be serialized into a byte array 
             : using a System.ComponentModel.TypeConverter
@@ -118,293 +117,323 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Accel" xml:space="preserve">
-    <value>Ускорение</value>
+    <value>Przysp.</value>
   </data>
   <data name="Action" xml:space="preserve">
-    <value>Действие</value>
+    <value>Akcja</value>
   </data>
   <data name="AddDirectory" xml:space="preserve">
-    <value>Добавить каталог</value>
+    <value>Dodaj folder</value>
   </data>
   <data name="AddPrograms" xml:space="preserve">
-    <value>Добавить программы</value>
+    <value>Dodaj programy</value>
   </data>
   <data name="AddStartMenuPrograms" xml:space="preserve">
-    <value>Добавить программы меню Пуск</value>
+    <value>Dodaj programy Menu Start</value>
   </data>
   <data name="AddSteamGames" xml:space="preserve">
-    <value>Добавить игры Steam</value>
+    <value>Dodaj gry ze Steama</value>
   </data>
   <data name="All" xml:space="preserve">
-    <value>Все</value>
+    <value>Wszystko</value>
   </data>
   <data name="AutoProfiles" xml:space="preserve">
-    <value>Авто-Профили</value>
+    <value>Autom. profil</value>
   </data>
   <data name="Battery" xml:space="preserve">
-    <value>Аккумулятор</value>
+    <value>Bateria</value>
   </data>
   <data name="Browse" xml:space="preserve">
-    <value>Выбрать</value>
+    <value>Przeglądaj</value>
   </data>
   <data name="BrowseOtherPrograms" xml:space="preserve">
-    <value>Выбрать другие программы</value>
+    <value>Inne programy</value>
   </data>
   <data name="Cancel" xml:space="preserve">
-    <value>Отмена</value>
+    <value>Anuluj</value>
   </data>
   <data name="CheckUpdateNow" xml:space="preserve">
-    <value>Проверка обновлений</value>
+    <value>Sprawdź aktualizacje teraz</value>
   </data>
   <data name="CheckUpdateStartup" xml:space="preserve">
-    <value>Проверка обновлений DS4Windows при запуске</value>
+    <value>Sprawdź aktualizacje podczas uruchamiania programu</value>
   </data>
   <data name="Clear" xml:space="preserve">
-    <value>Очистить</value>
+    <value>Wyczyść</value>
   </data>
   <data name="CloseMinimizes" xml:space="preserve">
-    <value>Сворачивать при закрытии</value>
+    <value>Zamknięcie minimalizuje program</value>
   </data>
   <data name="Color" xml:space="preserve">
-    <value>Цвет</value>
+    <value>Kolor</value>
   </data>
   <data name="Controller1Text" xml:space="preserve">
-    <value>Контроллер 1</value>
+    <value>Kontroler 1</value>
   </data>
   <data name="Controller2Text" xml:space="preserve">
-    <value>Контроллер 2</value>
+    <value>Kontroler 2</value>
   </data>
   <data name="Controller3Text" xml:space="preserve">
-    <value>Контроллер 3</value>
+    <value>Kontroler 3</value>
   </data>
   <data name="Controller4Text" xml:space="preserve">
-    <value>Контроллер 4</value>
+    <value>Kontroler 4</value>
   </data>
   <data name="Controllers" xml:space="preserve">
-    <value>Контроллеры</value>
+    <value>Kontrolery</value>
   </data>
   <data name="ControlPanel" xml:space="preserve">
-    <value>Панель управления</value>
+    <value>Panel sterowania</value>
   </data>
   <data name="Delete" xml:space="preserve">
-    <value>Удалить</value>
+    <value>Usuń</value>
   </data>
   <data name="DriverSetup" xml:space="preserve">
-    <value>Настройка драйвера контроллера</value>
+    <value>Konfiguracja kontrolera / sterownika</value>
   </data>
   <data name="Duplicate" xml:space="preserve">
-    <value>Дублировать</value>
+    <value>Kopiuj</value>
   </data>
   <data name="Edit" xml:space="preserve">
-    <value>Редактировать</value>
+    <value>Edytuj</value>
   </data>
   <data name="EditAction" xml:space="preserve">
-    <value>Изменить действие</value>
+    <value>Edytuj akcję</value>
   </data>
   <data name="Export" xml:space="preserve">
-    <value>Экспорт</value>
+    <value>Eksportuj</value>
   </data>
   <data name="Full" xml:space="preserve">
-    <value>Полностью</value>
+    <value>Pełny</value>
   </data>
   <data name="Gyro" xml:space="preserve">
-    <value>Гироскоп</value>
+    <value>Żyroskop</value>
   </data>
   <data name="HideUnchecked" xml:space="preserve">
-    <value>Скрыть не выбранные</value>
+    <value>Ukryj niezaznaczone</value>
   </data>
   <data name="Import" xml:space="preserve">
-    <value>Импорт</value>
+    <value>Importuj</value>
   </data>
   <data name="LeftStick" xml:space="preserve">
-    <value>Левый стик</value>
+    <value>Lewy drążek</value>
   </data>
   <data name="Log" xml:space="preserve">
-    <value>Журнал</value>
+    <value>Dziennik</value>
   </data>
   <data name="Name" xml:space="preserve">
-    <value>Название</value>
+    <value>Nazwa</value>
   </data>
   <data name="New" xml:space="preserve">
-    <value>Новый</value>
+    <value>Nowy</value>
   </data>
   <data name="NewAction" xml:space="preserve">
-    <value>Новое действие</value>
+    <value>Nowa akcja</value>
   </data>
   <data name="NewProfile" xml:space="preserve">
-    <value>Новый профиль</value>
+    <value>Nowy profil</value>
   </data>
   <data name="None" xml:space="preserve">
-    <value>Нет</value>
+    <value>Brak</value>
   </data>
   <data name="Path" xml:space="preserve">
-    <value>Путь</value>
+    <value>Ścieżka</value>
   </data>
   <data name="Profile" xml:space="preserve">
-    <value>Профиль</value>
+    <value>Profil</value>
   </data>
   <data name="ProfileFolder" xml:space="preserve">
-    <value>Папка профиля</value>
+    <value>Folder z profilami</value>
   </data>
   <data name="QuickCharge" xml:space="preserve">
-    <value>Быстрая зарядка</value>
+    <value>Szybkie ładowanie</value>
   </data>
   <data name="RecordText" xml:space="preserve">
-    <value>Запись</value>
+    <value>Nagraj</value>
   </data>
   <data name="Remove" xml:space="preserve">
-    <value>Удалить</value>
+    <value>Usuń</value>
   </data>
   <data name="RemoveAction" xml:space="preserve">
-    <value>Удалить действие</value>
+    <value>Usuń akcję</value>
   </data>
   <data name="RightStick" xml:space="preserve">
-    <value>Правый стик</value>
+    <value>Prawy drążek</value>
   </data>
   <data name="Rumble" xml:space="preserve">
-    <value>Вибрация</value>
+    <value>Wibracje</value>
   </data>
   <data name="RunAtStartup" xml:space="preserve">
-    <value>Запускать при запуске системы</value>
+    <value>Uruchom przy starcie systemu</value>
   </data>
   <data name="Save" xml:space="preserve">
-    <value>Сохранить</value>
+    <value>Zapisz</value>
   </data>
   <data name="SaveProfile" xml:space="preserve">
-    <value>Сохранить</value>
+    <value>Zapisz</value>
   </data>
   <data name="Settings" xml:space="preserve">
-    <value>Настройки</value>
+    <value>Ustawienia</value>
   </data>
   <data name="ShowNotifications" xml:space="preserve">
-    <value>Показать уведомления</value>
+    <value>Pokazuj powiadomienia</value>
   </data>
   <data name="StartMinimized" xml:space="preserve">
-    <value>Запускать свернутым</value>
+    <value>Uruchom zminimalizowany</value>
   </data>
   <data name="StartText" xml:space="preserve">
-    <value>Старт</value>
+    <value>Start</value>
   </data>
   <data name="Status" xml:space="preserve">
-    <value>Статус</value>
+    <value>Status</value>
   </data>
   <data name="StopText" xml:space="preserve">
-    <value>Стоп</value>
+    <value>Stop</value>
   </data>
   <data name="TouchScroll" xml:space="preserve">
-    <value>Прокрутка</value>
+    <value>Przewijanie</value>
   </data>
   <data name="TouchSlide" xml:space="preserve">
-    <value>Скольжение</value>
+    <value>Przesuwanie</value>
   </data>
   <data name="TouchTap" xml:space="preserve">
-    <value>Касание</value>
+    <value>Dotknięcie</value>
   </data>
   <data name="Trigger" xml:space="preserve">
-    <value>Триггер</value>
+    <value>Spust</value>
   </data>
   <data name="WarningsOnly" xml:space="preserve">
-    <value>Только предупреждения</value>
+    <value>Tylko ostrzeżenia</value>
   </data>
   <data name="RumbleMaxSecs" xml:space="preserve">
-    <value>сек</value>
+    <value>sek</value>
   </data>
   <data name="RumbleMaxSecsTip" xml:space="preserve">
-    <value>Автоостановка в секундах (0=отключена)</value>
+    <value>Zatrzymaj wibracje po upływie x sekund (0=wył.)</value>
   </data>
   <data name="WindowTitle" xml:space="preserve">
-    <value>Window Title</value>
+    <value>Nazwa okna</value>
   </data>
   <data name="MoveUp" xml:space="preserve">
-    <value>Move Up</value>
+    <value>Do góry</value>
   </data>
   <data name="MoveDown" xml:space="preserve">
-    <value>Move Down</value>
+    <value>Na dół</value>
   </data>
   <data name="AutoProfPathTip" xml:space="preserve">
-    <value>Process path. ^ABC = Match at the beginning of string (^) | ABC$ = Match at the end of string ($) | *ABC =Contains a string (*)</value>
+    <value>Ścieżka do procesu. ^ABC = Dopasuj na początku ciągu (^) | ABC$ = Dopasuj na końcu ciągu ($) | *ABC = Zawiera ciąg (*)</value>
   </data>
   <data name="AutoProfTitleTip" xml:space="preserve">
-    <value>Window title. ^ABC = Match at the beginning of string (^) | ABC$ = Match at the end of string ($) | *ABC =Contains a string (*)</value>
+    <value>Nazwa okna. ^ABC = Dopasuj na początku ciągu (^) | ABC$ = Dopasuj na końcu ciągu ($) | *ABC = Zawiera ciąg (*)</value>
   </data>
   <data name="GamepadTest" xml:space="preserve">
-    <value>Тест геймпада</value>
-    <comment>settings tab&gt;utils</comment>
-  </data>
-  <data name="Apply" xml:space="preserve">
-    <value>Применить</value>
-    <comment>Profiles&gt;Edit&gt;Apply
-(button)</comment>
-  </data>
-  <data name="CustomExeName" xml:space="preserve">
-    <value>Настраиваемое имя Exe</value>
-    <comment>Settings tab
-(string)</comment>
-  </data>
-  <data name="CustomExeNameInfo" xml:space="preserve">
-    <value>Некоторые игры встроили блок, который приводит к игнорированию ввода DS4, если игра обнаруживает, что в это время запущен DS4Windows.exe или InputMapper.exe. Обходной путь к блокировке - переименовать DS4Windows.exe, чтобы проверка в игре не прошла. Указание настраиваемого имени exe-файла позволяет DS4Updater автоматически обновлять настраиваемую копию DS4Windows до желаемого имени файла. Обязательно уберите расширение.
-
-Пример: whyme_DS4Windows</value>
-    <comment>Settings tab
-(help button)</comment>
-  </data>
-  <data name="Controller5Text" xml:space="preserve">
-    <value>Контроллер 5</value>
-  </data>
-  <data name="Controller6Text" xml:space="preserve">
-    <value>Контроллер 6</value>
-  </data>
-  <data name="Controller7Text" xml:space="preserve">
-    <value>Контроллер 7</value>
-  </data>
-  <data name="Controller8Text" xml:space="preserve">
-    <value>Контроллер 8</value>
-  </data>
-  <data name="GamepadPresetName" xml:space="preserve">
-    <value>Геймпад</value>
-    <comment>preset name</comment>
-  </data>
-  <data name="Description" xml:space="preserve">
-    <value>Описание</value>
-    <comment>Profiles tab&gt;Select Preset</comment>
-  </data>
-  <data name="PresetIntroText" xml:space="preserve">
-    <value>Вы хотите использовать предустановленный вариант? При выборе «Нет» редактор профиля будет использовать пустой профиль геймпада.</value>
-    <comment>Profiles tab&gt;Select Preset</comment>
-  </data>
-  <data name="Presets" xml:space="preserve">
-    <value>Пресеты</value>
-    <comment>Profiles tab&gt;Select Preset</comment>
-  </data>
-  <data name="Changelog" xml:space="preserve">
-    <value>Журнал изменений</value>
-    <comment>settings tab&gt;utils</comment>
-  </data>
-  <data name="Close" xml:space="preserve">
-    <value>Закрыть</value>
-    <comment>Changelog window
-(button)</comment>
-  </data>
-  <data name="Profiles" xml:space="preserve">
-    <value>Профили</value>
-    <comment>Main tab</comment>
-  </data>
-  <data name="NoControllersConnected" xml:space="preserve">
-    <value>Контроллеры не подключены (Максимум {0})</value>
-    <comment>Controllers tab
-(if controllers are disabled)</comment>
+    <value>Test kontrolera</value>
   </data>
   <data name="EnableOutputDataToDS4" xml:space="preserve">
-    <value>Включить вывод данных в DS4</value>
-    <comment>Profiles tab&gt;edit&gt;Other</comment>
+    <value>Włącz dane wyjściowe do DS4</value>
   </data>
   <data name="EnableOutputDataToDS4Tip" xml:space="preserve">
-    <value>Периодически выводить данные световой панели и вибрации на геймпад DS4. Снимите флажок, если геймпад не поддерживает прием данных. 
-Изменения этого параметра вступают в силу во время подключения геймпада.</value>
+    <value>Wysyłaj okresowo dane paska świetlnego i wibracji do kontrolera.
+Odznacz, jeśli nie wspiera on funkcji otrzymywania danych.
+Zmiany zostaną zastosowane przy łączeniu się z kontrolerem.</value>
     <comment>To enter a line break into a string resource value in VisualStudio resource editor press Shift+Enter.</comment>
   </data>
+  <data name="Apply" xml:space="preserve">
+    <value>Zastosuj</value>
+  </data>
+  <data name="HidNinja" xml:space="preserve">
+    <value>HidNinja</value>
+  </data>
+  <data name="CustomExeName" xml:space="preserve">
+    <value>Własna nazwa EXE</value>
+  </data>
+  <data name="CustomExeNameInfo" xml:space="preserve">
+    <value>Niektóre gry blokują użycie kontrolera, gdy wykryją one działający program DS4Windows.exe lub InputMapper.exe. Obejść to można zmieniając nazwę programu DS4Windows.exe. Podanie tutaj własnej nazwy tego programu pozwala programowi aktualizującemu na automatyczną aktualizację DS4Windows pod zmienioną nazwą. Pamiętaj, aby nie dodawać rozszerzenia.
+
+Przykład: 1_DS4Windows</value>
+  </data>
   <data name="XInputChecker" xml:space="preserve">
-    <value>Проверка XInput</value>
-    <comment>settings tab&gt;utils</comment>
+    <value>XInputChecker</value>
+  </data>
+  <data name="Controller5Text" xml:space="preserve">
+    <value>Kontroler 5</value>
+  </data>
+  <data name="Controller6Text" xml:space="preserve">
+    <value>Kontroler 6</value>
+  </data>
+  <data name="Controller7Text" xml:space="preserve">
+    <value>Kontroler 7</value>
+  </data>
+  <data name="Controller8Text" xml:space="preserve">
+    <value>Kontroler 8</value>
+  </data>
+  <data name="GamepadGyroCameraDescription" xml:space="preserve">
+    <value>Mapuje kontroler jako standardowy kontroler XInput lub DS4. Żyroskop jest mapowny jako myszkopodobny joystick.</value>
+  </data>
+  <data name="GamepadGyroCameraName" xml:space="preserve">
+    <value>Kontroler z myszkopodobnym joystickiem</value>
+  </data>
+  <data name="GamepadPresetDescription" xml:space="preserve">
+    <value>Mapuje kontroler jako standardowy</value>
+  </data>
+  <data name="GamepadPresetName" xml:space="preserve">
+    <value>Kontroler</value>
+  </data>
+  <data name="KBMGyroMouseDescription" xml:space="preserve">
+    <value>Mapuje kontroler jako klawiaturę i myszkę. Użyteczne w przypadku gier FPS bez wsparcia dla kontrolerów. Żyroskop mapowany jest jako mysz.</value>
+  </data>
+  <data name="KBMGyroMouseName" xml:space="preserve">
+    <value>Klawiatura i mysz</value>
+  </data>
+  <data name="KBMPresetDescription" xml:space="preserve">
+    <value>Mapuje kontroler jako klawiaturę i myszkę. Użyteczne w przypadku gier FPS bez wsparcia dla kontrolerów..</value>
+  </data>
+  <data name="KBMPresetName" xml:space="preserve">
+    <value>Klawiatura i mysz - przyciski</value>
+  </data>
+  <data name="MixedGyroMousePresetDescription" xml:space="preserve">
+    <value>Mapuje przyciski i osie jako standardowy kontroler. Żyroskop mapowany jest jako mysz.</value>
+  </data>
+  <data name="MixedGyroMousePresetName" xml:space="preserve">
+    <value>Kontroler z myszką</value>
+  </data>
+  <data name="MixedPresetDescription" xml:space="preserve">
+    <value>Mapuje kontroler jako mieszankę kontrolera XInput i myszy.</value>
+  </data>
+  <data name="MixedPresetName" xml:space="preserve">
+    <value>Kontroler z kamerą wysokiej precyzji</value>
+  </data>
+  <data name="Description" xml:space="preserve">
+    <value>Opis</value>
+  </data>
+  <data name="PresetIntroText" xml:space="preserve">
+    <value>Czy chcesz uzyć presetu? Wybranie opcji 'Nie' spowoduje utworzenie pustego profilu kontrolera.</value>
+  </data>
+  <data name="Presets" xml:space="preserve">
+    <value>Presety</value>
+  </data>
+  <data name="Changelog" xml:space="preserve">
+    <value>Lista zmian</value>
+  </data>
+  <data name="Close" xml:space="preserve">
+    <value>Zamknij</value>
+  </data>
+  <data name="Profiles" xml:space="preserve">
+    <value>Profile</value>
+  </data>
+  <data name="NoControllersConnected" xml:space="preserve">
+    <value>Brak podłączonych kontrolerów (Max {0})</value>
+  </data>
+  <data name="FlickThreshold" xml:space="preserve">
+    <value>Próg szybkiego ruchu</value>
+  </data>
+  <data name="FlickTime" xml:space="preserve">
+    <value>Czas szybkiego ruchu</value>
+  </data>
+  <data name="MinAngleThreshold" xml:space="preserve">
+    <value>Próg kąta minimalnego</value>
+  </data>
+  <data name="RealWorldCalibration" xml:space="preserve">
+    <value>Kalibracja w świecie rzeczywistym</value>
   </data>
 </root>

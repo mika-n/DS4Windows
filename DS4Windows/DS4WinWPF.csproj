@@ -3,7 +3,7 @@
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
     <ProjectGuid>{0135A24D-5DBB-483C-9FC5-9A869E23DA9A}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <RootNamespace>DS4WinWPF</RootNamespace>
@@ -14,25 +14,6 @@
     <WarningLevel>4</WarningLevel>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
@@ -224,6 +205,9 @@
     <Compile Include="DS4Forms\LanguagePackControl.xaml.cs">
       <DependentUpon>LanguagePackControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="DS4Forms\LogMessageDisplay.xaml.cs">
+      <DependentUpon>LogMessageDisplay.xaml</DependentUpon>
+    </Compile>
     <Compile Include="DS4Forms\OutputSlotManagerControl.xaml.cs">
       <DependentUpon>OutputSlotManagerControl.xaml</DependentUpon>
     </Compile>
@@ -344,6 +328,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="DS4Forms\LanguagePackControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="DS4Forms\LogMessageDisplay.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -481,6 +469,10 @@
       <SubType>Designer</SubType>
       <DependentUpon>Strings.resx</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Translations\Strings.pl.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>Strings.resx</DependentUpon>
+    </EmbeddedResource>
     <None Include="app.manifest" />
     <None Include="NLog.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -592,7 +584,7 @@
     <PostBuildEvent>rem Copy compiled l18n assemblies to alt folder
 GOTO END
 if not exist $(TargetDir)Lang mkdir $(TargetDir)Lang
-set langs=cs de es fr it ja nl pt-BR ru zh-CN zh-TW uk-UA hu-HU
+set langs=cs de es fr it ja nl pt-BR ru zh-CN zh-TW uk-UA hu-HU pl
 
 for %25%25l in (%25langs%25) do (
   xcopy $(TargetDir)%25%25l $(TargetDir)Lang\%25%25l\ /s /y
