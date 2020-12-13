@@ -6,10 +6,12 @@ dondrakon
 Flo082002
 Geroyuni
 Haamar
+hpesoj
 jdanders
 jdfeng
 justalemon
 Kamilczak020
+Кладовая
 Korney Czukowski (czukowski)
 Leonardo Melati (Leomelati)
 mayawei
@@ -24,5 +26,6 @@ sergejkiller
 SteelShot
 stryblt
 tpneill
+xLive
 xrossb
 Yuki-nyan
