@@ -170,6 +170,9 @@ namespace DS4Windows
         {
             string deviceInstanceId = devicePathToInstanceId(hDevice.DevicePath);
             CheckVirtualInfo info = checkVirtualFunc(deviceInstanceId);
+
+            AppLogger.LogToGui($"DEBUG: IsRealDS4. deviceInstanceId={deviceInstanceId} info={(info != null ? info.PropertyValue : "NULL")}", false);
+
             return string.IsNullOrEmpty(info.PropertyValue);
             //string temp = Global.GetDeviceProperty(deviceInstanceId,
             //    NativeMethods.DEVPKEY_Device_UINumber);
@@ -184,20 +187,32 @@ namespace DS4Windows
                 IEnumerable<HidDevice> hDevices = HidDevices.EnumerateDS4(knownDevices);
                 if (checkVirtualFunc != null)
                 {
+                    // DEBUG
+                    AppLogger.LogToGui($"DEBUG: findControllers. CheckVirtualFunc. Before Count={hDevices.Count()}", false);
+                    
                     hDevices = hDevices.Where(dev => IsRealDS4(dev)).Select(dev => dev);
+
+                    AppLogger.LogToGui($"DEBUG: findControllers. CheckVirtualFunc. After Count={hDevices.Count()}", false);
                 }
 
                 //hDevices = from dev in hDevices where IsRealDS4(dev) select dev;
-                // Sort Bluetooth first in case USB is also connected on the same controller.
+                // Sort Bluetooth first in case USB is also connected on the same controller.                
+                AppLogger.LogToGui($"DEBUG: findControllers. OrderBy BT before USB", false);
                 hDevices = hDevices.OrderBy<HidDevice, ConnectionType>((HidDevice d) =>
                 {
                     // Need VidPidInfo instance to get CheckConnectionDelegate and
                     // check the connection type
-                    VidPidInfo metainfo = knownDevices.Single(x => x.vid == d.Attributes.VendorId &&
+
+                    // DEBUG: Check existence of gamepad definition or NULL default
+                    VidPidInfo metainfo = knownDevices.SingleOrDefault(x => x.vid == d.Attributes.VendorId &&
                         x.pid == d.Attributes.ProductId);
 
                     //return DS4Device.HidConnectionType(d);
-                    return metainfo.checkConnection(d);
+                    // DEBUG. If metainfo was not found (unknown gamepad device) then assume it is USB
+                    if (metainfo != null)
+                        return metainfo.checkConnection(d);
+                    else
+                        return ConnectionType.USB;
                 });
 
                 List<HidDevice> tempList = hDevices.ToList();
@@ -273,7 +288,8 @@ namespace DS4Windows
                     {
                         //string serial = hDevice.ReadSerial();
                         string serial = DS4Device.BLANK_SERIAL;
-                        if (metainfo.inputDevType == InputDeviceType.DualSense)
+                        // DEBUG. check metainfo NULL
+                        if (metainfo != null && metainfo.inputDevType == InputDeviceType.DualSense)
                         {
                             serial = hDevice.ReadSerial(DualSenseDevice.SERIAL_FEATURE_ID);
                         }
