@@ -86,7 +86,8 @@ namespace DS4Windows
                 if (!found && (tempDev.Capabilities.Usage == 0x05 || (Global.debug_CustomHIDUsageFlag != -1 && tempDev.Capabilities.Usage == Global.debug_CustomHIDUsageFlag))
                     && !(tempDev.Attributes.VendorId == 0x045E && tempDev.Attributes.ProductId == 0x028E) // Ignore USB xbox360 gamepad because it may be the virtual output device
                     && !(tempDev.Attributes.VendorId == 0x06CB) // Ignore Synaptics touchpad devices even when it has Usage=0x5 flag
-                    && !(tempDev.Attributes.VendorId == 0x1234 && tempDev.Attributes.ProductId == 0xBEAD) // Ignoer VJoy virtual joystick devices
+                    && !(tempDev.Attributes.VendorId == 0x1234 && tempDev.Attributes.ProductId == 0xBEAD) // Ignore VJoy virtual joystick devices
+                    && !(tempDev.Attributes.VendorId == 0x10F5 && tempDev.Attributes.ProductId == 0x2123) // Ignore some headset device faking to be a gamepad (usage=0x5 flag)
                     )
                 {
                     AppLogger.LogToGui($"DEBUG: EnumerateDS4. HID#{iDebugDevCount} unknown gamepad device. It may not be DS4 compatible, but trying to use it as potentially DS4 compatible gamepad device", false);

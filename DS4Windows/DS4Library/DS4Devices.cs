@@ -333,9 +333,9 @@ namespace DS4Windows
                             if (metainfo != null)
                                 AppLogger.LogToGui($"DEBUG: findControllers. idx={i} Using device {hDevice.DevicePath}  metainfo.name={metainfo.name}  metainfo.featureSet={metainfo.featureSet}", false);
                             else
-                                AppLogger.LogToGui($"DEBUG: findControllers. idx={i} Using device {hDevice.DevicePath}  metainfo.name=UNKNOWN", false);
+                                AppLogger.LogToGui($"DEBUG: findControllers. idx={i} Using unknown device {hDevice.DevicePath}  metainfo.name=UNKNOWN", false);
 
-                            DS4Device ds4Device = InputDeviceFactory.CreateDevice(metainfo.inputDevType, hDevice, (metainfo != null ? metainfo.name : "UNKNOWN"), (metainfo != null ? metainfo.featureSet : VidPidFeatureSet.DefaultDS4));
+                            DS4Device ds4Device = InputDeviceFactory.CreateDevice((metainfo != null ? metainfo.inputDevType : InputDeviceType.DS4), hDevice, (metainfo != null ? metainfo.name : "UNKNOWN"), (metainfo != null ? metainfo.featureSet : VidPidFeatureSet.DefaultDS4));
                             //DS4Device ds4Device = new DS4Device(hDevice, metainfo.name, metainfo.featureSet);
                             if (ds4Device == null)
                             {
