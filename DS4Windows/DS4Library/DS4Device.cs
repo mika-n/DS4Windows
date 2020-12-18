@@ -88,34 +88,65 @@ namespace DS4Windows
      * The haptics engine uses a stack of these states representing the light bar and rumble motor settings.
      * It (will) handle composing them and the details of output report management.
      */
-    public struct DS4HapticState : IEquatable<DS4HapticState>
+    public struct DS4ForceFeedbackState : IEquatable<DS4ForceFeedbackState>
     {
-        public DS4Color LightBarColor;
-        public bool LightBarExplicitlyOff;
-        public byte LightBarFlashDurationOn, LightBarFlashDurationOff;
         public byte RumbleMotorStrengthLeftHeavySlow, RumbleMotorStrengthRightLightFast;
         public bool RumbleMotorsExplicitlyOff;
 
-        public bool Equals(DS4HapticState other)
+        public bool Equals(DS4ForceFeedbackState other)
         {
-            return LightBarColor.Equals(other.LightBarColor) &&
-                LightBarExplicitlyOff == other.LightBarExplicitlyOff &&
-                LightBarFlashDurationOn == other.LightBarFlashDurationOn &&
-                LightBarFlashDurationOff == other.LightBarFlashDurationOff &&
-                RumbleMotorStrengthLeftHeavySlow == other.RumbleMotorStrengthLeftHeavySlow &&
+            return RumbleMotorStrengthLeftHeavySlow == other.RumbleMotorStrengthLeftHeavySlow &&
                 RumbleMotorStrengthRightLightFast == other.RumbleMotorStrengthRightLightFast &&
                 RumbleMotorsExplicitlyOff == other.RumbleMotorsExplicitlyOff;
-        }
-
-        public bool IsLightBarSet()
-        {
-            return LightBarExplicitlyOff || LightBarColor.red != 0 || LightBarColor.green != 0 || LightBarColor.blue != 0;
         }
 
         public bool IsRumbleSet()
         {
             const byte zero = 0;
             return RumbleMotorsExplicitlyOff || RumbleMotorStrengthLeftHeavySlow != zero || RumbleMotorStrengthRightLightFast != zero;
+        }
+    }
+
+    public struct DS4LightbarState : IEquatable<DS4LightbarState>
+    {
+        public DS4Color LightBarColor;
+        public bool LightBarExplicitlyOff;
+        public byte LightBarFlashDurationOn, LightBarFlashDurationOff;
+
+        public bool Equals(DS4LightbarState other)
+        {
+            return LightBarColor.Equals(other.LightBarColor) &&
+                LightBarExplicitlyOff == other.LightBarExplicitlyOff &&
+                LightBarFlashDurationOn == other.LightBarFlashDurationOn &&
+                LightBarFlashDurationOff == other.LightBarFlashDurationOff;
+        }
+
+        public bool IsLightBarSet()
+        {
+            return LightBarExplicitlyOff || LightBarColor.red != 0 || LightBarColor.green != 0 || LightBarColor.blue != 0;
+        }
+    }
+
+    public struct DS4HapticState : IEquatable<DS4HapticState>
+    {
+        public DS4LightbarState lightbarState;
+        public DS4ForceFeedbackState rumbleState;
+
+        public bool Equals(DS4HapticState other)
+        {
+            return lightbarState.Equals(other.lightbarState) &&
+                rumbleState.Equals(other.rumbleState);
+        }
+
+        public bool IsLightBarSet()
+        {
+            return lightbarState.IsLightBarSet();
+        }
+
+        public bool IsRumbleSet()
+        {
+            const byte zero = 0;
+            return rumbleState.RumbleMotorsExplicitlyOff || rumbleState.RumbleMotorStrengthLeftHeavySlow != zero || rumbleState.RumbleMotorStrengthRightLightFast != zero;
         }
     }
 
@@ -371,27 +402,27 @@ namespace DS4Windows
 
         public byte RightLightFastRumble
         {
-            get { return currentHap.RumbleMotorStrengthRightLightFast; }
+            get { return currentHap.rumbleState.RumbleMotorStrengthRightLightFast; }
             set
             {
-                if (currentHap.RumbleMotorStrengthRightLightFast != value)
-                    currentHap.RumbleMotorStrengthRightLightFast = value;
+                if (currentHap.rumbleState.RumbleMotorStrengthRightLightFast != value)
+                    currentHap.rumbleState.RumbleMotorStrengthRightLightFast = value;
             }
         }
 
         public byte LeftHeavySlowRumble
         {
-            get { return currentHap.RumbleMotorStrengthLeftHeavySlow; }
+            get { return currentHap.rumbleState.RumbleMotorStrengthLeftHeavySlow; }
             set
             {
-                if (currentHap.RumbleMotorStrengthLeftHeavySlow != value)
-                    currentHap.RumbleMotorStrengthLeftHeavySlow = value;
+                if (currentHap.rumbleState.RumbleMotorStrengthLeftHeavySlow != value)
+                    currentHap.rumbleState.RumbleMotorStrengthLeftHeavySlow = value;
             }
         }
 
         public byte getLeftHeavySlowRumble()
         {
-            return currentHap.RumbleMotorStrengthLeftHeavySlow;
+            return currentHap.rumbleState.RumbleMotorStrengthLeftHeavySlow;
         }
 
 
@@ -414,19 +445,19 @@ namespace DS4Windows
 
         public DS4Color LightBarColor
         {
-            get { return currentHap.LightBarColor; }
+            get { return currentHap.lightbarState.LightBarColor; }
             set
             {
-                if (currentHap.LightBarColor.red != value.red || currentHap.LightBarColor.green != value.green || currentHap.LightBarColor.blue != value.blue)
+                if (currentHap.lightbarState.LightBarColor.red != value.red || currentHap.lightbarState.LightBarColor.green != value.green || currentHap.lightbarState.LightBarColor.blue != value.blue)
                 {
-                    currentHap.LightBarColor = value;
+                    currentHap.lightbarState.LightBarColor = value;
                 }
             }
         }
 
         public byte getLightBarOnDuration()
         {
-            return currentHap.LightBarFlashDurationOn;
+            return currentHap.lightbarState.LightBarFlashDurationOn;
         }
 
         // Specify the poll rate interval used for the DS4 hardware when
@@ -1536,19 +1567,25 @@ namespace DS4Windows
                     outReportBuffer[2] = 0xA0;
                     outReportBuffer[3] = 0xf7;
                     outReportBuffer[4] = 0x04;
-                    outReportBuffer[6] = currentHap.RumbleMotorStrengthRightLightFast; // fast motor
-                    outReportBuffer[7] = currentHap.RumbleMotorStrengthLeftHeavySlow; // slow motor
-                    outReportBuffer[8] = currentHap.LightBarColor.red; // red
-                    outReportBuffer[9] = currentHap.LightBarColor.green; // green
-                    outReportBuffer[10] = currentHap.LightBarColor.blue; // blue
-                    outReportBuffer[11] = currentHap.LightBarFlashDurationOn; // flash on duration
-                    outReportBuffer[12] = currentHap.LightBarFlashDurationOff; // flash off duration
+                    outReportBuffer[6] = currentHap.rumbleState.RumbleMotorStrengthRightLightFast; // fast motor
+                    outReportBuffer[7] = currentHap.rumbleState.RumbleMotorStrengthLeftHeavySlow; // slow motor
+                    outReportBuffer[8] = currentHap.lightbarState.LightBarColor.red; // red
+                    outReportBuffer[9] = currentHap.lightbarState.LightBarColor.green; // green
+                    outReportBuffer[10] = currentHap.lightbarState.LightBarColor.blue; // blue
+                    outReportBuffer[11] = currentHap.lightbarState.LightBarFlashDurationOn; // flash on duration
+                    outReportBuffer[12] = currentHap.lightbarState.LightBarFlashDurationOff; // flash off duration
 
                     fixed (byte* byteR = outputReport, byteB = outReportBuffer)
                     {
                         for (int i = 0, arlen = BT_OUTPUT_CHANGE_LENGTH; !change && i < arlen; i++)
                             change = byteR[i] != byteB[i];
                     }
+
+                    /*if (change)
+                    {
+                        Console.WriteLine("CHANGE: {0} {1} {2} {3} {4} {5}", currentHap.LightBarColor.red, currentHap.LightBarColor.green, currentHap.LightBarColor.blue, currentHap.RumbleMotorStrengthRightLightFast, currentHap.RumbleMotorStrengthLeftHeavySlow, DateTime.Now.ToString());
+                    }
+                    */
 
                     haptime = haptime || change;
                 }
@@ -1558,13 +1595,13 @@ namespace DS4Windows
                     // enable rumble (0x01), lightbar (0x02), flash (0x04)
                     outReportBuffer[1] = 0xf7;
                     outReportBuffer[2] = 0x04;
-                    outReportBuffer[4] = currentHap.RumbleMotorStrengthRightLightFast; // fast motor
-                    outReportBuffer[5] = currentHap.RumbleMotorStrengthLeftHeavySlow; // slow  motor
-                    outReportBuffer[6] = currentHap.LightBarColor.red; // red
-                    outReportBuffer[7] = currentHap.LightBarColor.green; // green
-                    outReportBuffer[8] = currentHap.LightBarColor.blue; // blue
-                    outReportBuffer[9] = currentHap.LightBarFlashDurationOn; // flash on duration
-                    outReportBuffer[10] = currentHap.LightBarFlashDurationOff; // flash off duration
+                    outReportBuffer[4] = currentHap.rumbleState.RumbleMotorStrengthRightLightFast; // fast motor
+                    outReportBuffer[5] = currentHap.rumbleState.RumbleMotorStrengthLeftHeavySlow; // slow  motor
+                    outReportBuffer[6] = currentHap.lightbarState.LightBarColor.red; // red
+                    outReportBuffer[7] = currentHap.lightbarState.LightBarColor.green; // green
+                    outReportBuffer[8] = currentHap.lightbarState.LightBarColor.blue; // blue
+                    outReportBuffer[9] = currentHap.lightbarState.LightBarFlashDurationOn; // flash on duration
+                    outReportBuffer[10] = currentHap.lightbarState.LightBarFlashDurationOff; // flash off duration
 
                     fixed (byte* byteR = outputReport, byteB = outReportBuffer)
                     {
@@ -1785,16 +1822,16 @@ namespace DS4Windows
 
         public void setRumble(byte rightLightFastMotor, byte leftHeavySlowMotor)
         {
-            testRumble.RumbleMotorStrengthRightLightFast = rightLightFastMotor;
-            testRumble.RumbleMotorStrengthLeftHeavySlow = leftHeavySlowMotor;
-            testRumble.RumbleMotorsExplicitlyOff = rightLightFastMotor == 0 && leftHeavySlowMotor == 0;
+            testRumble.rumbleState.RumbleMotorStrengthRightLightFast = rightLightFastMotor;
+            testRumble.rumbleState.RumbleMotorStrengthLeftHeavySlow = leftHeavySlowMotor;
+            testRumble.rumbleState.RumbleMotorsExplicitlyOff = rightLightFastMotor == 0 && leftHeavySlowMotor == 0;
 
             // If rumble autostop timer (msecs) is enabled for this device then restart autostop timer everytime rumble is modified (or stop the timer if rumble is set to zero)
             if (rumbleAutostopTime > 0)
             {
-                if (testRumble.RumbleMotorsExplicitlyOff)
+                if (testRumble.rumbleState.RumbleMotorsExplicitlyOff)
                     rumbleAutostopTimer.Reset();   // Stop an autostop timer because ViGem driver sent properly a zero rumble notification
-                else if (currentHap.RumbleMotorStrengthLeftHeavySlow != leftHeavySlowMotor || currentHap.RumbleMotorStrengthRightLightFast != rightLightFastMotor)
+                else if (currentHap.rumbleState.RumbleMotorStrengthLeftHeavySlow != leftHeavySlowMotor || currentHap.rumbleState.RumbleMotorStrengthRightLightFast != rightLightFastMotor)
                     rumbleAutostopTimer.Restart(); // Start an autostop timer to stop potentially stuck rumble motor because of lost rumble notification events from ViGem driver
             }
         }
@@ -1803,11 +1840,12 @@ namespace DS4Windows
         {
             if (testRumble.IsRumbleSet())
             {
-                if (testRumble.RumbleMotorsExplicitlyOff)
-                    testRumble.RumbleMotorsExplicitlyOff = false;
+                if (testRumble.rumbleState.RumbleMotorsExplicitlyOff)
+                    testRumble.rumbleState.RumbleMotorsExplicitlyOff = false;
 
-                currentHap.RumbleMotorStrengthLeftHeavySlow = testRumble.RumbleMotorStrengthLeftHeavySlow;
-                currentHap.RumbleMotorStrengthRightLightFast = testRumble.RumbleMotorStrengthRightLightFast;
+                //currentHap.rumbleState.RumbleMotorStrengthLeftHeavySlow = testRumble.rumbleState.RumbleMotorStrengthLeftHeavySlow;
+                //currentHap.rumbleState.RumbleMotorStrengthRightLightFast = testRumble.rumbleState.RumbleMotorStrengthRightLightFast;
+                currentHap.rumbleState = testRumble.rumbleState;
             }
         }
 
@@ -1868,8 +1906,17 @@ namespace DS4Windows
             currentHap = hs;
         }
 
-        override
-        public string ToString()
+        public void SetLightbarState(ref DS4LightbarState lightState)
+        {
+            currentHap.lightbarState = lightState;
+        }
+
+        public void SetRumbleState(ref DS4ForceFeedbackState rumbleState)
+        {
+            currentHap.rumbleState = rumbleState;
+        }
+
+        public override string ToString()
         {
             return Mac;
         }
