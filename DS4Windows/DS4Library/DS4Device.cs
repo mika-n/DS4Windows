@@ -1660,7 +1660,7 @@ namespace DS4Windows
                                     int winError = Marshal.GetLastWin32Error();
 
                                     // Logfile notification that the gamepad is force disconnected because of writeOutput failed
-                                    if (quitOutputThread == false && Global.debug_WriteOutputErrorCount == 0 /* DEBUG */)
+                                    if (quitOutputThread == false && !isDisconnecting && Global.debug_WriteOutputErrorCount == 0 /* DEBUG */)
                                         AppLogger.LogToGui($"Gamepad data write connection is lost. Disconnecting the gamepad. LastErrorCode={winError}", false);
 
                                     // DEBUG:
