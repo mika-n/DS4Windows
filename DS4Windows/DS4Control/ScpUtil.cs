@@ -34,6 +34,7 @@ namespace DS4Windows
         Controls,
         Mouse,
         MouseJoystick,
+        Passthru,
     }
 
     public enum TouchpadOutMode : uint
@@ -42,6 +43,7 @@ namespace DS4Windows
         Mouse,
         Controls,
         AbsoluteMouse,
+        Passthru,
     }
 
     public enum TrayIconChoice : uint
@@ -358,6 +360,17 @@ namespace DS4Windows
             return result;
         }
 
+        public static bool IsWin10OrGreater()
+        {
+            bool result = false;
+            if (Environment.OSVersion.Version.Major >= 10)
+            {
+                result = true;
+            }
+
+            return result;
+        }
+
         public static string appdatapath;
         public static bool firstRun = false;
         public static bool multisavespots = false;
@@ -384,6 +397,9 @@ namespace DS4Windows
         public static bool vigemInstalled = IsViGEmBusInstalled();
         public static bool hidguardInstalled = IsHidGuardianInstalled();
         public static string vigembusVersion = ViGEmBusVersion();
+        public static Version vigemBusVersionInfo =
+            new Version(!string.IsNullOrEmpty(vigembusVersion) ? vigembusVersion :
+                "0.0.0.0");
         public const int CONFIG_VERSION = 5;
         public const int APP_CONFIG_VERSION = 2;
         public const string ASSEMBLY_RESOURCE_PREFIX = "pack://application:,,,/DS4Windows;";
@@ -2893,6 +2909,9 @@ namespace DS4Windows
                 case GyroOutMode.MouseJoystick:
                     result = "MouseJoystick";
                     break;
+                case GyroOutMode.Passthru:
+                    result = "Passthru";
+                    break;
                 default:
                     break;
             }
@@ -2913,6 +2932,9 @@ namespace DS4Windows
                     break;
                 case "MouseJoystick":
                     result = GyroOutMode.MouseJoystick;
+                    break;
+                case "Passthru":
+                    result = GyroOutMode.Passthru;
                     break;
                 default:
                     break;
@@ -3115,7 +3137,7 @@ namespace DS4Windows
                 XmlNode xmlGyroMinThreshold = m_Xdoc.CreateNode(XmlNodeType.Element, "GyroMouseMinThreshold", null); xmlGyroMinThreshold.InnerText = gyroMouseInfo[device].minThreshold.ToString(); rootElement.AppendChild(xmlGyroMinThreshold);
                 XmlNode xmlGyroMouseToggle = m_Xdoc.CreateNode(XmlNodeType.Element, "GyroMouseToggle", null); xmlGyroMouseToggle.InnerText = gyroMouseToggle[device].ToString(); rootElement.AppendChild(xmlGyroMouseToggle);
 
-                XmlNode xmlGyroOutMode = m_Xdoc.CreateNode(XmlNodeType.Element, "GyroOutputMode", null); xmlGyroOutMode.InnerText = GetGyroOutModeString(gyroOutMode[device]); rootElement.AppendChild(xmlGyroOutMode);
+                XmlNode xmlGyroOutMode = m_Xdoc.CreateNode(XmlNodeType.Element, "GyroOutputMode", null); xmlGyroOutMode.InnerText = gyroOutMode[device].ToString(); rootElement.AppendChild(xmlGyroOutMode);
                 XmlNode xmlGyroMStickTriggers = m_Xdoc.CreateNode(XmlNodeType.Element, "GyroMouseStickTriggers", null); xmlGyroMStickTriggers.InnerText = sAMouseStickTriggers[device].ToString(); rootElement.AppendChild(xmlGyroMStickTriggers);
                 XmlNode xmlGyroMStickTriggerCond = m_Xdoc.CreateNode(XmlNodeType.Element, "GyroMouseStickTriggerCond", null); xmlGyroMStickTriggerCond.InnerText = SaTriggerCondString(sAMouseStickTriggerCond[device]); rootElement.AppendChild(xmlGyroMStickTriggerCond);
                 XmlNode xmlGyroMStickTriggerTurns = m_Xdoc.CreateNode(XmlNodeType.Element, "GyroMouseStickTriggerTurns", null); xmlGyroMStickTriggerTurns.InnerText = gyroMouseStickTriggerTurns[device].ToString(); rootElement.AppendChild(xmlGyroMStickTriggerTurns);
@@ -4203,7 +4225,8 @@ namespace DS4Windows
 
                 try { Item = m_Xdoc.SelectSingleNode("/" + rootname + "/GyroOutputMode");
                     string tempMode = Item.InnerText;
-                    gyroOutMode[device] = GetGyroOutModeType(tempMode);
+                    //gyroOutMode[device] = GetGyroOutModeType(tempMode);
+                    Enum.TryParse(tempMode, out gyroOutMode[device]);
                 }
                 catch { PortOldGyroSettings(device); missingSetting = true; }
 
@@ -5020,46 +5043,21 @@ namespace DS4Windows
                     }
                     catch { missingSetting = true; }
 
-                    try {
-                        Item = m_Xdoc.SelectSingleNode("/Profile/Controller1"); profilePath[0] = Item.InnerText;
-                        if (profilePath[0].ToLower().Contains("distance"))
+                    for (int i = 0; i < Global.MAX_DS4_CONTROLLER_COUNT; i++)
+                    {
+                        string contTag = $"/Profile/Controller{i+1}";
+                        try
                         {
-                            distanceProfiles[0] = true;
-                        }
+                            Item = m_Xdoc.SelectSingleNode(contTag); profilePath[i] = Item.InnerText;
+                            if (profilePath[i].ToLower().Contains("distance"))
+                            {
+                                distanceProfiles[i] = true;
+                            }
 
-                        olderProfilePath[0] = profilePath[0];
-                    }
-                    catch { profilePath[0] = olderProfilePath[0] = string.Empty; distanceProfiles[0] = false; missingSetting = true; }
-                    try {
-                        Item = m_Xdoc.SelectSingleNode("/Profile/Controller2"); profilePath[1] = Item.InnerText;
-                        if (profilePath[1].ToLower().Contains("distance"))
-                        {
-                            distanceProfiles[1] = true;
+                            olderProfilePath[i] = profilePath[i];
                         }
-
-                        olderProfilePath[1] = profilePath[1];
+                        catch { profilePath[i] = olderProfilePath[i] = string.Empty; distanceProfiles[i] = false; missingSetting = true; }
                     }
-                    catch { profilePath[1] = olderProfilePath[1] = string.Empty; distanceProfiles[1] = false; missingSetting = true; }
-                    try {
-                        Item = m_Xdoc.SelectSingleNode("/Profile/Controller3"); profilePath[2] = Item.InnerText;
-                        if (profilePath[2].ToLower().Contains("distance"))
-                        {
-                            distanceProfiles[2] = true;
-                        }
-
-                        olderProfilePath[2] = profilePath[2];
-                    }
-                    catch { profilePath[2] = olderProfilePath[2] = string.Empty; distanceProfiles[2] = false; missingSetting = true; }
-                    try {
-                        Item = m_Xdoc.SelectSingleNode("/Profile/Controller4"); profilePath[3] = Item.InnerText;
-                        if (profilePath[3].ToLower().Contains("distance"))
-                        {
-                            distanceProfiles[3] = true;
-                        }
-
-                        olderProfilePath[3] = profilePath[3];
-                    }
-                    catch { profilePath[3] = olderProfilePath[3] = string.Empty; distanceProfiles[3] = false; missingSetting = true; }
 
                     try { Item = m_Xdoc.SelectSingleNode("/Profile/LastChecked"); DateTime.TryParse(Item.InnerText, out lastChecked); }
                     catch { missingSetting = true; }
@@ -5251,10 +5249,15 @@ namespace DS4Windows
             XmlNode xmlFormLocationX = m_Xdoc.CreateNode(XmlNodeType.Element, "formLocationX", null); xmlFormLocationX.InnerText = formLocationX.ToString(); rootElement.AppendChild(xmlFormLocationX);
             XmlNode xmlFormLocationY = m_Xdoc.CreateNode(XmlNodeType.Element, "formLocationY", null); xmlFormLocationY.InnerText = formLocationY.ToString(); rootElement.AppendChild(xmlFormLocationY);
 
-            XmlNode xmlController1 = m_Xdoc.CreateNode(XmlNodeType.Element, "Controller1", null); xmlController1.InnerText = !Global.linkedProfileCheck[0] ? profilePath[0] : olderProfilePath[0]; rootElement.AppendChild(xmlController1);
-            XmlNode xmlController2 = m_Xdoc.CreateNode(XmlNodeType.Element, "Controller2", null); xmlController2.InnerText = !Global.linkedProfileCheck[1] ? profilePath[1] : olderProfilePath[1]; rootElement.AppendChild(xmlController2);
-            XmlNode xmlController3 = m_Xdoc.CreateNode(XmlNodeType.Element, "Controller3", null); xmlController3.InnerText = !Global.linkedProfileCheck[2] ? profilePath[2] : olderProfilePath[2]; rootElement.AppendChild(xmlController3);
-            XmlNode xmlController4 = m_Xdoc.CreateNode(XmlNodeType.Element, "Controller4", null); xmlController4.InnerText = !Global.linkedProfileCheck[3] ? profilePath[3] : olderProfilePath[3]; rootElement.AppendChild(xmlController4);
+            for (int i = 0; i < Global.MAX_DS4_CONTROLLER_COUNT; i++)
+            {
+                string contTagName = $"Controller{i+1}";
+                XmlNode xmlControllerNode = m_Xdoc.CreateNode(XmlNodeType.Element, contTagName, null); xmlControllerNode.InnerText = !Global.linkedProfileCheck[i] ? profilePath[i] : olderProfilePath[i];
+                if (!string.IsNullOrEmpty(xmlControllerNode.InnerText))
+                {
+                    rootElement.AppendChild(xmlControllerNode);
+                }
+            }
 
             XmlNode xmlLastChecked = m_Xdoc.CreateNode(XmlNodeType.Element, "LastChecked", null); xmlLastChecked.InnerText = lastChecked.ToString(); rootElement.AppendChild(xmlLastChecked);
             XmlNode xmlCheckWhen = m_Xdoc.CreateNode(XmlNodeType.Element, "CheckWhen", null); xmlCheckWhen.InnerText = CheckWhen.ToString(); rootElement.AppendChild(xmlCheckWhen);
