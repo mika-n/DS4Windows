@@ -464,6 +464,8 @@ namespace DS4Windows
         public static int debug_CustomHIDUsageFlag = -1;   // -1=No custom (default 0x05 only), >=0 custom usage flag
         public static int debug_WriteOutputErrorCount = 0; // Number of consequtive writeOutput errors. If this is repeated 100 times then disconnect the gamepad
         public static int debug_ReadInputErrorCount = 0;   // Number of consequtive readInput errors. If this is repeated 100 times then disconnect the gamepad
+        public static int debug_ForceOutputReport00 = 0;   // Override HID output report bit flags. 0=default, 0x15 or 0x11
+        public static int debug_ForceOutputReport01 = 0;   // Override HID output report bit flags. 0=default, 0xC4 or 0x84
 
         // Create mapping array at runtime
         public static DS4Controls[] reverseX360ButtonMapping = new Func<DS4Controls[]>(() =>
@@ -5012,6 +5014,13 @@ namespace DS4Windows
 
                         if (!string.IsNullOrEmpty(ConfigurationSettings.AppSettings["Debug_CustomHIDUsageFlag"]))
                             Global.debug_CustomHIDUsageFlag = Convert.ToInt32(ConfigurationSettings.AppSettings["Debug_CustomHIDUsageFlag"]);
+
+                        if (!string.IsNullOrEmpty(ConfigurationSettings.AppSettings["Debug_ForceOutputReport00"]))
+                            Global.debug_ForceOutputReport00 = Convert.ToInt32(ConfigurationSettings.AppSettings["Debug_ForceOutputReport00"]);
+
+                        if (!string.IsNullOrEmpty(ConfigurationSettings.AppSettings["Debug_ForceOutputReport01"]))
+                            Global.debug_ForceOutputReport01 = Convert.ToInt32(ConfigurationSettings.AppSettings["Debug_ForceOutputReport01"]);
+
                     }
                     catch (Exception)
                     { }

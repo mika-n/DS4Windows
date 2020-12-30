@@ -582,6 +582,8 @@ namespace DS4Windows
             AppLogger.LogToGui($"DEBUG: DS4Device. Current debug options: debug_SendRumbleLightbarData={Global.debug_SendRumbleLightbarData}  debug_SendRumbleLightbarDataType={Global.debug_SendRumbleLightbarDataType}  debug_SendRumbleLightbarDataAPI={Global.debug_SendRumbleLightbarDataAPI}", false);
             AppLogger.LogToGui($"DEBUG: DS4Device. Current debug options: debug_ReadTouchpadData ={Global.debug_ReadTouchpadData}  debug_ReadGyroData={Global.debug_ReadGyroData}  debug_ReadBatteryData={Global.debug_ReadBatteryData}", false);
             AppLogger.LogToGui($"DEBUG: DS4Device. Current debug options: debug_ForceConnectionType={Global.debug_ForceConnectionType}  debug_PrintoutInputDataBuffer={Global.debug_PrintoutInputDataBuffer}", false);
+
+            AppLogger.LogToGui($"DEBUG: DS4Device. Current debug options: debug_ForceOutputReport00={Global.debug_ForceOutputReport00}  debug_ForceOutputReport01={Global.debug_ForceOutputReport01}", false);
         }
 
         public virtual void PostInit()
@@ -1549,10 +1551,19 @@ namespace DS4Windows
 
             if (usingBT && (this.featureSet & VidPidFeatureSet.OnlyOutputData0x05) == 0)
             {
-                outReportBuffer[0] = 0x15;
+                // DEBUG
+                if (Global.debug_ForceOutputReport00 != 0)
+                    outReportBuffer[0] = (byte)Global.debug_ForceOutputReport00;
+                else
+                    outReportBuffer[0] = 0x15;
                 //outReportBuffer[0] = 0x11;
                 //outReportBuffer[1] = (byte)(0x80 | btPollRate); // input report rate
-                outReportBuffer[1] = (byte)(0xC0 | btPollRate); // input report rate
+
+                // DEBUG
+                if (Global.debug_ForceOutputReport01 != 0)
+                    outReportBuffer[1] = (byte)Global.debug_ForceOutputReport01;
+                else
+                    outReportBuffer[1] = (byte)(0xC0 | btPollRate); // input report rate
                                                                 // enable rumble (0x01), lightbar (0x02), flash (0x04)
                 outReportBuffer[2] = 0xA0;
                 outReportBuffer[3] = 0xf7;
@@ -1581,9 +1592,19 @@ namespace DS4Windows
             }
             else
             {
-                outReportBuffer[0] = 0x05;
+                // DEBUG
+                if (Global.debug_ForceOutputReport00 != 0)
+                    outReportBuffer[0] = (byte)Global.debug_ForceOutputReport00;
+                else
+                    outReportBuffer[0] = 0x05;
+
                 // enable rumble (0x01), lightbar (0x02), flash (0x04)
-                outReportBuffer[1] = 0xf7;
+                // DEBUG
+                if (Global.debug_ForceOutputReport01 != 0)
+                    outReportBuffer[1] = (byte)Global.debug_ForceOutputReport01;
+                else
+                    outReportBuffer[1] = 0xf7;
+
                 outReportBuffer[2] = 0x04;
                 outReportBuffer[4] = currentHap.rumbleState.RumbleMotorStrengthRightLightFast; // fast motor
                 outReportBuffer[5] = currentHap.rumbleState.RumbleMotorStrengthLeftHeavySlow; // slow  motor
