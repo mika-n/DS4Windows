@@ -1351,6 +1351,7 @@ namespace DS4Windows
                     }
 
                     cState.elapsedTime = elapsedDeltaTime;
+                    cState.ds4Timestamp = (ushort)tempStamp;
                     timeStampPrevious = tempStamp;
 
                     // DEBUG: Feed touchpad values to DS4Win app only when debug option enables it
@@ -1745,7 +1746,10 @@ namespace DS4Windows
                     }
                     else
                     {
-                        Monitor.Pulse(outReportBuffer);
+                        lock(outReportBuffer)
+                        {
+                            Monitor.Pulse(outReportBuffer);
+                        }
                     }
                 }
             }
