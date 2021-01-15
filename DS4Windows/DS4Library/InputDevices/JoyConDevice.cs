@@ -6,9 +6,8 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using DS4Windows;
 
-namespace DS4WinWPF.DS4Library.InputDevices
+namespace DS4Windows.InputDevices
 {
     public class JoyConDevice : DS4Device
     {
@@ -211,6 +210,9 @@ namespace DS4WinWPF.DS4Library.InputDevices
         private double combLatency;
         public double CombLatency { get => combLatency; set => combLatency = value; }
 
+        private bool enableHomeLED = true;
+        public bool EnableHomeLED { get => enableHomeLED; set => enableHomeLED = value; }
+
         public override event ReportHandler<EventArgs> Report = null;
         public override event EventHandler<EventArgs> Removal = null;
         public override event EventHandler BatteryChanged;
@@ -243,6 +245,16 @@ namespace DS4WinWPF.DS4Library.InputDevices
         public override void PostInit()
         {
             sideType = DetermineSideType();
+            if (sideType == JoyConSide.Left)
+            {
+                deviceType = InputDeviceType.JoyConL;
+            }
+            else if (sideType == JoyConSide.Right)
+            {
+                deviceType = InputDeviceType.JoyConR;
+            }
+
+            gyroMouseSensSettings = new GyroMouseSens();
             conType = ConnectionType.BT;
             warnInterval = WARN_INTERVAL_BT;
 
@@ -665,7 +677,7 @@ namespace DS4WinWPF.DS4Library.InputDevices
             byte[] powerChoiceArray = new byte[] { 0x00 };
             Subcommand(SwitchProSubCmd.SET_LOW_POWER_STATE, powerChoiceArray, 1, checkResponse: true);
 
-            if (sideType == JoyConSide.Right)
+            if (sideType == JoyConSide.Right && enableHomeLED)
             {
                 // Turn on Home light (Solid)
                 byte[] light = Enumerable.Repeat((byte)0xFF, 25).ToArray();

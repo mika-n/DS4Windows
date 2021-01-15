@@ -1,5 +1,4 @@
-﻿using DS4Windows;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -8,7 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace DS4WinWPF.DS4Library.InputDevices
+namespace DS4Windows.InputDevices
 {
     public class SwitchProDevice : DS4Device
     {
@@ -192,6 +191,9 @@ namespace DS4WinWPF.DS4Library.InputDevices
         private double combLatency;
         public double CombLatency { get => combLatency; set => combLatency = value; }
 
+        private bool enableHomeLED = true;
+        public bool EnableHomeLED { get => enableHomeLED; set => enableHomeLED = value; }
+
         public override event ReportHandler<EventArgs> Report = null;
         public override event EventHandler<EventArgs> Removal = null;
 
@@ -222,6 +224,8 @@ namespace DS4WinWPF.DS4Library.InputDevices
 
         public override void PostInit()
         {
+            deviceType = InputDeviceType.SwitchPro;
+            gyroMouseSensSettings = new GyroMouseSens();
             conType = DetermineConnectionType(hDevice);
 
             if (conType == ConnectionType.BT)
@@ -647,11 +651,14 @@ namespace DS4WinWPF.DS4Library.InputDevices
             byte[] powerChoiceArray = new byte[] { 0x00 };
             Subcommand(SwitchProSubCmd.SET_LOW_POWER_STATE, powerChoiceArray, 1, checkResponse: true);
 
-            // Turn on Home light (Solid)
-            byte[] light = Enumerable.Repeat((byte)0xFF, 25).ToArray();
-            light[0] = 0x1F; light[1] = 0xF0;
-            //Thread.Sleep(1000);
-            Subcommand(0x38, light, 25, checkResponse: true);
+            if (enableHomeLED)
+            {
+                // Turn on Home light (Solid)
+                byte[] light = Enumerable.Repeat((byte)0xFF, 25).ToArray();
+                light[0] = 0x1F; light[1] = 0xF0;
+                //Thread.Sleep(1000);
+                Subcommand(0x38, light, 25, checkResponse: true);
+            }
 
             // Turn on bottom LEDs
             byte[] leds = new byte[] { 0x01 };

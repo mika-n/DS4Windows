@@ -152,6 +152,13 @@ namespace DS4Windows
 
     public class DS4Device
     {
+        public class GyroMouseSens
+        {
+            public double mouseOffset = 0.2;
+            public double mouseCoefficient = 0.012;
+            public double mouseSmoothOffset = 0.2;
+        }
+
         public enum ExclusiveStatus : byte
         {
             Shared = 0,
@@ -373,6 +380,9 @@ namespace DS4Windows
             return featureSet;
         }
 
+        protected bool useRumble = true;
+        public bool UseRumble { get => useRumble; set => useRumble = value; }
+
         public int Battery => battery;
         public delegate void BatteryUpdateHandler(object sender, EventArgs e);
         public virtual event EventHandler BatteryChanged;
@@ -538,6 +548,12 @@ namespace DS4Windows
         private BTOutputReportMethod btOutputMethod;
         public BTOutputReportMethod BTOutputMethod { get => btOutputMethod; set => btOutputMethod = value; }
 
+        protected InputDevices.InputDeviceType deviceType;
+        public InputDevices.InputDeviceType DeviceType { get => deviceType; }
+
+        protected GyroMouseSens gyroMouseSensSettings;
+        public virtual GyroMouseSens GyroMouseSensSettings { get => gyroMouseSensSettings; }
+
         public DS4Device(HidDevice hidDevice, string disName, VidPidFeatureSet featureSet = VidPidFeatureSet.DefaultDS4)
         {
             hDevice = hidDevice;
@@ -589,6 +605,8 @@ namespace DS4Windows
         public virtual void PostInit()
         {
             HidDevice hidDevice = hDevice;
+            deviceType = InputDevices.InputDeviceType.DS4;
+            gyroMouseSensSettings = new GyroMouseSens();
 
             if (conType == ConnectionType.USB || conType == ConnectionType.SONYWA)
             {
