@@ -599,7 +599,7 @@ namespace DS4Windows
             AppLogger.LogToGui($"DEBUG: DS4Device. Current debug options: debug_ReadTouchpadData ={Global.debug_ReadTouchpadData}  debug_ReadGyroData={Global.debug_ReadGyroData}  debug_ReadBatteryData={Global.debug_ReadBatteryData}", false);
             AppLogger.LogToGui($"DEBUG: DS4Device. Current debug options: debug_ForceConnectionType={Global.debug_ForceConnectionType}  debug_PrintoutInputDataBuffer={Global.debug_PrintoutInputDataBuffer}", false);
 
-            AppLogger.LogToGui($"DEBUG: DS4Device. Current debug options: debug_ForceOutputReport00={Global.debug_ForceOutputReport00}  debug_ForceOutputReport01={Global.debug_ForceOutputReport01}", false);
+            AppLogger.LogToGui($"DEBUG: DS4Device. Current debug options: debug_ForceOutputReport00={Global.debug_ForceOutputReport00}  debug_ForceOutputReport01={Global.debug_ForceOutputReport01}  debug_ForceOutputReportFx={Global.debug_ForceOutputReportFx}  ", false);
         }
 
         public virtual void PostInit()
@@ -1585,7 +1585,11 @@ namespace DS4Windows
                     outReportBuffer[1] = (byte)(0xC0 | btPollRate); // input report rate
                                                                 // enable rumble (0x01), lightbar (0x02), flash (0x04)
                 outReportBuffer[2] = 0xA0;
-                outReportBuffer[3] = 0xf7;
+                if(Global.debug_ForceOutputReportFx != 0)
+                    outReportBuffer[3] = (byte)Global.debug_ForceOutputReportFx;
+                else
+                    outReportBuffer[3] = 0xf7;
+
                 outReportBuffer[4] = 0x04;
                 outReportBuffer[6] = currentHap.rumbleState.RumbleMotorStrengthRightLightFast; // fast motor
                 outReportBuffer[7] = currentHap.rumbleState.RumbleMotorStrengthLeftHeavySlow; // slow motor
@@ -1622,8 +1626,12 @@ namespace DS4Windows
                 if (Global.debug_ForceOutputReport01 != 0)
                     outReportBuffer[1] = (byte)Global.debug_ForceOutputReport01;
                 else
-                    outReportBuffer[1] = 0xf7;
-
+                {
+                    if (Global.debug_ForceOutputReportFx != 0)
+                        outReportBuffer[1] = (byte)Global.debug_ForceOutputReportFx;
+                    else
+                        outReportBuffer[1] = 0xf7;
+                }
                 outReportBuffer[2] = 0x04;
                 outReportBuffer[4] = currentHap.rumbleState.RumbleMotorStrengthRightLightFast; // fast motor
                 outReportBuffer[5] = currentHap.rumbleState.RumbleMotorStrengthLeftHeavySlow; // slow  motor

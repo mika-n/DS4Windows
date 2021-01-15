@@ -466,6 +466,7 @@ namespace DS4Windows
         public static int debug_ReadInputErrorCount = 0;   // Number of consequtive readInput errors. If this is repeated 100 times then disconnect the gamepad
         public static int debug_ForceOutputReport00 = 0;   // Override HID output report bit flags. 0=default, 0x15 or 0x11
         public static int debug_ForceOutputReport01 = 0;   // Override HID output report bit flags. 0=default, 0xC4 or 0x84
+        public static int debug_ForceOutputReportFx = 0;   // Override HID output report bit flags. 0=default, 0xF7 or 0xF3 (this has been F7 for years, but some copy-cats works better with F3 value, maybe)
 
         // Create mapping array at runtime
         public static DS4Controls[] reverseX360ButtonMapping = new Func<DS4Controls[]>(() =>
@@ -5026,6 +5027,8 @@ namespace DS4Windows
                         if (!string.IsNullOrEmpty(ConfigurationSettings.AppSettings["Debug_ForceOutputReport01"]))
                             Global.debug_ForceOutputReport01 = Convert.ToInt32(ConfigurationSettings.AppSettings["Debug_ForceOutputReport01"]);
 
+                        if (!string.IsNullOrEmpty(ConfigurationSettings.AppSettings["Debug_ForceOutputReportFx"]))
+                            Global.debug_ForceOutputReportFx = Convert.ToInt32(ConfigurationSettings.AppSettings["Debug_ForceOutputReportFx"]);
                     }
                     catch (Exception)
                     { }
