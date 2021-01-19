@@ -554,6 +554,20 @@ namespace DS4Windows
         protected GyroMouseSens gyroMouseSensSettings;
         public virtual GyroMouseSens GyroMouseSensSettings { get => gyroMouseSensSettings; }
 
+        protected int deviceSlotNumber = -1;
+        public int DeviceSlotNumber
+        {
+            get => deviceSlotNumber;
+            set
+            {
+                if (deviceSlotNumber == value) return;
+                deviceSlotNumber = value;
+                DeviceSlotNumberChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        protected event EventHandler DeviceSlotNumberChanged;
+        protected byte deviceSlotMask = 0x00;
+
         public DS4Device(HidDevice hidDevice, string disName, VidPidFeatureSet featureSet = VidPidFeatureSet.DefaultDS4)
         {
             hDevice = hidDevice;
@@ -1299,6 +1313,7 @@ namespace DS4Windows
                     tempByte = inputReport[7];
                     cState.PS = (tempByte & (1 << 0)) != 0;
                     cState.TouchButton = (tempByte & 0x02) != 0;
+                    cState.OutputTouchButton = cState.TouchButton;
                     cState.FrameCounter = (byte)(tempByte >> 2);
 
                     //if ((this.featureSet & VidPidFeatureSet.NoBatteryReading) == 0)

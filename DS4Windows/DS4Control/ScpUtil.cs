@@ -5207,8 +5207,10 @@ namespace DS4Windows
                             try
                             {
                                 XmlNode item = xmlDS4Support.SelectSingleNode("Enabled");
-                                bool.TryParse(item?.InnerText ?? "", out bool temp);
-                                deviceOptions.DS4DeviceOpts.Enabled = temp;
+                                if (bool.TryParse(item?.InnerText ?? "", out bool temp))
+                                {
+                                    deviceOptions.DS4DeviceOpts.Enabled = temp;
+                                }
                             }
                             catch { }
                         }
@@ -5219,16 +5221,30 @@ namespace DS4Windows
                             try
                             {
                                 XmlNode item = xmlDualSenseSupport.SelectSingleNode("Enabled");
-                                bool.TryParse(item?.InnerText ?? "", out bool temp);
-                                deviceOptions.DualSenseOpts.Enabled = temp;
+                                if (bool.TryParse(item?.InnerText ?? "", out bool temp))
+                                {
+                                    deviceOptions.DualSenseOpts.Enabled = temp;
+                                }
                             }
                             catch { }
 
                             try
                             {
                                 XmlNode item = xmlDualSenseSupport.SelectSingleNode("EnableRumble");
-                                bool.TryParse(item?.InnerText ?? "", out bool temp);
-                                deviceOptions.DualSenseOpts.EnableRumble = temp;
+                                if (bool.TryParse(item?.InnerText ?? "", out bool temp))
+                                {
+                                    deviceOptions.DualSenseOpts.EnableRumble = temp;
+                                }
+                            }
+                            catch { }
+
+                            try
+                            {
+                                XmlNode item = xmlDualSenseSupport.SelectSingleNode("RumbleStrength");
+                                if (Enum.TryParse(item?.InnerText ?? "", out InputDevices.DualSenseDevice.HapticIntensity temp))
+                                {
+                                    deviceOptions.DualSenseOpts.HapticIntensity = temp;
+                                }
                             }
                             catch { }
                         }
@@ -5239,16 +5255,20 @@ namespace DS4Windows
                             try
                             {
                                 XmlNode item = xmlSwitchProSupport.SelectSingleNode("Enabled");
-                                bool.TryParse(item?.InnerText ?? "", out bool temp);
-                                deviceOptions.SwitchProDeviceOpts.Enabled = temp;
+                                if (bool.TryParse(item?.InnerText ?? "", out bool temp))
+                                {
+                                    deviceOptions.SwitchProDeviceOpts.Enabled = temp;
+                                }
                             }
                             catch { }
 
                             try
                             {
                                 XmlNode item = xmlSwitchProSupport.SelectSingleNode("EnableHomeLED");
-                                bool.TryParse(item?.InnerText ?? "", out bool temp);
-                                deviceOptions.SwitchProDeviceOpts.EnableHomeLED = temp;
+                                if (bool.TryParse(item?.InnerText ?? "", out bool temp))
+                                {
+                                    deviceOptions.SwitchProDeviceOpts.EnableHomeLED = temp;
+                                }
                             }
                             catch { }
                         }
@@ -5259,16 +5279,20 @@ namespace DS4Windows
                             try
                             {
                                 XmlNode item = xmlJoyConSupport.SelectSingleNode("Enabled");
-                                bool.TryParse(item?.InnerText ?? "", out bool temp);
-                                deviceOptions.JoyConDeviceOpts.Enabled = temp;
+                                if (bool.TryParse(item?.InnerText ?? "", out bool temp))
+                                {
+                                    deviceOptions.JoyConDeviceOpts.Enabled = temp;
+                                }
                             }
                             catch { }
 
                             try
                             {
                                 XmlNode item = xmlJoyConSupport.SelectSingleNode("EnableHomeLED");
-                                bool.TryParse(item?.InnerText ?? "", out bool temp);
-                                deviceOptions.JoyConDeviceOpts.EnableHomeLED = temp;
+                                if (bool.TryParse(item?.InnerText ?? "", out bool temp))
+                                {
+                                    deviceOptions.JoyConDeviceOpts.EnableHomeLED = temp;
+                                }
                             }
                             catch { }
                         }
@@ -5400,6 +5424,10 @@ namespace DS4Windows
             XmlElement xmlDualSenseEnableRumble = m_Xdoc.CreateElement("EnableRumble", null);
             xmlDualSenseEnableRumble.InnerText = deviceOptions.DualSenseOpts.EnableRumble.ToString();
             xmlDualSenseSupport.AppendChild(xmlDualSenseEnableRumble);
+
+            XmlElement xmlDualSenseHapticStrength = m_Xdoc.CreateElement("RumbleStrength", null);
+            xmlDualSenseHapticStrength.InnerText = deviceOptions.DualSenseOpts.HapticIntensity.ToString();
+            xmlDualSenseSupport.AppendChild(xmlDualSenseHapticStrength);
             xmlDeviceOptions.AppendChild(xmlDualSenseSupport);
 
             XmlElement xmlSwitchProSupport = m_Xdoc.CreateElement("SwitchProSupportSettings", null);
@@ -6428,6 +6456,12 @@ namespace DS4Windows
             rsInfo.antiDeadZone = 0;
             rsInfo.maxZone = 90;
 
+            TriggerDeadZoneZInfo l2Info = l2ModInfo[device];
+            l2Info.deadZone = (byte)(0.20 * 255);
+
+            TriggerDeadZoneZInfo r2Info = r2ModInfo[device];
+            r2Info.deadZone = (byte)(0.20 * 255);
+
             // Flag to unplug virtual controller
             dinputOnly[device] = true;
 
@@ -6526,6 +6560,12 @@ namespace DS4Windows
             rsInfo.deadZone = (int)(0.105 * 127);
             rsInfo.antiDeadZone = 0;
             rsInfo.maxZone = 90;
+
+            TriggerDeadZoneZInfo l2Info = l2ModInfo[device];
+            l2Info.deadZone = (byte)(0.20 * 255);
+
+            TriggerDeadZoneZInfo r2Info = r2ModInfo[device];
+            r2Info.deadZone = (byte)(0.20 * 255);
 
             gyroOutMode[device] = GyroOutMode.Mouse;
             sATriggers[device] = "4";

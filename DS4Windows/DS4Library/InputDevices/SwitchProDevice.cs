@@ -220,6 +220,10 @@ namespace DS4Windows.InputDevices
             rightStickYData.mid = SAMPLE_STICK_MID;
 
             warnInterval = WARN_INTERVAL_BT;
+
+            DeviceSlotNumberChanged += (sender, e) => {
+                CalculateDeviceSlotMask();
+            };
         }
 
         public override void PostInit()
@@ -661,7 +665,7 @@ namespace DS4Windows.InputDevices
             }
 
             // Turn on bottom LEDs
-            byte[] leds = new byte[] { 0x01 };
+            byte[] leds = new byte[] { deviceSlotMask };
             //Thread.Sleep(1000);
             Subcommand(0x30, leds, 1, checkResponse: true);
 
@@ -1201,6 +1205,61 @@ namespace DS4Windows.InputDevices
         public override bool IsAlive()
         {
             return !isDisconnecting;
+        }
+
+        private void CalculateDeviceSlotMask()
+        {
+            // Map 1-15 as a set of 4 LED lights
+            switch (deviceSlotNumber)
+            {
+                case 0:
+                case 1:
+                case 2:
+                case 3:
+                    deviceSlotMask = (byte)(1 << deviceSlotNumber);
+                    break;
+                case 4:
+                    deviceSlotMask = 0x01 | 0x02;
+                    break;
+                case 5:
+                    deviceSlotMask = 0x01 | 0x04;
+                    break;
+                case 6:
+                    deviceSlotMask = 0x01 | 0x08;
+                    break;
+
+                case 7:
+                    deviceSlotMask = 0x02 | 0x04;
+                    break;
+                case 8:
+                    deviceSlotMask = 0x02 | 0x08;
+                    break;
+
+                case 9:
+                    deviceSlotMask = 0x04 | 0x08;
+                    break;
+
+                case 10:
+                    deviceSlotMask = 0x01 | 0x02 | 0x04;
+                    break;
+                case 11:
+                    deviceSlotMask = 0x01 | 0x02 | 0x08;
+                    break;
+                case 12:
+                    deviceSlotMask = 0x01 | 0x04 | 0x08;
+                    break;
+
+                case 13:
+                    deviceSlotMask = 0x02 | 0x04 | 0x08;
+                    break;
+
+                case 14:
+                    deviceSlotMask = 0x01 | 0x02 | 0x04 | 0x08;
+                    break;
+                default:
+                    deviceSlotMask = 0x00;
+                    break;
+            }
         }
     }
 }
