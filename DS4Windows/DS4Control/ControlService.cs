@@ -1211,7 +1211,7 @@ namespace DS4Windows
                         OutputDevice tempout = outputDevices[i];
                         if (tempout != null)
                         {
-                            UnplugOutDev(i, tempDevice, immediate: true, force: true);
+                            UnplugOutDev(i, tempDevice, immediate: false, force: true);
                             anyUnplugged = true;
                         }
 
@@ -1239,6 +1239,7 @@ namespace DS4Windows
                 if (showlog)
                     LogDebug(DS4WinWPF.Properties.Resources.StoppedDS4Windows);
 
+                outputslotMan.Stop();
                 while (outputslotMan.RunningQueue)
                 {
                     Thread.SpinWait(500);
@@ -1762,10 +1763,10 @@ namespace DS4Windows
                     device.IsRemoved = true;
                     device.Synced = false;
                     DS4Controllers[ind] = null;
-                    eventDispatcher.Invoke(() =>
-                    {
+                    //eventDispatcher.Invoke(() =>
+                    //{
                         slotManager.RemoveController(device, ind);
-                    });
+                    //});
 
                     touchPad[ind] = null;
                     lag[ind] = false;
