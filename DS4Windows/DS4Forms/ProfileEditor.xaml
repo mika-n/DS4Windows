@@ -553,6 +553,10 @@
                                     <RowDefinition Style="{StaticResource gridRowHeight}"></RowDefinition>
                                     <RowDefinition Style="{StaticResource gridRowHeight}"></RowDefinition>
                                     <RowDefinition Style="{StaticResource gridRowHeight}"></RowDefinition>
+                                    <RowDefinition Style="{StaticResource gridRowHeight}"></RowDefinition>
+                                    <RowDefinition></RowDefinition>
+                                    <RowDefinition Style="{StaticResource gridRowHeight}"></RowDefinition>
+                                    <RowDefinition Style="{StaticResource gridRowHeight}"></RowDefinition>
                                 </Grid.RowDefinitions>
 
                                 <Grid.ColumnDefinitions>
@@ -628,6 +632,47 @@
                                     <TextBox Text="{Binding R2CustomCurve,FallbackValue='0.00, 0.00, 1.00, 1.00'}" DockPanel.Dock="Left"
                                              Margin="{StaticResource spaceMargin}" />
                                 </DockPanel>
+
+                                <Label Content="Two Stage Mode:" Grid.Row="8" Grid.Column="0" />
+                                <ComboBox Grid.Row="8" Grid.Column="1" ItemsSource="{Binding Path=TwoStageModeChoices}"
+                                          DisplayMemberPath="DisplayName" SelectedValuePath="Mode" SelectedValue="{Binding L2TriggerMode}" Margin="{StaticResource spaceMargin}" />
+
+                                <ComboBox Grid.Row="8" Grid.Column="2" ItemsSource="{Binding Path=TwoStageModeChoices}"
+                                          DisplayMemberPath="DisplayName" SelectedValuePath="Mode" SelectedValue="{Binding R2TriggerMode}" Margin="{StaticResource spaceMargin}" />
+
+                                <Label Content="Full Pull Btn:" Grid.Row="9" Grid.Column="0" />
+                                <DockPanel Grid.Row="9" Grid.Column="1">
+                                    <Button Content="Full" MinWidth="40" Tag="{Binding L2FullPull, Source={StaticResource controlIndexCheck}}" Click="TriggerFullPullBtn_Click"
+                                            Margin="{StaticResource spaceMargin}" DockPanel.Dock="Top" />
+                                    <Label x:Name="l2FullPullLb" Content="{Binding MappingName,FallbackValue=Unassigned}"
+                                           Margin="{StaticResource spaceMargin}" HorizontalAlignment="Center" DockPanel.Dock="Top"/>
+                                </DockPanel>
+                                <DockPanel Grid.Row="9" Grid.Column="2">
+                                    <Button Content="Full" MinWidth="40" Tag="{Binding R2FullPull, Source={StaticResource controlIndexCheck}}" Click="TriggerFullPullBtn_Click"
+                                            Margin="{StaticResource spaceMargin}" DockPanel.Dock="Top" />
+                                    <Label x:Name="r2FullPullLb" Content="{Binding MappingName,FallbackValue=Unassigned}"
+                                           Margin="{StaticResource spaceMargin}" HorizontalAlignment="Center" DockPanel.Dock="Top" />
+                                </DockPanel>
+
+                                <Label Content="Hip Fire Delay:" Grid.Row="10" Grid.Column="0" />
+                                <DockPanel Grid.Row="10" Grid.Column="1">
+                                    <Label Content="ms" DockPanel.Dock="Right" />
+                                    <xctk:IntegerUpDown d:IsHidden="True" Value="{Binding L2HipFireTime}" MinWidth="50" Maximum="5000" Minimum="0" Increment="10"
+                                                   Margin="{StaticResource spaceMargin}" />
+                                </DockPanel>
+
+                                <DockPanel Grid.Row="10" Grid.Column="2">
+                                    <Label Content="ms" DockPanel.Dock="Right" />
+                                    <xctk:IntegerUpDown d:IsHidden="True" Value="{Binding R2HipFireTime}" MinWidth="50" Maximum="5000" Minimum="0" Increment="10"
+                                                   Margin="{StaticResource spaceMargin}" />
+                                </DockPanel>
+
+                                <Label Content="Trigger Effect:" Grid.Row="11" Grid.Column="0" />
+
+                                <ComboBox Grid.Row="11" Grid.Column="1" ItemsSource="{Binding Path=TriggerEffectChoices}"
+                                          DisplayMemberPath="DisplayName" SelectedValuePath="Mode" SelectedValue="{Binding L2TriggerEffect}" Margin="{StaticResource spaceMargin}" />
+                                <ComboBox Grid.Row="11" Grid.Column="2" ItemsSource="{Binding Path=TriggerEffectChoices}"
+                                          DisplayMemberPath="DisplayName" SelectedValuePath="Mode" SelectedValue="{Binding R2TriggerEffect}" Margin="{StaticResource spaceMargin}" />
                             </Grid>
                         </GroupBox>
 
@@ -835,6 +880,7 @@
                                         <RowDefinition />
                                         <RowDefinition />
                                         <RowDefinition />
+                                        <RowDefinition />
                                     </Grid.RowDefinitions>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition />
@@ -864,10 +910,12 @@
 
                                     <CheckBox Content="Lower Right as RMB" Grid.Row="2" Grid.Column="1" IsChecked="{Binding LowerRightTouchRMB}" VerticalAlignment="Center"
                                                           ToolTip="{lex:Loc Resources:BestUsedRightSide}" />
+
+                                    <CheckBox Content="Passthru Click Action (DS4 mode)" Grid.Row="3" Grid.Column="0" IsChecked="{Binding TouchpadClickPassthru}" VerticalAlignment="Center" />
                                 </Grid>
 
                                 <CheckBox Content="Start with Slide/Scroll Off" IsChecked="{Binding StartTouchpadOff}" VerticalAlignment="Center"
-                                                    ToolTip="{lex:Loc Resources:TouchpadOffTip}" Margin="{StaticResource spaceMargin}" />
+                                                    ToolTip="{lex:Loc Resources:TouchpadOffTip}" Margin="0,10,0,0" />
 
                                 <StackPanel Orientation="Horizontal" Margin="{StaticResource spaceMargin}">
                                     <Label Content="Rotation" ContentStringFormat="{}{0}:" />
@@ -949,6 +997,9 @@
                                     <Button x:Name="swipeRightBtn" Content="Swipe Right" MinWidth="100" Tag="{Binding SwipeRight, Source={StaticResource controlIndexCheck}}" Click="SwipeControlsButton_Click" />
                                     <Label x:Name="swipeRightLb" Content="{Binding MappingName,FallbackValue=Unassigned}"  Margin="10,0,0,0"/>
                                 </StackPanel>
+
+                                <CheckBox Content="Passthru Click Action (DS4 mode)" IsChecked="{Binding TouchpadClickPassthru}" VerticalAlignment="Center"
+                                                          Margin="5,8,0,0" />
                             </StackPanel>
                         </TabItem>
                         <TabItem Header="Absolute Mouse" Visibility="Collapsed">

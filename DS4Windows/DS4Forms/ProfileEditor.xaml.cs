@@ -79,6 +79,7 @@ namespace DS4WinWPF.DS4Forms
             ColorByBatteryPerCheck();
             AssignTiltAssociation();
             AssignSwipeAssociation();
+            AssignTriggerFullPullAssociation();
 
             inputTimer = new NonFormTimer(100);
             inputTimer.Elapsed += InputDS4;
@@ -167,6 +168,12 @@ namespace DS4WinWPF.DS4Forms
             swipeDownLb.DataContext = mappingListVM.ControlMap[DS4Windows.DS4Controls.SwipeDown];
             swipeLeftLb.DataContext = mappingListVM.ControlMap[DS4Windows.DS4Controls.SwipeLeft];
             swipeRightLb.DataContext = mappingListVM.ControlMap[DS4Windows.DS4Controls.SwipeRight];
+        }
+
+        private void AssignTriggerFullPullAssociation()
+        {
+            l2FullPullLb.DataContext = mappingListVM.ControlMap[DS4Controls.L2FullPull];
+            r2FullPullLb.DataContext = mappingListVM.ControlMap[DS4Controls.R2FullPull];
         }
 
         private void MappingListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -713,23 +720,26 @@ namespace DS4WinWPF.DS4Forms
             }
         }
 
-        private void SetLateProperties()
+        private void SetLateProperties(bool fullSave = true)
         {
             Global.BTPollRate[deviceNum] = profileSettingsVM.TempBTPollRateIndex;
             Global.OutContType[deviceNum] = profileSettingsVM.TempConType;
-            Global.outDevTypeTemp[deviceNum] = OutContType.X360;
+            if (fullSave)
+            {
+                Global.outDevTypeTemp[deviceNum] = OutContType.X360;
+            }
         }
 
         private void SaveBtn_Click(object sender, RoutedEventArgs e)
         {
-            bool saved = ApplyProfileStep();
+            bool saved = ApplyProfileStep(false);
             if (saved)
             {
                 Closed?.Invoke(this, EventArgs.Empty);
             }
         }
 
-        private bool ApplyProfileStep()
+        private bool ApplyProfileStep(bool fullSave = true)
         {
             bool result = false;
             if (profileSettingsVM.FuncDevNum < ControlService.CURRENT_DS4_CONTROLLER_LIMIT)
@@ -741,7 +751,7 @@ namespace DS4WinWPF.DS4Forms
             if (!string.IsNullOrWhiteSpace(temp) &&
                 temp.IndexOfAny(System.IO.Path.GetInvalidFileNameChars()) == -1)
             {
-                SetLateProperties();
+                SetLateProperties(false);
                 DS4Windows.Global.ProfilePath[deviceNum] =
                     DS4Windows.Global.OlderProfilePath[deviceNum] = temp;
 
@@ -1369,6 +1379,25 @@ namespace DS4WinWPF.DS4Forms
             ApplyProfileStep();
         }
 
+        private void TriggerFullPullBtn_Click(object sender, RoutedEventArgs e)
+        {
+            Button btn = sender as Button;
+            int tag = Convert.ToInt32(btn.Tag);
+            DS4Controls ds4control = (DS4Controls)tag;
+            if (ds4control == DS4Controls.None)
+            {
+                return;
+            }
+
+            //DS4ControlSettings setting = Global.getDS4CSetting(tag, ds4control);
+            MappedControl mpControl = mappingListVM.ControlMap[ds4control];
+            BindingWindow window = new BindingWindow(deviceNum, mpControl.Setting);
+            window.Owner = App.Current.MainWindow;
+            window.ShowDialog();
+            mpControl.UpdateMappingName();
+            Global.CacheProfileCustomsFlags(profileSettingsVM.Device);
+		}
+
         private void GyroCalibration_Click(object sender, RoutedEventArgs e)
         {
             int deviceNum = profileSettingsVM.FuncDevNum;
@@ -1391,5 +1420,7 @@ namespace DS4WinWPF.DS4Forms
         public int SwipeDown { get => (int)DS4Controls.SwipeDown; }
         public int SwipeLeft { get => (int)DS4Controls.SwipeLeft; }
         public int SwipeRight { get => (int)DS4Controls.SwipeRight; }
+        public int L2FullPull { get => (int)DS4Controls.L2FullPull; }
+        public int R2FullPull { get => (int)DS4Controls.R2FullPull; }
     }
 }

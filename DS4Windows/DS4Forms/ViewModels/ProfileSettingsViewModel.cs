@@ -1257,6 +1257,95 @@ namespace DS4WinWPF.DS4Forms.ViewModels
             set => Global.r2OutBezierCurveObj[device].InitBezierCurve(value, BezierCurve.AxisType.L2R2, true);
         }
 
+        private List<TriggerModeChoice> triggerModeChoices = new List<TriggerModeChoice>()
+        {
+            new TriggerModeChoice("Normal", TriggerMode.Normal),
+        };
+
+        private List<TwoStageChoice> twoStageModeChoices = new List<TwoStageChoice>()
+        {
+            new TwoStageChoice("Disabled", TwoStageTriggerMode.Disabled),
+            new TwoStageChoice("Normal", TwoStageTriggerMode.Normal),
+            new TwoStageChoice("Exclusive", TwoStageTriggerMode.ExclusiveButtons),
+            new TwoStageChoice("Hair Trigger", TwoStageTriggerMode.HairTrigger),
+            new TwoStageChoice("Hip Fire", TwoStageTriggerMode.HipFire),
+            new TwoStageChoice("Hip Fire Exclusive", TwoStageTriggerMode.HipFireExclusiveButtons),
+        };
+        public List<TwoStageChoice> TwoStageModeChoices { get => twoStageModeChoices; }
+
+        public TwoStageTriggerMode L2TriggerMode
+        {
+            get => Global.L2OutputSettings[device].twoStageMode;
+            set
+            {
+                TwoStageTriggerMode temp = Global.L2OutputSettings[device].TwoStageMode;
+                if (temp == value) return;
+
+                Global.L2OutputSettings[device].TwoStageMode = value;
+                L2TriggerModeChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler L2TriggerModeChanged;
+
+        public TwoStageTriggerMode R2TriggerMode
+        {
+            get => Global.R2OutputSettings[device].TwoStageMode;
+            set
+            {
+                TwoStageTriggerMode temp = Global.R2OutputSettings[device].TwoStageMode;
+                if (temp == value) return;
+
+                Global.R2OutputSettings[device].twoStageMode = value;
+                R2TriggerModeChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+        public event EventHandler R2TriggerModeChanged;
+
+        public int L2HipFireTime
+        {
+            get => Global.L2OutputSettings[device].hipFireMS;
+            set => Global.L2OutputSettings[device].hipFireMS = value;
+        }
+
+        public int R2HipFireTime
+        {
+            get => Global.R2OutputSettings[device].hipFireMS;
+            set => Global.R2OutputSettings[device].hipFireMS = value;
+        }
+
+        private List<TriggerEffectChoice> triggerEffectChoices = new List<TriggerEffectChoice>()
+        {
+            new TriggerEffectChoice("None", DS4Windows.InputDevices.TriggerEffects.None),
+            new TriggerEffectChoice("Full Click", DS4Windows.InputDevices.TriggerEffects.FullClick),
+            new TriggerEffectChoice("Rigid", DS4Windows.InputDevices.TriggerEffects.Rigid),
+            new TriggerEffectChoice("Pulse", DS4Windows.InputDevices.TriggerEffects.Pulse),
+        };
+        public List<TriggerEffectChoice> TriggerEffectChoices { get => triggerEffectChoices; }
+
+        public DS4Windows.InputDevices.TriggerEffects L2TriggerEffect
+        {
+            get => Global.L2OutputSettings[device].triggerEffect;
+            set
+            {
+                DS4Windows.InputDevices.TriggerEffects temp = Global.L2OutputSettings[device].TriggerEffect;
+                if (temp == value) return;
+
+                Global.L2OutputSettings[device].TriggerEffect = value;
+            }
+        }
+
+        public DS4Windows.InputDevices.TriggerEffects R2TriggerEffect
+        {
+            get => Global.R2OutputSettings[device].triggerEffect;
+            set
+            {
+                DS4Windows.InputDevices.TriggerEffects temp = Global.R2OutputSettings[device].TriggerEffect;
+                if (temp == value) return;
+
+                Global.R2OutputSettings[device].TriggerEffect = value;
+            }
+        }
+
         public double SXDeadZone
         {
             get => Global.SXDeadzone[device];
@@ -1520,6 +1609,15 @@ namespace DS4WinWPF.DS4Forms.ViewModels
             set
             {
                 Global.LowerRCOn[device] = value;
+            }
+        }
+
+        public bool TouchpadClickPassthru
+        {
+            get => Global.TouchClickPassthru[device];
+            set
+            {
+                Global.TouchClickPassthru[device] = value;
             }
         }
 
@@ -3028,6 +3126,58 @@ namespace DS4WinWPF.DS4Forms.ViewModels
             }
 
             return inputControls;
+        }
+    }
+
+    public class TriggerModeChoice
+    {
+        private string displayName;
+        public string DisplayName { get => displayName; set => displayName = value; }
+
+        public TriggerMode mode;
+        public TriggerMode Mode { get => mode; set => mode = value; }
+
+        public TriggerModeChoice(string name, TriggerMode mode)
+        {
+            this.displayName = name;
+            this.mode = mode;
+        }
+
+        public override string ToString()
+        {
+            return displayName;
+        }
+    }
+
+    public class TwoStageChoice
+    {
+        private string displayName;
+        public string DisplayName { get => displayName; set => displayName = value; }
+
+
+        private TwoStageTriggerMode mode;
+        public TwoStageTriggerMode Mode { get => mode; set => mode = value; }
+
+        public TwoStageChoice(string name, TwoStageTriggerMode mode)
+        {
+            this.displayName = name;
+            this.mode = mode;
+        }
+    }
+
+    public class TriggerEffectChoice
+    {
+        private string displayName;
+        public string DisplayName { get => displayName; set => displayName = value; }
+
+
+        private DS4Windows.InputDevices.TriggerEffects mode;
+        public DS4Windows.InputDevices.TriggerEffects Mode { get => mode; set => mode = value; }
+
+        public TriggerEffectChoice(string name, DS4Windows.InputDevices.TriggerEffects mode)
+        {
+            this.displayName = name;
+            this.mode = mode;
         }
     }
 }
