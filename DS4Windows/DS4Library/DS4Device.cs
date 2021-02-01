@@ -738,6 +738,8 @@ namespace DS4Windows
                 if (WriteOutput(outputBuffer))
                 {
                     finalReport = element.Id;
+                    // DEBUG
+                    AppLogger.LogToGui($"DEBUG: CheckOutputReportTypes. knownGoodBTOutputReportType=0x{string.Format("{0:X}", element.Id)}", false);
                     knownGoodBTOutputReportType = element.Id;
                     outputReport = new byte[len];
                     outReportBuffer = new byte[len];
