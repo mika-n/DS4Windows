@@ -22,7 +22,7 @@ namespace DS4Windows
     [Flags]
     public enum DS4KeyType : byte { None = 0, ScanCode = 1, Toggle = 2, Unbound = 4, Macro = 8, HoldMacro = 16, RepeatMacro = 32 }; // Increment by exponents of 2*, starting at 2^0
     public enum Ds3PadId : byte { None = 0xFF, One = 0x00, Two = 0x01, Three = 0x02, Four = 0x03, All = 0x04 };
-    public enum DS4Controls : byte { None, LXNeg, LXPos, LYNeg, LYPos, RXNeg, RXPos, RYNeg, RYPos, L1, L2, L3, R1, R2, R3, Square, Triangle, Circle, Cross, DpadUp, DpadRight, DpadDown, DpadLeft, PS, TouchLeft, TouchUpper, TouchMulti, TouchRight, Share, Options, Mute, GyroXPos, GyroXNeg, GyroZPos, GyroZNeg, SwipeLeft, SwipeRight, SwipeUp, SwipeDown, L2FullPull, R2FullPull };
+    public enum DS4Controls : byte { None, LXNeg, LXPos, LYNeg, LYPos, RXNeg, RXPos, RYNeg, RYPos, L1, L2, L3, R1, R2, R3, Square, Triangle, Circle, Cross, DpadUp, DpadRight, DpadDown, DpadLeft, PS, TouchLeft, TouchUpper, TouchMulti, TouchRight, Share, Options, Mute, GyroXPos, GyroXNeg, GyroZPos, GyroZNeg, SwipeLeft, SwipeRight, SwipeUp, SwipeDown, L2FullPull, R2FullPull, GyroSwipeLeft, GyroSwipeRight, GyroSwipeUp, GyroSwipeDown };
     public enum X360Controls : byte { None, LXNeg, LXPos, LYNeg, LYPos, RXNeg, RXPos, RYNeg, RYPos, LB, LT, LS, RB, RT, RS, X, Y, B, A, DpadUp, DpadRight, DpadDown, DpadLeft, Guide, Back, Start, TouchpadClick, LeftMouse, RightMouse, MiddleMouse, FourthMouse, FifthMouse, WUP, WDOWN, MouseUp, MouseDown, MouseLeft, MouseRight, Unbound };
 
     public enum SASteeringWheelEmulationAxisType: byte { None = 0, LX, LY, RX, RY, L2R2, VJoy1X, VJoy1Y, VJoy1Z, VJoy2X, VJoy2Y, VJoy2Z };
@@ -34,6 +34,7 @@ namespace DS4Windows
         Controls,
         Mouse,
         MouseJoystick,
+        DirectionalSwipe,
         Passthru,
     }
 
@@ -60,6 +61,13 @@ namespace DS4Windows
         Dark,
     }
 
+    public class ControlActionData
+    {
+        public int actionKey;
+        public X360Controls actionBtn;
+        public int[] actionMacro = new int[1];
+    }
+
     public class DS4ControlSettings
     {
         public DS4Controls control;
@@ -67,9 +75,9 @@ namespace DS4Windows
         public DS4KeyType keyType = DS4KeyType.None;
         public enum ActionType : byte { Default, Key, Button, Macro };
         public ActionType actionType = ActionType.Default;
-        public object action = null;
+        public ControlActionData action = new ControlActionData();
         public ActionType shiftActionType = ActionType.Default;
-        public object shiftAction = null;
+        public ControlActionData shiftAction = new ControlActionData();
         public int shiftTrigger = 0;
         public string shiftExtras = null;
         public DS4KeyType shiftKeyType = DS4KeyType.None;
@@ -84,9 +92,9 @@ namespace DS4Windows
             extras = null;
             keyType = DS4KeyType.None;
             actionType = ActionType.Default;
-            action = null;
+            action = new ControlActionData();
             shiftActionType = ActionType.Default;
-            shiftAction = null;
+            shiftAction = new ControlActionData();
             shiftTrigger = 0;
             shiftExtras = null;
             shiftKeyType = DS4KeyType.None;
@@ -97,30 +105,66 @@ namespace DS4Windows
             if (!shift)
             {
                 if (act is int || act is ushort)
+                {
                     actionType = ActionType.Key;
+                    action.actionKey = Convert.ToInt32(act);
+                }
                 else if (act is string || act is X360Controls)
+                {
                     actionType = ActionType.Button;
+                    if (act is X360Controls)
+                    {
+                        action.actionBtn = (X360Controls)act;
+                    }
+                    else
+                    {
+                        Enum.TryParse(act.ToString(), out action.actionBtn);
+                    }
+                }
                 else if (act is int[])
+                {
                     actionType = ActionType.Macro;
+                    action.actionMacro = (int[])act;
+                }
                 else
+                {
                     actionType = ActionType.Default;
+                    action.actionKey = 0;
+                }
 
-                action = act;
                 extras = exts;
                 keyType = kt;
             }
             else
             {
                 if (act is int || act is ushort)
+                {
                     shiftActionType = ActionType.Key;
+                    shiftAction.actionKey = Convert.ToInt32(act);
+                }
                 else if (act is string || act is X360Controls)
+                {
                     shiftActionType = ActionType.Button;
+                    if (act is X360Controls)
+                    {
+                        shiftAction.actionBtn = (X360Controls)act;
+                    }
+                    else
+                    {
+                        Enum.TryParse(act.ToString(), out shiftAction.actionBtn);
+                    }
+                }
                 else if (act is int[])
+                {
                     shiftActionType = ActionType.Macro;
+                    shiftAction.actionMacro = (int[])act;
+                }
                 else
+                {
                     shiftActionType = ActionType.Default;
+                    shiftAction.actionKey = 0;
+                }
 
-                shiftAction = act;
                 shiftExtras = exts;
                 shiftKeyType = kt;
                 shiftTrigger = trigger;
@@ -136,6 +180,11 @@ namespace DS4Windows
         public DS4ControlSettings L2FullPull;
         public DS4ControlSettings R2;
         public DS4ControlSettings R2FullPull;
+
+        public DS4ControlSettings GyroSwipeLeft;
+        public DS4ControlSettings GyroSwipeRight;
+        public DS4ControlSettings GyroSwipeUp;
+        public DS4ControlSettings GyroSwipeDown;
 
         public List<DS4ControlSettings> ControlButtons =
             new List<DS4ControlSettings>();
@@ -157,6 +206,11 @@ namespace DS4Windows
 
             L2FullPull = settingsList[(int)DS4Controls.L2FullPull - 1];
             R2FullPull = settingsList[(int)DS4Controls.R2FullPull - 1];
+
+            GyroSwipeLeft = settingsList[(int)DS4Controls.GyroSwipeLeft - 1];
+            GyroSwipeRight = settingsList[(int)DS4Controls.GyroSwipeRight - 1];
+            GyroSwipeUp = settingsList[(int)DS4Controls.GyroSwipeUp - 1];
+            GyroSwipeDown = settingsList[(int)DS4Controls.GyroSwipeDown - 1];
 
             ControlButtons.Add(settingsList[(int)DS4Controls.L1-1]);
             ControlButtons.Add(settingsList[(int)DS4Controls.L3-1]);
@@ -453,6 +507,10 @@ namespace DS4Windows
             X360Controls.None, // DS4Controls.SwipeDown
             X360Controls.None, // DS4Controls.L2FullPull
             X360Controls.None, // DS4Controls.R2FullPull
+            X360Controls.None, // DS4Controls.GyroSwipeLeft
+            X360Controls.None, // DS4Controls.GyroSwipeRight
+            X360Controls.None, // DS4Controls.GyroSwipeUp
+            X360Controls.None, // DS4Controls.GyroSwipeDown
         };
 
 
@@ -633,6 +691,11 @@ namespace DS4Windows
             [DS4Controls.SwipeDown] = "Swipe Down",
             [DS4Controls.L2FullPull] = "L2 Full Pull",
             [DS4Controls.R2FullPull] = "R2 Full Pull",
+
+            [DS4Controls.GyroSwipeLeft] = "Gyro Swipe Left",
+            [DS4Controls.GyroSwipeRight] = "Gyro Swipe Right",
+            [DS4Controls.GyroSwipeUp] = "Gyro Swipe Up",
+            [DS4Controls.GyroSwipeDown] = "Gyro Swipe Down",
         };
 
         public static Dictionary<DS4Controls, int> macroDS4Values = new Dictionary<DS4Controls, int>()
@@ -1498,6 +1561,12 @@ namespace DS4Windows
             return m_Config.gyroMStickInfo[device];
         }
 
+        public static GyroDirectionalSwipeInfo[] GyroSwipeInf => m_Config.gyroSwipeInfo;
+        public static GyroDirectionalSwipeInfo GetGyroSwipeInfo(int device)
+        {
+            return m_Config.gyroSwipeInfo[device];
+        }
+
         public static bool[] GyroMouseStickToggle => m_Config.gyroMouseStickToggle;
         public static void SetGyroMouseStickToggle(int index, bool value, ControlService control)
             => m_Config.SetGyroMouseStickToggle(index, value, control);
@@ -2116,22 +2185,26 @@ namespace DS4Windows
 
         public static bool Load() => m_Config.Load();
         
-        public static void LoadProfile(int device, bool launchprogram, ControlService control,
+        public static bool LoadProfile(int device, bool launchprogram, ControlService control,
             bool xinputChange = true, bool postLoad = true)
         {
-            m_Config.LoadProfile(device, launchprogram, control, "", xinputChange, postLoad);
+            bool result = m_Config.LoadProfile(device, launchprogram, control, "", xinputChange, postLoad);
             tempprofilename[device] = string.Empty;
             useTempProfile[device] = false;
             tempprofileDistance[device] = false;
+
+            return result;
         }
 
-        public static void LoadTempProfile(int device, string name, bool launchprogram,
+        public static bool LoadTempProfile(int device, string name, bool launchprogram,
             ControlService control, bool xinputChange = true)
         {
-            m_Config.LoadProfile(device, launchprogram, control, appdatapath + @"\Profiles\" + name + ".xml");
+            bool result = m_Config.LoadProfile(device, launchprogram, control, appdatapath + @"\Profiles\" + name + ".xml");
             tempprofilename[device] = name;
             useTempProfile[device] = true;
             tempprofileDistance[device] = name.ToLower().Contains("distance");
+
+            return result;
         }
 
         public static void LoadBlankDevProfile(int device, bool launchprogram, ControlService control,
@@ -2588,7 +2661,15 @@ namespace DS4Windows
             new GyroMouseStickInfo(), new GyroMouseStickInfo(),
             new GyroMouseStickInfo(),
         };
-        
+        public GyroDirectionalSwipeInfo[] gyroSwipeInfo = new GyroDirectionalSwipeInfo[Global.TEST_PROFILE_ITEM_COUNT]
+        {
+            new GyroDirectionalSwipeInfo(), new GyroDirectionalSwipeInfo(),
+            new GyroDirectionalSwipeInfo(), new GyroDirectionalSwipeInfo(),
+            new GyroDirectionalSwipeInfo(), new GyroDirectionalSwipeInfo(),
+            new GyroDirectionalSwipeInfo(), new GyroDirectionalSwipeInfo(),
+            new GyroDirectionalSwipeInfo(),
+        };
+
         public bool[] gyroMouseStickToggle = new bool[Global.TEST_PROFILE_ITEM_COUNT] { false, false, false,
             false, false, false, false, false, false };
 
@@ -3202,6 +3283,15 @@ namespace DS4Windows
                 XmlNode xmlGyroMStickSmoothBeta = m_Xdoc.CreateNode(XmlNodeType.Element, "SmoothingBeta", null); xmlGyroMStickSmoothBeta.InnerText = gyroMStickInfo[device].beta.ToString(); xmlGyroMStickSmoothingElement.AppendChild(xmlGyroMStickSmoothBeta);
                 rootElement.AppendChild(xmlGyroMStickSmoothingElement);
 
+                XmlElement xmlGyroSwipeSettingsElement = m_Xdoc.CreateElement("GyroSwipeSettings");
+                XmlNode xmlGyroSwipeDeadzoneX = m_Xdoc.CreateNode(XmlNodeType.Element, "DeadZoneX", null); xmlGyroSwipeDeadzoneX.InnerText = gyroSwipeInfo[device].deadzoneX.ToString(); xmlGyroSwipeSettingsElement.AppendChild(xmlGyroSwipeDeadzoneX);
+                XmlNode xmlGyroSwipeDeadzoneY = m_Xdoc.CreateNode(XmlNodeType.Element, "DeadZoneY", null); xmlGyroSwipeDeadzoneY.InnerText = gyroSwipeInfo[device].deadzoneY.ToString(); xmlGyroSwipeSettingsElement.AppendChild(xmlGyroSwipeDeadzoneY);
+                XmlNode xmlGyroSwipeTriggers = m_Xdoc.CreateNode(XmlNodeType.Element, "Triggers", null); xmlGyroSwipeTriggers.InnerText = gyroSwipeInfo[device].triggers; xmlGyroSwipeSettingsElement.AppendChild(xmlGyroSwipeTriggers);
+                XmlNode xmlGyroSwipeTriggerCond = m_Xdoc.CreateNode(XmlNodeType.Element, "TriggerCond", null); xmlGyroSwipeTriggerCond.InnerText = SaTriggerCondString(gyroSwipeInfo[device].triggerCond); xmlGyroSwipeSettingsElement.AppendChild(xmlGyroSwipeTriggerCond);
+                XmlNode xmlGyroSwipeTriggerTurns = m_Xdoc.CreateNode(XmlNodeType.Element, "TriggerTurns", null); xmlGyroSwipeTriggerTurns.InnerText = gyroSwipeInfo[device].triggerTurns.ToString(); xmlGyroSwipeSettingsElement.AppendChild(xmlGyroSwipeTriggerTurns);
+                XmlNode xmlGyroSwipeXAxis = m_Xdoc.CreateNode(XmlNodeType.Element, "XAxis", null); xmlGyroSwipeXAxis.InnerText = gyroSwipeInfo[device].xAxis.ToString(); xmlGyroSwipeSettingsElement.AppendChild(xmlGyroSwipeXAxis);
+                rootElement.AppendChild(xmlGyroSwipeSettingsElement);
+
                 XmlNode xmlLSC = m_Xdoc.CreateNode(XmlNodeType.Element, "LSCurve", null); xmlLSC.InnerText = lsCurve[device].ToString(); rootElement.AppendChild(xmlLSC);
                 XmlNode xmlRSC = m_Xdoc.CreateNode(XmlNodeType.Element, "RSCurve", null); xmlRSC.InnerText = rsCurve[device].ToString(); rootElement.AppendChild(xmlRSC);
                 XmlNode xmlProfileActions = m_Xdoc.CreateNode(XmlNodeType.Element, "ProfileActions", null); xmlProfileActions.InnerText = string.Join("/", profileActions[device]); rootElement.AppendChild(xmlProfileActions);
@@ -3285,15 +3375,15 @@ namespace DS4Windows
 
                 foreach (DS4ControlSettings dcs in ds4settings[device])
                 {
-                    if (dcs.action != null)
+                    if (dcs.actionType != DS4ControlSettings.ActionType.Default)
                     {
                         XmlNode buttonNode;
                         string keyType = string.Empty;
 
-                        if (dcs.action is string)
+                        if (dcs.actionType == DS4ControlSettings.ActionType.Button &&
+                            dcs.action.actionBtn == X360Controls.Unbound)
                         {
-                            if (dcs.action.ToString() == "Unbound")
-                                keyType += DS4KeyType.Unbound;
+                            keyType += DS4KeyType.Unbound;
                         }
 
                         if (dcs.keyType.HasFlag(DS4KeyType.HoldMacro))
@@ -3314,25 +3404,20 @@ namespace DS4Windows
                         }
 
                         buttonNode = m_Xdoc.CreateNode(XmlNodeType.Element, dcs.control.ToString(), null);
-                        if (dcs.action is IEnumerable<int> || dcs.action is int[] || dcs.action is ushort[])
+                        if (dcs.actionType == DS4ControlSettings.ActionType.Macro)
                         {
-                            int[] ii = (int[])dcs.action;
+                            int[] ii = dcs.action.actionMacro;
                             buttonNode.InnerText = string.Join("/", ii);
                             Macro.AppendChild(buttonNode);
                         }
-                        else if (dcs.action is int || dcs.action is ushort || dcs.action is byte)
+                        else if (dcs.actionType == DS4ControlSettings.ActionType.Key)
                         {
                             buttonNode.InnerText = dcs.action.ToString();
                             Key.AppendChild(buttonNode);
                         }
-                        else if (dcs.action is string)
+                        else if (dcs.actionType == DS4ControlSettings.ActionType.Button)
                         {
-                            buttonNode.InnerText = dcs.action.ToString();
-                            Button.AppendChild(buttonNode);
-                        }
-                        else if (dcs.action is X360Controls)
-                        {
-                            buttonNode.InnerText = getX360ControlString((X360Controls)dcs.action);
+                            buttonNode.InnerText = getX360ControlString((X360Controls)dcs.action.actionBtn);
                             Button.AppendChild(buttonNode);
                         }
                     }
@@ -3357,15 +3442,15 @@ namespace DS4Windows
                         Extras.AppendChild(extraNode);
                     }
 
-                    if (dcs.shiftAction != null && dcs.shiftTrigger > 0)
+                    if (dcs.shiftActionType != DS4ControlSettings.ActionType.Default && dcs.shiftTrigger > 0)
                     {
                         XmlElement buttonNode;
                         string keyType = string.Empty;
 
-                        if (dcs.shiftAction is string)
+                        if (dcs.shiftActionType == DS4ControlSettings.ActionType.Button &&
+                            dcs.shiftAction.actionBtn == X360Controls.Unbound)
                         {
-                            if (dcs.shiftAction.ToString() == "Unbound")
-                                keyType += DS4KeyType.Unbound;
+                            keyType += DS4KeyType.Unbound;
                         }
 
                         if (dcs.shiftKeyType.HasFlag(DS4KeyType.HoldMacro))
@@ -3386,20 +3471,20 @@ namespace DS4Windows
 
                         buttonNode = m_Xdoc.CreateElement(dcs.control.ToString());
                         buttonNode.SetAttribute("Trigger", dcs.shiftTrigger.ToString());
-                        if (dcs.shiftAction is IEnumerable<int> || dcs.shiftAction is int[] || dcs.shiftAction is ushort[])
+                        if (dcs.shiftActionType == DS4ControlSettings.ActionType.Macro)
                         {
-                            int[] ii = (int[])dcs.shiftAction;
+                            int[] ii = dcs.shiftAction.actionMacro;
                             buttonNode.InnerText = string.Join("/", ii);
                             ShiftMacro.AppendChild(buttonNode);
                         }
-                        else if (dcs.shiftAction is int || dcs.shiftAction is ushort || dcs.shiftAction is byte)
+                        else if (dcs.shiftActionType == DS4ControlSettings.ActionType.Key)
                         {
                             buttonNode.InnerText = dcs.shiftAction.ToString();
                             ShiftKey.AppendChild(buttonNode);
                         }
-                        else if (dcs.shiftAction is string || dcs.shiftAction is X360Controls)
+                        else if (dcs.shiftActionType == DS4ControlSettings.ActionType.Button)
                         {
-                            buttonNode.InnerText = dcs.shiftAction.ToString();
+                            buttonNode.InnerText = dcs.shiftAction.actionBtn.ToString();
                             ShiftButton.AppendChild(buttonNode);
                         }
                     }
@@ -4395,6 +4480,71 @@ namespace DS4Windows
                     missingSetting = true;
                 }
 
+                XmlNode xmlGyroSwipeElement =
+                    m_Xdoc.SelectSingleNode("/" + rootname + "/GyroSwipeSettings");
+                if (xmlGyroSwipeElement != null)
+                {
+                    try
+                    {
+                        Item = xmlGyroSwipeElement.SelectSingleNode("DeadZoneX");
+                        if (int.TryParse(Item?.InnerText ?? "", out int tempDead))
+                        {
+                            gyroSwipeInfo[device].deadzoneX = tempDead;
+                        }
+                    }
+                    catch {}
+
+                    try
+                    {
+                        Item = xmlGyroSwipeElement.SelectSingleNode("DeadZoneY");
+                        if (int.TryParse(Item?.InnerText ?? "", out int tempDead))
+                        {
+                            gyroSwipeInfo[device].deadzoneY = tempDead;
+                        }
+                    }
+                    catch { }
+
+                    try
+                    {
+                        Item = xmlGyroSwipeElement.SelectSingleNode("Triggers");
+                        if (Item != null)
+                        {
+                            gyroSwipeInfo[device].triggers = Item.InnerText;
+                        }
+                    }
+                    catch { }
+
+                    try
+                    {
+                        Item = xmlGyroSwipeElement.SelectSingleNode("TriggerCond");
+                        if (Item != null)
+                        {
+                            gyroSwipeInfo[device].triggerCond = SaTriggerCondValue(Item.InnerText);
+                        }
+                    }
+                    catch { }
+
+                    try
+                    {
+                        Item = xmlGyroSwipeElement.SelectSingleNode("TriggerTurns");
+                        if (bool.TryParse(Item?.InnerText ?? "", out bool tempTurns))
+                        {
+                            gyroSwipeInfo[device].triggerTurns = tempTurns;
+                        }
+                    }
+                    catch { }
+
+                    try
+                    {
+                        Item = xmlGyroSwipeElement.SelectSingleNode("XAxis");
+                        if (Enum.TryParse(Item?.InnerText ?? "", out GyroDirectionalSwipeInfo.XAxisSwipe tempX))
+                        {
+                            gyroSwipeInfo[device].xAxis = tempX;
+                        }
+                    }
+                    catch { }
+                }
+
                 // Check for TouchpadOutputMode if UseTPforControls is not present in profile
                 if (!tpForControlsPresent)
                 {
@@ -5058,6 +5208,8 @@ namespace DS4Windows
             else
             {
                 Loaded = false;
+                ResetProfile(device);
+
                 // Unplug existing output device if requested profile does not exist
                 OutputDevice tempOutDev = control.outputDevices[device];
                 if (tempOutDev != null)
@@ -6236,7 +6388,7 @@ namespace DS4Windows
             for (int i = 0, settingsLen = ds4settingsList.Count; i < settingsLen; i++)
             {
                 DS4ControlSettings dcs = ds4settingsList[i];
-                if (dcs.action != null || dcs.shiftAction != null)
+                if (dcs.actionType != DS4ControlSettings.ActionType.Default || dcs.shiftActionType != DS4ControlSettings.ActionType.Default)
                     return true;
             }
 
@@ -6258,11 +6410,7 @@ namespace DS4Windows
 
         private void ResetProfile(int device)
         {
-            buttonMouseInfos[device].buttonSensitivity = ButtonMouseInfo.DEFAULT_BUTTON_SENS;
-            buttonMouseInfos[device].activeButtonSensitivity = ButtonMouseInfo.DEFAULT_BUTTON_SENS;
-            buttonMouseInfos[device].mouseVelocityOffset = ButtonMouseInfo.MOUSESTICKANTIOFFSET;
-            buttonMouseInfos[device].buttonVerticalScale = ButtonMouseInfo.DEFAULT_BUTTON_VERTICAL_SCALE;
-            buttonMouseInfos[device].mouseAccel = false;
+            buttonMouseInfos[device].Reset();
             enableTouchToggle[device] = true;
             idleDisconnectTimeout[device] = 0;
             enableOutputDataToDS4[device] = true;
@@ -6344,6 +6492,7 @@ namespace DS4Windows
             sAMouseStickTriggerCond[device] = true;
 
             gyroMStickInfo[device].Reset();
+            gyroSwipeInfo[device].Reset();
 
             gyroMouseStickToggle[device] = false;
             gyroMouseStickTriggerTurns[device] = true;

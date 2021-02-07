@@ -1856,6 +1856,44 @@ namespace DS4Windows
                     ref tempMouseDeltaY, ctrl);
             }
 
+            if (GyroOutputMode[device] == GyroOutMode.DirectionalSwipe)
+            {
+                DS4ControlSettings gyroSwipeXDcs = null;
+                DS4ControlSettings gyroSwipeYDcs = null;
+
+                if (tp.gyroSwipe.swipeLeft)
+                {
+                    gyroSwipeXDcs = controlSetGroup.GyroSwipeLeft;
+                }
+                else if (tp.gyroSwipe.swipeRight)
+                {
+                    gyroSwipeXDcs = controlSetGroup.GyroSwipeRight;
+                }
+
+                if (tp.gyroSwipe.swipeUp)
+                {
+                    gyroSwipeYDcs = controlSetGroup.GyroSwipeUp;
+                }
+                else if (tp.gyroSwipe.swipeDown)
+                {
+                    gyroSwipeYDcs = controlSetGroup.GyroSwipeDown;
+                }
+
+                if (gyroSwipeXDcs != null)
+                {
+                    ProcessControlSettingAction(gyroSwipeXDcs, device, cState, MappedState, eState,
+                        tp, fieldMapping, outputfieldMapping, deviceState, ref tempMouseDeltaX,
+                        ref tempMouseDeltaY, ctrl);
+                }
+
+                if (gyroSwipeYDcs != null)
+                {
+                    ProcessControlSettingAction(gyroSwipeYDcs, device, cState, MappedState, eState,
+                        tp, fieldMapping, outputfieldMapping, deviceState, ref tempMouseDeltaX,
+                        ref tempMouseDeltaY, ctrl);
+                }
+            }
+
             Queue<ControlToXInput> tempControl = customMapQueue[device];
             unchecked
             {
@@ -2297,18 +2335,19 @@ namespace DS4Windows
             ControlService ctrl)
         {
             //DS4ControlSettings dcs = tempSettingsList[settingIndex];
-            
-            object action = null;
+
+            //object action = null;
+            ControlActionData action = null;
             DS4ControlSettings.ActionType actionType = 0;
             DS4KeyType keyType = DS4KeyType.None;
             DS4Controls usingExtra = DS4Controls.None;
-            if (dcs.shiftAction != null && ShiftTrigger2(dcs.shiftTrigger, device, cState, eState, tp, fieldMapping))
+            if (dcs.shiftActionType != DS4ControlSettings.ActionType.Default && ShiftTrigger2(dcs.shiftTrigger, device, cState, eState, tp, fieldMapping))
             {
                 action = dcs.shiftAction;
                 actionType = dcs.shiftActionType;
                 keyType = dcs.shiftKeyType;
             }
-            else if (dcs.action != null)
+            else if (dcs.actionType != DS4ControlSettings.ActionType.Default)
             {
                 action = dcs.action;
                 actionType = dcs.actionType;
@@ -2389,18 +2428,18 @@ namespace DS4Windows
                 }
             }
 
-            if (action != null)
+            if (actionType != DS4ControlSettings.ActionType.Default)
             {
                 if (actionType == DS4ControlSettings.ActionType.Macro)
                 {
                     bool active = getBoolMapping2(device, dcs.control, cState, eState, tp, fieldMapping);
                     if (active)
                     {
-                        PlayMacro(device, macroControl, String.Empty, null, (int[])action, dcs.control, keyType);
+                        PlayMacro(device, macroControl, string.Empty, null, action.actionMacro, dcs.control, keyType);
                     }
                     else
                     {
-                        EndMacro(device, macroControl, (int[])action, dcs.control);
+                        EndMacro(device, macroControl, action.actionMacro, dcs.control);
                     }
 
                     // erase default mappings for things that are remapped
@@ -2408,7 +2447,7 @@ namespace DS4Windows
                 }
                 else if (actionType == DS4ControlSettings.ActionType.Key)
                 {
-                    ushort value = Convert.ToUInt16(action);
+                    ushort value = Convert.ToUInt16(action.actionKey);
                     if (getBoolActionMapping2(device, dcs.control, cState, eState, tp, fieldMapping))
                     {
                         SyntheticState.KeyPresses kp;
@@ -2456,15 +2495,7 @@ namespace DS4Windows
                     }
 
                     X360Controls xboxControl = X360Controls.None;
-                    if (action is X360Controls)
-                    {
-                        xboxControl = (X360Controls)action;
-                    }
-                    else if (action is string)
-                    {
-                        xboxControl = getX360ControlsByName(action.ToString());
-                    }
-
+                    xboxControl = (X360Controls)action.actionBtn;
                     if (xboxControl >= X360Controls.LXNeg && xboxControl <= X360Controls.Start)
                     {
                         DS4Controls tempDS4Control = reverseX360ButtonMapping[(int)xboxControl];
@@ -2859,13 +2890,13 @@ namespace DS4Windows
                                     {
                                         DS4Controls dc = action.trigger[i];
                                         DS4ControlSettings dcs = getDS4CSetting(device, dc);
-                                        if (dcs.action != null)
+                                        if (dcs.actionType != DS4ControlSettings.ActionType.Default)
                                         {
                                             if (dcs.actionType == DS4ControlSettings.ActionType.Key)
                                                 InputMethods.performKeyRelease(ushort.Parse(dcs.action.ToString()));
                                             else if (dcs.actionType == DS4ControlSettings.ActionType.Macro)
                                             {
-                                                int[] keys = (int[])dcs.action;
+                                                int[] keys = (int[])dcs.action.actionMacro;
                                                 for (int j = 0, keysLen = keys.Length; j < keysLen; j++)
                                                     InputMethods.performKeyRelease((ushort)keys[j]);
                                             }
@@ -3317,13 +3348,13 @@ namespace DS4Windows
                                 DS4Controls dc = action.uTrigger[i];
                                 actionDone[index].dev[device] = true;
                                 DS4ControlSettings dcs = getDS4CSetting(device, dc);
-                                if (dcs.action != null)
+                                if (dcs.actionType != DS4ControlSettings.ActionType.Default)
                                 {
                                     if (dcs.actionType == DS4ControlSettings.ActionType.Key)
-                                        InputMethods.performKeyRelease((ushort)dcs.action);
+                                        InputMethods.performKeyRelease((ushort)dcs.action.actionKey);
                                     else if (dcs.actionType == DS4ControlSettings.ActionType.Macro)
                                     {
-                                        int[] keys = (int[])dcs.action;
+                                        int[] keys = dcs.action.actionMacro;
                                         for (int j = 0, keysLen = keys.Length; j < keysLen; j++)
                                             InputMethods.performKeyRelease((ushort)keys[j]);
                                     }
@@ -3360,13 +3391,13 @@ namespace DS4Windows
             {
                 DS4Controls dc = action.trigger[i];
                 DS4ControlSettings dcs = getDS4CSetting(device, dc);
-                if (dcs.action != null)
+                if (dcs.actionType != DS4ControlSettings.ActionType.Default)
                 {
                     if (dcs.actionType == DS4ControlSettings.ActionType.Key)
-                        InputMethods.performKeyRelease((ushort)dcs.action);
+                        InputMethods.performKeyRelease((ushort)dcs.action.actionKey);
                     else if (dcs.actionType == DS4ControlSettings.ActionType.Macro)
                     {
-                        int[] keys = (int[])dcs.action;
+                        int[] keys = dcs.action.actionMacro;
                         for (int j = 0, keysLen = keys.Length; j < keysLen; j++)
                             InputMethods.performKeyRelease((ushort)keys[j]);
                     }
