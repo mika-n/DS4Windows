@@ -71,9 +71,12 @@ namespace DS4Windows
             trackballAccel = TRACKBALL_RADIUS * friction / TRACKBALL_INERTIA;
         }
 
-        public void ResetToggleGyroM()
+        public void ResetToggleGyroModes()
         {
+            currentToggleGyroControls = false;
             currentToggleGyroM = false;
+            currentToggleGyroStick = false;
+
             previousTriggerActivated = false;
             triggeractivated = false;
         }
@@ -81,18 +84,107 @@ namespace DS4Windows
         bool triggeractivated = false;
         bool previousTriggerActivated = false;
         bool useReverseRatchet = false;
-        bool toggleGyroMouse = true;
-        public bool ToggleGyroMouse { get => toggleGyroMouse;
-            set { toggleGyroMouse = value; ResetToggleGyroM(); } }
+
+        private bool toggleGyroControls = true;
+        public bool ToggleGyroControls
+        {
+            get => toggleGyroControls;
+            set
+            {
+                toggleGyroControls = value;
+                ResetToggleGyroModes();
+            }
+        }
+
+        private bool toggleGyroMouse = true;
+        public bool ToggleGyroMouse
+        {
+            get => toggleGyroMouse;
+            set
+            {
+                toggleGyroMouse = value;
+                ResetToggleGyroModes();
+            }
+        }
+
+        private bool toggleGyroStick = true;
+        public bool ToggleGyroStick
+        {
+            get => toggleGyroStick;
+            set
+            {
+                toggleGyroStick = value;
+                ResetToggleGyroModes();
+            }
+        }
 
         public MouseCursor Cursor => cursor;
 
+        bool currentToggleGyroControls = false;
         bool currentToggleGyroM = false;
+        bool currentToggleGyroStick = false;
 
         public virtual void sixaxisMoved(DS4SixAxis sender, SixAxisEventArgs arg)
         {
             GyroOutMode outMode = Global.GetGyroOutMode(deviceNum);
-            if (outMode == GyroOutMode.Mouse && Global.getGyroSensitivity(deviceNum) > 0)
+            if (outMode == GyroOutMode.Controls)
+            {
+                s = dev.getCurrentStateRef();
+
+                GyroControlsInfo controlsMapInfo = Global.GetGyroControlsInfo(deviceNum);
+                useReverseRatchet = controlsMapInfo.triggerTurns;
+                int i = 0;
+                string[] ss = controlsMapInfo.triggers.Split(',');
+                bool andCond = controlsMapInfo.triggerCond;
+                triggeractivated = andCond ? true : false;
+                if (!string.IsNullOrEmpty(ss[0]))
+                {
+                    string s = string.Empty;
+                    for (int index = 0, arlen = ss.Length; index < arlen; index++)
+                    {
+                        s = ss[index];
+                        if (andCond && !(int.TryParse(s, out i) && getDS4ControlsByName(i)))
+                        {
+                            triggeractivated = false;
+                            break;
+                        }
+                        else if (!andCond && int.TryParse(s, out i) && getDS4ControlsByName(i))
+                        {
+                            triggeractivated = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (toggleGyroControls)
+                {
+                    if (triggeractivated && triggeractivated != previousTriggerActivated)
+                    {
+                        currentToggleGyroStick = !currentToggleGyroStick;
+                    }
+
+                    previousTriggerActivated = triggeractivated;
+                    triggeractivated = currentToggleGyroStick;
+                }
+                else
+                {
+                    previousTriggerActivated = triggeractivated;
+                }
+
+                if (useReverseRatchet && triggeractivated)
+                {
+                    s.Motion.outputGyroControls = true;
+                }
+                else if (!useReverseRatchet && !triggeractivated)
+                {
+                    s.Motion.outputGyroControls = true;
+                }
+                else
+                {
+                    s.Motion.outputGyroControls = false;
+                }
+            }
+            else if (outMode == GyroOutMode.Mouse && Global.getGyroSensitivity(deviceNum) > 0)
             {
                 s = dev.getCurrentStateRef();
 
@@ -120,15 +212,15 @@ namespace DS4Windows
                     }
                 }
 
-                if (toggleGyroMouse)
+                if (toggleGyroStick)
                 {
                     if (triggeractivated && triggeractivated != previousTriggerActivated)
                     {
-                        currentToggleGyroM = !currentToggleGyroM;
+                        currentToggleGyroControls = !currentToggleGyroControls;
                     }
 
                     previousTriggerActivated = triggeractivated;
-                    triggeractivated = currentToggleGyroM;
+                    triggeractivated = currentToggleGyroControls;
                 }
                 else
                 {

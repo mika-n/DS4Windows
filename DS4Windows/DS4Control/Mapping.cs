@@ -1425,7 +1425,7 @@ namespace DS4Windows
                 
 
             bool saControls = IsUsingSAForControls(device);
-            if (saControls)
+            if (saControls && dState.Motion.outputGyroControls)
             {
                 int SXD = (int)(128d * getSXDeadzone(device));
                 int SZD = (int)(128d * getSZDeadzone(device));
