@@ -2230,6 +2230,15 @@ namespace DS4WinWPF.DS4Forms.ViewModels
             }
         }
 
+        public int GyroSwipeDelayTime
+        {
+            get => Global.GyroSwipeInf[device].delayTime;
+            set
+            {
+                Global.GyroSwipeInf[device].delayTime = value;
+            }
+        }
+
         private PresetMenuHelper presetMenuUtil;
         public PresetMenuHelper PresetMenuUtil
         {
@@ -3346,7 +3355,7 @@ namespace DS4WinWPF.DS4Forms.ViewModels
             int idx = 0;
             foreach(DS4Controls dsControl in inputControls)
             {
-                DS4ControlSettings setting = Global.getDS4CSetting(deviceNum, dsControl);
+                DS4ControlSettings setting = Global.GetDS4CSetting(deviceNum, dsControl);
                 setting.Reset();
                 if (idx < actionBtns.Count && actionBtns[idx] != null)
                 {
