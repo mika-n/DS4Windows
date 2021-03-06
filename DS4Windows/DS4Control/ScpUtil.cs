@@ -5103,7 +5103,7 @@ namespace DS4Windows
 
                 // Only change xinput devices under certain conditions. Avoid
                 // performing this upon program startup before loading devices.
-                if (xinputChange)
+                if (xinputChange && device < ControlService.CURRENT_DS4_CONTROLLER_LIMIT)
                 {
                     CheckOldDevicestatus(device, control, oldContType,
                         out xinputPlug, out xinputStatus);
