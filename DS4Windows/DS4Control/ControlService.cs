@@ -700,7 +700,7 @@ namespace DS4Windows
 
                     //Console.WriteLine("IN EVENT");
                     //Console.WriteLine("Rumble ({0}, {1}) | Light ({2}, {3}, {4}) {5}",
-                    //    largeMotor, smallMotor, color.red, color.green, color.blue, DateTime.Now.ToLongTimeString());
+                    //    largeMotor, smallMotor, color.red, color.green, color.blue, DateTime.Now.ToString("hh:mm:ss.FFFF"));
 
                     if (largeMotor != 0 || smallMotor != 0)
                     {
@@ -720,7 +720,7 @@ namespace DS4Windows
                         {
                             useRumble = true;
                         }
-                        else if (deviceLightbarSettingsInfo.Mode == LightbarMode.Passthru && 
+                        else if (deviceLightbarSettingsInfo.Mode == LightbarMode.Passthru &&
                             (device.LightBarColor.red != 0 ||
                             device.LightBarColor.green != 0 ||
                             device.LightBarColor.blue != 0))
@@ -756,7 +756,7 @@ namespace DS4Windows
                 };
 
                 tempDS4.cont.FeedbackReceived += p;
-                tempDS4.forceFeedbackCall = p;
+                tempDS4.forceFeedbacksDict.Add(index, p);
             }
         }
 
@@ -772,8 +772,9 @@ namespace DS4Windows
             else if (contType == OutContType.DS4)
             {
                 DS4OutDevice tempDS4 = outDevice as DS4OutDevice;
-                tempDS4.cont.FeedbackReceived -= tempDS4.forceFeedbackCall;
-                tempDS4.forceFeedbackCall = null;
+                tempDS4.RemoveFeedback(inIdx);
+                //tempDS4.cont.FeedbackReceived -= tempDS4.forceFeedbackCall;
+                //tempDS4.forceFeedbackCall = null;
             }
         }
 
@@ -903,19 +904,19 @@ namespace DS4Windows
                             as DS4OutDevice;
 
                             // Enable ViGem feedback callback handler only if DS4 lightbar/rumble data output is enabled (if those are disabled then no point enabling ViGem callback handler call)
-                            //if (Global.EnableOutputDataToDS4[index])
-                            //{
-                            //    EstablishOutFeedback(index, OutContType.DS4, tempDS4, device);
+                            if (Global.EnableOutputDataToDS4[index])
+                            {
+                                EstablishOutFeedback(index, OutContType.DS4, tempDS4, device);
 
-                            //    if (device.JointDeviceSlotNumber != -1)
-                            //    {
-                            //        DS4Device tempDS4Device = DS4Controllers[device.JointDeviceSlotNumber];
-                            //        if (tempDS4Device != null)
-                            //        {
-                            //            EstablishOutFeedback(device.JointDeviceSlotNumber, OutContType.DS4, tempDS4, tempDS4Device);
-                            //        }
-                            //    }
-                            //}
+                                if (device.JointDeviceSlotNumber != -1)
+                                {
+                                    DS4Device tempDS4Device = DS4Controllers[device.JointDeviceSlotNumber];
+                                    if (tempDS4Device != null)
+                                    {
+                                        EstablishOutFeedback(device.JointDeviceSlotNumber, OutContType.DS4, tempDS4, tempDS4Device);
+                                    }
+                                }
+                            }
 
                             outputslotMan.DeferredPlugin(tempDS4, index, outputDevices, contType);
                             //slotDevice.CurrentInputBound = OutSlotDevice.InputBound.Bound;
@@ -934,19 +935,19 @@ namespace DS4Windows
                         DS4OutDevice tempDS4 = slotDevice.OutputDevice as DS4OutDevice;
 
                         // Enable ViGem feedback callback handler only if lightbar/rumble data output is enabled (if those are disabled then no point enabling ViGem callback handler call)
-                        //if (Global.EnableOutputDataToDS4[index])
-                        //{
-                        //    EstablishOutFeedback(index, OutContType.DS4, tempDS4, device);
+                        if (Global.EnableOutputDataToDS4[index])
+                        {
+                            EstablishOutFeedback(index, OutContType.DS4, tempDS4, device);
 
-                        //    if (device.JointDeviceSlotNumber != -1)
-                        //    {
-                        //        DS4Device tempDS4Device = DS4Controllers[device.JointDeviceSlotNumber];
-                        //        if (tempDS4Device != null)
-                        //        {
-                        //            EstablishOutFeedback(device.JointDeviceSlotNumber, OutContType.DS4, tempDS4, tempDS4Device);
-                        //        }
-                        //    }
-                        //}
+                            if (device.JointDeviceSlotNumber != -1)
+                            {
+                                DS4Device tempDS4Device = DS4Controllers[device.JointDeviceSlotNumber];
+                                if (tempDS4Device != null)
+                                {
+                                    EstablishOutFeedback(device.JointDeviceSlotNumber, OutContType.DS4, tempDS4, tempDS4Device);
+                                }
+                            }
+                        }
 
                         outputslotMan.EventDispatcher.BeginInvoke((Action)(() =>
                         {
@@ -2145,6 +2146,7 @@ namespace DS4Windows
                 {
                     cState = device.JointState;
                     device.MergeStateData(cState);
+                    CurrentState[ind] = cState;
                 }
 
                 DS4State pState = device.getPreviousStateRef();
