@@ -2765,7 +2765,7 @@ namespace DS4Windows
         public bool downloadLang = true;
         public TrayIconChoice useIconChoice;
         public bool flashWhenLate = true;
-        public int flashWhenLateAt = 40;
+        public int flashWhenLateAt = 50;
         public bool useUDPServ = false;
         public int udpServPort = 26760;
         public string udpServListenAddress = "127.0.0.1"; // 127.0.0.1=IPAddress.Loopback (default), 0.0.0.0=IPAddress.Any as all interfaces, x.x.x.x = Specific ipv4 interface address or hostname
@@ -5913,20 +5913,25 @@ namespace DS4Windows
         private void CreateAction()
         {
             XmlDocument m_Xdoc = new XmlDocument();
+            PrepareActionsXml(m_Xdoc);
+            m_Xdoc.Save(m_Actions);
+        }
+
+        private void PrepareActionsXml(XmlDocument xmlDoc)
+        {
             XmlNode Node;
 
-            Node = m_Xdoc.CreateXmlDeclaration("1.0", "utf-8", String.Empty);
-            m_Xdoc.AppendChild(Node);
+            Node = xmlDoc.CreateXmlDeclaration("1.0", "utf-8", String.Empty);
+            xmlDoc.AppendChild(Node);
 
-            Node = m_Xdoc.CreateComment(String.Format(" Special Actions Configuration Data. {0} ", DateTime.Now));
-            m_Xdoc.AppendChild(Node);
+            Node = xmlDoc.CreateComment(String.Format(" Special Actions Configuration Data. {0} ", DateTime.Now));
+            xmlDoc.AppendChild(Node);
 
-            Node = m_Xdoc.CreateWhitespace("\r\n");
-            m_Xdoc.AppendChild(Node);
+            Node = xmlDoc.CreateWhitespace("\r\n");
+            xmlDoc.AppendChild(Node);
 
-            Node = m_Xdoc.CreateNode(XmlNodeType.Element, "Actions", "");
-            m_Xdoc.AppendChild(Node);
-            m_Xdoc.Save(m_Actions);
+            Node = xmlDoc.CreateNode(XmlNodeType.Element, "Actions", "");
+            xmlDoc.AppendChild(Node);
         }
 
         public bool SaveAction(string name, string controls, int mode, string details, bool edit, string extras = "")
@@ -5934,7 +5939,19 @@ namespace DS4Windows
             bool saved = true;
             if (!File.Exists(m_Actions))
                 CreateAction();
-            m_Xdoc.Load(m_Actions);
+
+            try
+            {
+                m_Xdoc.Load(m_Actions);
+            }
+            catch (XmlException)
+            {
+                // XML file has become corrupt. Start from scratch
+                AppLogger.LogToGui(DS4WinWPF.Properties.Resources.XMLActionsCorrupt, true);
+                m_Xdoc.RemoveAll();
+                PrepareActionsXml(m_Xdoc);
+            }
+
             XmlNode Node;
 
             Node = m_Xdoc.CreateComment(String.Format(" Special Actions Configuration Data. {0} ", DateTime.Now));
@@ -6303,27 +6320,35 @@ namespace DS4Windows
                 if (node == null)
                 {
                     XmlElement el = xmlDoc.CreateElement("Controller");
-                    el.SetAttribute("Mac", device.getMacAddress());
-                    el.SetAttribute("ControllerType", device.DeviceType.ToString());
-
-                    el.AppendChild(xmlDoc.CreateElement("wheelCenterPoint"));
-                    el.AppendChild(xmlDoc.CreateElement("wheel90DegPointLeft"));
-                    el.AppendChild(xmlDoc.CreateElement("wheel90DegPointRight"));
-
                     node = xmlControllersNode.AppendChild(el);
                 }
-
-                XmlAttribute tempAttr = node.Attributes["ControllerType"];
-                if (tempAttr == null)
+                else
                 {
-                    tempAttr = xmlDoc.CreateAttribute("ControllerType");
-                    node.Attributes.Append(tempAttr);
+                    node.RemoveAll();
                 }
 
-                tempAttr.Value = device.DeviceType.ToString();
-                node["wheelCenterPoint"].InnerText = $"{device.wheelCenterPoint.X},{device.wheelCenterPoint.Y}";
-                node["wheel90DegPointLeft"].InnerText = $"{device.wheel90DegPointLeft.X},{device.wheel90DegPointLeft.Y}";
-                node["wheel90DegPointRight"].InnerText = $"{device.wheel90DegPointRight.X},{device.wheel90DegPointRight.Y}";
+                XmlAttribute macAttr = xmlDoc.CreateAttribute("Mac");
+                macAttr.Value = device.getMacAddress();
+                node.Attributes.Append(macAttr);
+
+                XmlAttribute contTypeAttr = xmlDoc.CreateAttribute("ControllerType");
+                contTypeAttr.Value = device.DeviceType.ToString();
+                node.Attributes.Append(contTypeAttr);
+
+                if (!device.wheelCenterPoint.IsEmpty)
+                {
+                    XmlElement wheelCenterEl = xmlDoc.CreateElement("wheelCenterPoint");
+                    wheelCenterEl.InnerText = $"{device.wheelCenterPoint.X},{device.wheelCenterPoint.Y}";
+                    node.AppendChild(wheelCenterEl);
+
+                    XmlElement wheel90DegPointLeftEl = xmlDoc.CreateElement("wheel90DegPointLeft");
+                    wheel90DegPointLeftEl.InnerText = $"{device.wheel90DegPointLeft.X},{device.wheel90DegPointLeft.Y}";
+                    node.AppendChild(wheel90DegPointLeftEl);
+
+                    XmlElement wheel90DegPointRightEl = xmlDoc.CreateElement("wheel90DegPointLeft");
+                    wheel90DegPointRightEl.InnerText = $"{device.wheel90DegPointRight.X},{device.wheel90DegPointRight.Y}";
+                    node.AppendChild(wheel90DegPointRightEl);
+                }
 
                 device.optionsStore.PersistSettings(xmlDoc, node);
 
