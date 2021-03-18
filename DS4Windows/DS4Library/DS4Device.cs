@@ -1317,6 +1317,8 @@ namespace DS4Windows
                                 Global.debug_ReadInputErrorCount++;
                                 if (Global.debug_ReadInputErrorCount < 100)
                                     continue;
+
+                                AppLogger.LogToGui(Mac.ToString() + " disconnected due to read failure: " + winError, true);
                             }
 
                             readWaitEv.Reset();
@@ -1554,10 +1556,12 @@ namespace DS4Windows
                             if (synced)
                             {
                                 forceWrite = true;
+                                sixAxis.ResetContinuousCalibration();
                             }
                             else
                             {
                                 standbySw.Reset();
+                                sixAxis.StopContinuousCalibration();
                             }
                         }
                     }
