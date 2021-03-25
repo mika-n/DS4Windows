@@ -825,8 +825,10 @@ namespace DS4Windows
                 int lsAntiDead = lsMod.antiDeadZone;
                 int lsMaxZone = lsMod.maxZone;
                 double lsMaxOutput = lsMod.maxOutput;
+                double lsVerticalScale = lsMod.verticalScale;
+                bool interpret = lsAntiDead > 0 || lsMaxZone != 100 || lsMaxOutput != 100.0 || lsVerticalScale != StickDeadZoneInfo.DEFAULT_VERTICAL_SCALE;
 
-                if (lsDeadzone > 0 || lsAntiDead > 0 || lsMaxZone != 100 || lsMaxOutput != 100.0)
+                if (lsDeadzone > 0 || interpret)
                 {
                     double lsSquared = Math.Pow(cState.LX - 128f, 2) + Math.Pow(cState.LY - 128f, 2);
                     double lsDeadzoneSquared = Math.Pow(lsDeadzone, 2);
@@ -835,13 +837,14 @@ namespace DS4Windows
                         dState.LX = 128;
                         dState.LY = 128;
                     }
-                    else if ((lsDeadzone > 0 && lsSquared > lsDeadzoneSquared) || lsAntiDead > 0 || lsMaxZone != 100 || lsMaxOutput != 100.0)
+                    else if ((lsDeadzone > 0 && lsSquared > lsDeadzoneSquared) || interpret)
                     {
                         double r = Math.Atan2(-(dState.LY - 128.0), (dState.LX - 128.0));
                         double maxXValue = dState.LX >= 128.0 ? 127.0 : -128;
                         double maxYValue = dState.LY >= 128.0 ? 127.0 : -128;
                         double ratio = lsMaxZone / 100.0;
                         double maxOutRatio = lsMaxOutput / 100.0;
+                        double verticalScale = lsVerticalScale / 100.0;
 
                         double maxZoneXNegValue = (ratio * -128) + 128;
                         double maxZoneXPosValue = (ratio * 127) + 128;
@@ -871,6 +874,11 @@ namespace DS4Windows
                             double currentY = Global.Clamp(maxZoneYNegValue, dState.LY, maxZoneYPosValue);
                             tempOutputX = (currentX - 128.0) / maxZoneX;
                             tempOutputY = (currentY - 128.0) / maxZoneY;
+                        }
+
+                        if (lsVerticalScale != StickDeadZoneInfo.DEFAULT_VERTICAL_SCALE)
+                        {
+                            tempOutputY = Math.Min(Math.Max(tempOutputY * verticalScale, 0.0), 1.0);
                         }
 
                         if (lsMaxOutput != 100.0)
@@ -1006,8 +1014,10 @@ namespace DS4Windows
                 int rsAntiDead = rsMod.antiDeadZone;
                 int rsMaxZone = rsMod.maxZone;
                 double rsMaxOutput = rsMod.maxOutput;
+                double rsVerticalScale = rsMod.verticalScale;
+                bool interpret = rsAntiDead > 0 || rsMaxZone != 100 || rsMaxOutput != 100.0 || rsVerticalScale != StickDeadZoneInfo.DEFAULT_VERTICAL_SCALE;
 
-                if (rsDeadzone > 0 || rsAntiDead > 0 || rsMaxZone != 100 || rsMaxOutput != 100.0)
+                if (rsDeadzone > 0 || interpret)
                 {
                     double rsSquared = Math.Pow(cState.RX - 128.0, 2) + Math.Pow(cState.RY - 128.0, 2);
                     double rsDeadzoneSquared = Math.Pow(rsDeadzone, 2);
@@ -1016,13 +1026,14 @@ namespace DS4Windows
                         dState.RX = 128;
                         dState.RY = 128;
                     }
-                    else if ((rsDeadzone > 0 && rsSquared > rsDeadzoneSquared) || rsAntiDead > 0 || rsMaxZone != 100 || rsMaxOutput != 100.0)
+                    else if ((rsDeadzone > 0 && rsSquared > rsDeadzoneSquared) || interpret)
                     {
                         double r = Math.Atan2(-(dState.RY - 128.0), (dState.RX - 128.0));
                         double maxXValue = dState.RX >= 128.0 ? 127 : -128;
                         double maxYValue = dState.RY >= 128.0 ? 127 : -128;
                         double ratio = rsMaxZone / 100.0;
                         double maxOutRatio = rsMaxOutput / 100.0;
+                        double verticalScale = rsVerticalScale / 100.0;
 
                         double maxZoneXNegValue = (ratio * -128.0) + 128.0;
                         double maxZoneXPosValue = (ratio * 127.0) + 128.0;
@@ -1054,6 +1065,11 @@ namespace DS4Windows
 
                             tempOutputX = (currentX - 128.0) / maxZoneX;
                             tempOutputY = (currentY - 128.0) / maxZoneY;
+                        }
+
+                        if (rsVerticalScale != StickDeadZoneInfo.DEFAULT_VERTICAL_SCALE)
+                        {
+                            tempOutputY = Math.Min(Math.Max(tempOutputY * verticalScale, 0.0), 1.0);
                         }
 
                         if (rsMaxOutput != 100.0)
